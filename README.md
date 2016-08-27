@@ -13,4 +13,3 @@
 
 The resulting Docker image chalmersrevere/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest contains
 the OpenDLV core binaries on the latest OpenDaVINCI framework running on Ubuntu 16.04 LTS.
-
