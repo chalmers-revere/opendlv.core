@@ -25,6 +25,8 @@
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
 
+#include "odvdapplanix/GeneratedHeaders_ODVDApplanix.h"
+
 #include "ApplanixStringDecoder.h"
 
 namespace opendlv {
@@ -78,6 +80,10 @@ namespace proxy {
 
     // TODO: To be tested and mapped to data structures as specified in ODVDApplanix.
     void ApplanixStringDecoder::nextString(std::string const &data) {
+        // TODO: Fill this data structure.
+        opendlv::core::sensors::applanix::Grp1Data g1data;
+        cout << g1data.toString() << endl;
+
         bool foundHeader = false;
         bool buffering = false;
         uint32_t PAYLOAD_SIZE = 0;
