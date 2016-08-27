@@ -47,7 +47,7 @@ namespace proxy {
         const string APPLANIX_IP = getKeyValueConfiguration().getValue<std::string>("proxy-applanix.ip");
         const uint32_t APPLANIX_PORT = getKeyValueConfiguration().getValue<uint32_t>("proxy-applanix.port");
 
-        // Separated string decoding for GPS messages from this class.
+        // Separating string decoding for GPS messages received from Applanix unit from this class.
         // Therefore, we need to pass the getConference() reference to the other instance so that it can send containers.
         m_applanixStringDecoder = std::unique_ptr<ApplanixStringDecoder>(new ApplanixStringDecoder(getConference()));
 

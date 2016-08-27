@@ -27,6 +27,6 @@ RUN chown -R odv:odv /opt/opendlv.core
 
 # Environment parameters to allow GUIs.
 ENV QT_X11_NO_MITSHM=1
-ENV LD_LIBRARY_PATH=/opt/opendlv.core/lib
+ENV LD_LIBRARY_PATH=/opt/od4/lib:/opt/opendlv.core/lib
 WORKDIR /opt/opendlv.core/bin
 

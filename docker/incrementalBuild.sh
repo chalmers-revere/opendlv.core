@@ -30,11 +30,10 @@ cd /opt/opendlv.core.build
 
 echo "[opendlv.core Docker builder] Incremental build."
 
-if [ "$TESTRUNNER_DISABLED" == "YES" ]; then
-    make -j4
-else
-    make -j1
-fi
+mkdir -p build.system && cd build.system
+PATH=/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core /opt/opendlv.core.sources/code/core/system
+
+make -j3 && make install
 EOF
 
 chmod 755 /opt/opendlv.core.build/build.sh
