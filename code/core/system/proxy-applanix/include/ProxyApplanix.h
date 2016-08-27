@@ -17,13 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_APPLANIX_H
-#define PROXY_APPLANIX_H
+#ifndef PROXY_PROXYAPPLANIX_H
+#define PROXY_PROXYAPPLANIX_H
 
-#include <string>
-#include <vector>
+#include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/data/Container.h>
+#include <opendavinci/odcore/io/tcp/TCPConnection.h>
 
-#include "opendavinci/odcore/opendavinci.h"
+#include "ApplanixStringDecoder.h"
 
 namespace opendlv {
 namespace core {
@@ -35,7 +36,7 @@ namespace proxy {
     /**
      * Interface to GPS/IMU unit Applanix.
      */
-    class ProxyApplanix {
+    class ProxyApplanix : public odcore::base::module::DataTriggeredConferenceClientModule {
         private:
             ProxyApplanix(const ProxyApplanix &/*obj*/) = delete;
             ProxyApplanix& operator=(const ProxyApplanix &/*obj*/) = delete;
@@ -43,37 +44,24 @@ namespace proxy {
         public:
             /**
              * Constructor.
-             */
-            ProxyApplanix();
-
-            virtual ~ProxyApplanix();
-
-            /**
-             * This method runs odfilter.
              *
              * @param argc Number of command line arguments.
              * @param argv Command line arguments.
-             * @return 0 if the filter is successful, 1 if both, the keep and the drop parameters are specified.
              */
-            int32_t run(const int32_t &argc, char **argv);
+            ProxyApplanix(const int &argc, char **argv);
+
+            virtual ~ProxyApplanix();
+            virtual void nextContainer(odcore::data::Container &c);
 
         private:
-            void parseAdditionalCommandLineParameters(const int &argc, char **argv);
-
-            /**
-             * This method returns a sorted vector with unique numerical values
-             * extracted from a comma-separated list of numbers.
-             *
-             * @param s Comma-separated list of numbers.
-             * @return vector containing sorted unique numerical values.
-             */
-            vector<uint32_t> getListOfNumbers(const string &s);
+            void setUp();
+            void tearDown();
 
         private:
-            vector<uint32_t> m_keep;
-            vector<uint32_t> m_drop;
+            std::shared_ptr<odcore::io::tcp::TCPConnection> m_applanix;
+            std::unique_ptr<ApplanixStringDecoder> m_applanixStringDecoder;
     };
 
 } } } } // opendlv::core::system::proxy
 
-#endif /*PROXY_APPLANIX_H*/
+#endif /*PROXY_PROXYAPPLANIX_H*/

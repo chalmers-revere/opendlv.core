@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_APPLANIX_TESTSUITE_H
-#define PROXY_APPLANIX_TESTSUITE_H
+#ifndef PROXY_PROXYAPPLANIX_TESTSUITE_H
+#define PROXY_PROXYAPPLANIX_TESTSUITE_H
 
 #include "cxxtest/TestSuite.h"
 
@@ -39,5 +39,5 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
         }
 };
 
-#endif /*PROXY_APPLANIX_TESTSUITE_H*/
+#endif /*PROXY_PROXYAPPLANIX_TESTSUITE_H*/
 

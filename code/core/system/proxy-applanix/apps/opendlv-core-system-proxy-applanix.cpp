@@ -20,6 +20,6 @@
 #include "ProxyApplanix.h"
 
 int32_t main(int32_t argc, char **argv) {
-    opendlv::core::system::proxy::ProxyApplanix pa;
-    return pa.run(argc, argv);
+    opendlv::core::system::proxy::ProxyApplanix pa(argc, argv);
+    return pa.runModule();
 }
