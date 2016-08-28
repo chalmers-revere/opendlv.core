@@ -1,8 +1,8 @@
 #!/bin/bash
 
-for file in `find . -name \*.cpp -o -name \*.hpp`; do 
+for file in `find . -name \*.cpp -o -name \*.h*`; do 
   clang-format $file > /tmp/formatted_file;
   cat /tmp/formatted_file > $file;
 done
 
-rm /tmp/formatted_file;
+rm -f /tmp/formatted_file
