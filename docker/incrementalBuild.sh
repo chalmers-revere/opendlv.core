@@ -18,7 +18,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 BUILD_AS=$1
-TESTRUNNER_DISABLED=$2
 
 # Adding user for building.
 groupadd $BUILD_AS
@@ -33,7 +32,7 @@ echo "[opendlv.core Docker builder] Incremental build."
 mkdir -p build.system && cd build.system
 PATH=/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core /opt/opendlv.core.sources/code/core/system
 
-make -j3 && make install
+make -j4 && make install
 EOF
 
 chmod 755 /opt/opendlv.core.build/build.sh
