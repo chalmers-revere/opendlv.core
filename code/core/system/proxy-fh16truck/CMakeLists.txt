@@ -52,7 +52,27 @@ find_package(ODVDFH16Truck REQUIRED)
 # Find ODVDVehicle.
 find_package(ODVDVehicle REQUIRED)
 
+###########################################################################
+# Find fh16mapping.
+find_package(fh16mapping REQUIRED)
+
+###########################################################################
+# Find AutomotiveData.
+set(AUTOMOTIVEDATA_DIR "${OPENDAVINCI_DIR}")
+find_package(AutomotiveData REQUIRED)
+
+###########################################################################
+# Find odcantools.
+set(ODCANTOOLS_DIR "${OPENDAVINCI_DIR}")
+find_package(odcantools REQUIRED)
+
 ###############################################################################
+# Set header files from ODCANTools.
+INCLUDE_DIRECTORIES (SYSTEM ${ODCANTOOLS_INCLUDE_DIRS})
+# Set header files from AutomotiveData.
+INCLUDE_DIRECTORIES (SYSTEM ${AUTOMOTIVEDATA_INCLUDE_DIRS})
+# Set header files from ODVDFH16Truck.
+INCLUDE_DIRECTORIES (SYSTEM ${FH16MAPPING_INCLUDE_DIRS})
 # Set header files from ODVDFH16Truck.
 INCLUDE_DIRECTORIES (SYSTEM ${ODVDFH16TRUCK_INCLUDE_DIRS})
 # Set header files from ODVDVehicle.
@@ -65,7 +85,10 @@ INCLUDE_DIRECTORIES(include)
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
               ${ODVDFH16TRUCK_LIBRARIES}
-              ${ODVDVEHICLE_LIBRARIES})
+              ${ODVDVEHICLE_LIBRARIES}
+              ${FH16MAPPING_LIBRARIES}
+              ${AUTOMOTIVEDATA_LIBRARIES}
+              ${ODCANTOOLS_LIBRARIES})
 
 ###############################################################################
 # Build this project.

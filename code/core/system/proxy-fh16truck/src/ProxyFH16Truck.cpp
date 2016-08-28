@@ -23,6 +23,7 @@
 
 #include "odvdfh16truck/GeneratedHeaders_ODVDFH16Truck.h"
 #include "odvdvehicle/GeneratedHeaders_ODVDVehicle.h"
+#include "fh16mapping/GeneratedHeaders_fh16mapping.h"
 
 #include "ProxyFH16Truck.h"
 
@@ -47,8 +48,12 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyFH16Truck::body()
     // TODO: Listen for messages of type opendlv::proxy::ActuationRequest to map them on the appropriate FH16 truck messages.
     opendlv::proxy::ActuationRequest ar;
     (void)ar;
+
     opendlv::proxy::reverefh16::AccelerationRequest ar2;
     (void)ar2;
+
+    canmapping::opendlv::proxy::reverefh16::AccelerationRequest mar2;
+    (void)mar2;
 
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
         cout << "Inside the main processing loop." << endl;
