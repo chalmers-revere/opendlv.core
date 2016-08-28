@@ -1,3 +1,4 @@
+0.0.6 - Prepare code layout for Chalmers Revere OpenDLV core.
 0.0.5 - Testing Docker hub notification web hook
 0.0.4 - Tagging Docker images.
 0.0.3 - Added Applanix decoder
