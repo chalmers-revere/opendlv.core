@@ -76,6 +76,18 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
             const string s = sstr.str();
             if (s.size() > 0) {
                 asd.nextString(s);
+                if (mcc.m_callCounter == 1) {
+//                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X1, 1e-8);
+//                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y1, 1e-8);
+                }
+                if (mcc.m_callCounter == 2) {
+//                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X2, 1e-8);
+//                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y2, 1e-8);
+                }
+                if (mcc.m_callCounter == 3) {
+//                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X3, 1e-8);
+//                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y3, 1e-8);
+                }
             }
             overallCounter++;
         }
