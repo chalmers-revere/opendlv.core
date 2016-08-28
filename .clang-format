@@ -44,8 +44,8 @@ PointerAlignment: Right
 SpacesBeforeTrailingComments: 1
 Cpp11BracedListStyle: true
 Standard:        Cpp11
-IndentWidth:     2
-TabWidth:        2
+IndentWidth:     4
+TabWidth:        4
 UseTab:          Never
 BreakBeforeBraces: Stroustrup
 SpacesInParentheses: false
