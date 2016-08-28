@@ -22,10 +22,16 @@
 
 #include "cxxtest/TestSuite.h"
 
+#include <memory>
+
+#include <opendavinci/odcore/io/conference/ContainerConference.h>
+#include <opendavinci/odcore/io/conference/ContainerConferenceFactory.h>
+
 // Include local header files.
 #include "../include/ProxyApplanix.h"
 
 using namespace std;
+using namespace odcore::io::conference;
 using namespace opendlv::core::system::proxy;
 
 class ProxyApplanixTest : public CxxTest::TestSuite {
@@ -35,6 +41,8 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
     void tearDown() {}
 
     void testApplication() {
+        shared_ptr<ContainerConference> conf = ContainerConferenceFactory::getInstance().getContainerConference("225.0.0.199");
+        (void)conf;
         TS_ASSERT(true);
     }
 };

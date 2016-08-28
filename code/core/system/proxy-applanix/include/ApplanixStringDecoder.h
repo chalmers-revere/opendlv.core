@@ -30,8 +30,8 @@ namespace system {
 namespace proxy {
 
 /**
-     * This class decodes data from the Applanix unit.
-     */
+ * This class decodes data from the Applanix unit.
+ */
 class ApplanixStringDecoder : public odcore::io::StringListener {
    private:
     ApplanixStringDecoder(ApplanixStringDecoder const &) = delete;
