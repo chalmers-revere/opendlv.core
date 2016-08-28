@@ -44,7 +44,7 @@ class MyContainerConference : public ContainerConference {
         m_callCounter++;
         if (container.getDataType() == opendlv::core::sensors::applanix::Grp1Data::ID()) {
             m_g1data = container.getData<opendlv::core::sensors::applanix::Grp1Data>();
-cout << m_g1data.toString() << endl;
+            cout << m_g1data.toString() << endl;
         }
     }
     mutable uint32_t m_callCounter;
@@ -61,6 +61,7 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
         MyContainerConference mcc;
         ApplanixStringDecoder asd(mcc);
 
+        // TODO: Add Applanix data dump.
         fstream data("../2016-08-28-Applanix.dump", ios::binary | ios::in);
 
         uint32_t overallCounter = 0;
