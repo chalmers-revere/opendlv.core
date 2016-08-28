@@ -34,8 +34,8 @@ namespace proxy {
 using namespace std;
 
 /**
-     * Interface to GPS/IMU unit Applanix.
-     */
+ * Interface to GPS/IMU unit Applanix.
+ */
 class ProxyApplanix : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
     ProxyApplanix(const ProxyApplanix & /*obj*/) = delete;
