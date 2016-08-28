@@ -81,7 +81,7 @@ removeExistingDockerImages:
 	$(DOCKER) rmi -f `$(DOCKER) images | grep $(DOCKER_IMAGE_NAME)- | tr -s " " ";" | cut -f3 -d";"` || exit 0
 
 updateDockerBaseImage:
-	$(DOCKER) pull $(BASE_IMAGE)
+	$(DOCKER) pull $(BASE_IMAGE):latest
 
 ###############################################################################
 define compile
@@ -91,7 +91,7 @@ define compile
 	$(CMAKE) -E make_directory $(BUILD_PATH)/opendlv.core.deb
 	$(DOCKER) network inspect $(DOCKER_NETWORK_NAME) || $(DOCKER) network create $(DOCKER_NETWORK_NAME)
 	$(DOCKER) network ls
-	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(SOURCE_TREE_PATH)/docker/completeBuild.sh:/opt/completeBuild.sh -w /opt $(BASE_IMAGE) /opt/completeBuild.sh $(RUN_BUILD_AS)
+	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(SOURCE_TREE_PATH)/docker/completeBuild.sh:/opt/completeBuild.sh -w /opt $(BASE_IMAGE):latest /opt/completeBuild.sh $(RUN_BUILD_AS)
 	$(DOCKER) network rm $(DOCKER_NETWORK_NAME)
 	mkdir -p $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME) && for i in $$(find $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD) -type f -name "*deb" | grep -v CPack); do cp $$i $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME); done
 	touch $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD)/build.incremental
