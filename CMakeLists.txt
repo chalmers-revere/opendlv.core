@@ -36,7 +36,7 @@ project(opendlv.core)
 IF(     NOT("${DPKG_EXECUTABLE}" STREQUAL "DPKG_EXECUTABLE-NOTFOUND")
     AND NOT("${RPMBUILD_EXECUTABLE}" STREQUAL "RPMBUILD_EXECUTABLE-NOTFOUND") )
     MESSAGE(STATUS "Enabling building .deb and .rpm packages.")
-    SET(MAKE_PACKAGE package) # TODO: Enable packaging for code/system.
+    SET(MAKE_PACKAGE package)
 ELSE()
     # If the platform does not provide dpkg and rpmbuild, make package is
     # replaced with make install.
