@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-# Date: 2016-08-27
+# Date: 2016-08-28
 FROM BASEIMAGE
 MAINTAINER Christian Berger "christian.berger@gu.se"
 
@@ -27,6 +27,6 @@ RUN chown -R odv:odv /opt/opendlv.core
 
 # Environment parameters to allow GUIs.
 ENV QT_X11_NO_MITSHM=1
-ENV LD_LIBRARY_PATH=/opt/od4/lib:/opt/opendlv.core/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/opendlv.core/lib
 WORKDIR /opt/opendlv.core/bin
 

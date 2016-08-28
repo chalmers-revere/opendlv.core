@@ -55,7 +55,7 @@ DOCKER_IMAGE_NAME_SHORT_NAME=$(DOCKER_REPOSITORY_NAME)/$(DOCKER_IMAGE_NAME):late
 
 ###############################################################################
 
-.PHONY: all buildComplete createDockerImage clean cleanAll cleanDocker removeExitedContainers removeNoneDockerImages  removeExistingDockerImages updateDockerBaseImage
+.PHONY: all buildComplete buildIncremental createDockerImage pushDockerImage clean cleanAll cleanDocker removeExitedContainers removeNoneDockerImages  removeExistingDockerImages updateDockerBaseImage
 
 ###############################################################################
 
