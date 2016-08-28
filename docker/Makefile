@@ -40,7 +40,8 @@ BUILD_PATH_BASE=$(SOURCE_TREE_PATH)/docker/builds
 MAPPED_VOLUME_SOURCES=opendlv.core.sources
 MAPPED_VOLUME_BUILD=opendlv.core.build
 MAPPED_VOLUME_INSTALL=/opt/opendlv.core
-RUN_BUILD_AS=$(shell whoami)
+#RUN_BUILD_AS=$(shell whoami)
+RUN_BUILD_AS=odv # odv built the OpenDaVINCI Docker image.
 PACKAGES_DIR=$(BUILD_PATH)
 
 ###############################################################################

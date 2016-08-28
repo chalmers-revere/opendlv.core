@@ -36,5 +36,5 @@ EOF
 chmod 755 /opt/opendlv.core.build/build.sh
 chown $BUILD_AS:$BUILD_AS /opt/opendlv.core.build/build.sh
 
-su -m $BUILD_AS -c /opt/opendlv.core.build/build.sh
+su -m `getent passwd 1000|cut -f1 -d":"` -c /opt/opendlv.core.build/build.sh
 
