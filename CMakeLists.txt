@@ -84,7 +84,7 @@ message(STATUS "Installing OpenDLV.core to ${INSTALL_DIR}.")
 set(PROJECT_ROOT ${CMAKE_SOURCE_DIR})
 
 ###########################################################################
-# This "external project" simply deletes the existing libodvdopendlv.
+# This "external project" simply deletes the existing libodvdapplanix.
 ExternalProject_Add (libodvdapplanix-cleanup
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdapplanix
@@ -95,6 +95,7 @@ ExternalProject_Add (libodvdapplanix-cleanup
     TEST_COMMAND ""
     INSTALL_COMMAND "")
 
+# This "external project" builds libodvdapplanix.
 ExternalProject_Add (libodvdapplanix
     DEPENDS libodvdapplanix-cleanup
     DOWNLOAD_COMMAND ""
