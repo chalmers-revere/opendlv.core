@@ -45,12 +45,18 @@ INCLUDE (CheckCxxTestEnvironment)
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
-# Find ODVDApplanix.
-find_package(ODVDApplanix REQUIRED)
+# Find ODVDFH16Truck.
+find_package(ODVDFH16Truck REQUIRED)
+
+###########################################################################
+# Find ODVDVehicle.
+find_package(ODVDVehicle REQUIRED)
 
 ###############################################################################
-# Set header files from ODVDApplanix.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDAPPLANIX_INCLUDE_DIRS})
+# Set header files from ODVDFH16Truck.
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDFH16TRUCK_INCLUDE_DIRS})
+# Set header files from ODVDVehicle.
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDVEHICLE_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set include directory.
@@ -58,7 +64,8 @@ INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
-              ${ODVDAPPLANIX_LIBRARIES})
+              ${ODVDFH16TRUCK_LIBRARIES}
+              ${ODVDVEHICLE_LIBRARIES})
 
 ###############################################################################
 # Build this project.

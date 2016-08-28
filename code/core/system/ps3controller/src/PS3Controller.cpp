@@ -21,6 +21,8 @@
 
 #include <iostream>
 
+#include "odvdvehicle/GeneratedHeaders_ODVDVehicle.h"
+
 #include "PS3Controller.h"
 
 namespace opendlv {
@@ -40,6 +42,10 @@ void PS3Controller::setUp() {}
 void PS3Controller::tearDown() {}
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() {
+    // TODO: Implement reading PS3Controller to emit messages of type opendlv::proxy::ActuationRequest.
+    opendlv::proxy::ActuationRequest ar;
+    (void)ar;
+
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
         cout << "Inside the main processing loop." << endl;
     }
