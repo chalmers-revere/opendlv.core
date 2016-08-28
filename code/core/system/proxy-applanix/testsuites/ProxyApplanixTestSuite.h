@@ -27,6 +27,8 @@
 #include <opendavinci/odcore/io/conference/ContainerConference.h>
 #include <opendavinci/odcore/io/conference/ContainerConferenceFactory.h>
 
+#include "odvdapplanix/GeneratedHeaders_ODVDApplanix.h"
+
 // Include local header files.
 #include "../include/ProxyApplanix.h"
 #include "../include/ApplanixStringDecoder.h"
@@ -35,6 +37,20 @@ using namespace std;
 using namespace odcore::io::conference;
 using namespace opendlv::core::system::proxy;
 
+class MyContainerConference : public ContainerConference {
+   public:
+    MyContainerConference() : ContainerConference(), m_callCounter(0), m_g1data() {}
+    virtual void send(odcore::data::Container &container) const {
+        m_callCounter++;
+        if (container.getDataType() == opendlv::core::sensors::applanix::Grp1Data::ID()) {
+            m_g1data = container.getData<opendlv::core::sensors::applanix::Grp1Data>();
+cout << m_g1data.toString() << endl;
+        }
+    }
+    mutable uint32_t m_callCounter;
+    mutable opendlv::core::sensors::applanix::Grp1Data m_g1data;
+};
+
 class ProxyApplanixTest : public CxxTest::TestSuite {
    public:
     void setUp() {}
@@ -42,10 +58,10 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
     void tearDown() {}
 
     void testApplication() {
-        shared_ptr<ContainerConference> conf = ContainerConferenceFactory::getInstance().getContainerConference("225.0.0.199");
-        ApplanixStringDecoder asd(*(conf.get()));
+        MyContainerConference mcc;
+        ApplanixStringDecoder asd(mcc);
 
-        fstream data("test2.net", ios::binary | ios::in);
+        fstream data("../2016-08-28-Applanix.dump", ios::binary | ios::in);
 
         uint32_t overallCounter = 0;
         while (overallCounter < 50) {
@@ -54,9 +70,8 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
             while (data.good()) {
                 char c = data.get();
                 sstr.write(&c, sizeof(c));
-                count++;
 
-                if (count == 15) break;
+                if (++count == 15) break;
             }
             const string s = sstr.str();
             if (s.size() > 0) {
@@ -65,7 +80,6 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
             overallCounter++;
         }
         data.close();
-        TS_ASSERT(true);
     }
 };
 
