@@ -29,15 +29,14 @@ using namespace std;
 using namespace opendlv::core::system::proxy;
 
 class ProxyApplanixTest : public CxxTest::TestSuite {
-    public:
-        void setUp() {}
+   public:
+    void setUp() {}
 
-        void tearDown() {}
+    void tearDown() {}
 
-        void testApplication() {
-            TS_ASSERT(true);
-        }
+    void testApplication() {
+        TS_ASSERT(true);
+    }
 };
 
 #endif /*PROXY_PROXYAPPLANIX_TESTSUITE_H*/
-

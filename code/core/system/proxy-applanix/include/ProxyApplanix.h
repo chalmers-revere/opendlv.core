@@ -31,37 +31,39 @@ namespace core {
 namespace system {
 namespace proxy {
 
-    using namespace std;
+using namespace std;
 
-    /**
+/**
      * Interface to GPS/IMU unit Applanix.
      */
-    class ProxyApplanix : public odcore::base::module::DataTriggeredConferenceClientModule {
-        private:
-            ProxyApplanix(const ProxyApplanix &/*obj*/) = delete;
-            ProxyApplanix& operator=(const ProxyApplanix &/*obj*/) = delete;
+class ProxyApplanix : public odcore::base::module::DataTriggeredConferenceClientModule {
+   private:
+    ProxyApplanix(const ProxyApplanix & /*obj*/) = delete;
+    ProxyApplanix &operator=(const ProxyApplanix & /*obj*/) = delete;
 
-        public:
-            /**
+   public:
+    /**
              * Constructor.
              *
              * @param argc Number of command line arguments.
              * @param argv Command line arguments.
              */
-            ProxyApplanix(const int &argc, char **argv);
+    ProxyApplanix(const int &argc, char **argv);
 
-            virtual ~ProxyApplanix();
-            virtual void nextContainer(odcore::data::Container &c);
+    virtual ~ProxyApplanix();
+    virtual void nextContainer(odcore::data::Container &c);
 
-        private:
-            void setUp();
-            void tearDown();
+   private:
+    void setUp();
+    void tearDown();
 
-        private:
-            std::shared_ptr<odcore::io::tcp::TCPConnection> m_applanix;
-            std::unique_ptr<ApplanixStringDecoder> m_applanixStringDecoder;
-    };
-
-} } } } // opendlv::core::system::proxy
+   private:
+    std::shared_ptr< odcore::io::tcp::TCPConnection > m_applanix;
+    std::unique_ptr< ApplanixStringDecoder > m_applanixStringDecoder;
+};
+}
+}
+}
+} // opendlv::core::system::proxy
 
 #endif /*PROXY_PROXYAPPLANIX_H*/

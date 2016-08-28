@@ -31,45 +31,44 @@ namespace core {
 namespace system {
 namespace proxy {
 
-    using namespace std;
-    using namespace odcore::base;
-    using namespace odcore::io::tcp;
+using namespace std;
+using namespace odcore::base;
+using namespace odcore::io::tcp;
 
-    ProxyApplanix::ProxyApplanix(const int &argc, char **argv)
-        : DataTriggeredConferenceClientModule(argc, argv, "proxy-applanix")
-        , m_applanix()
-        , m_applanixStringDecoder()
-    {}
+ProxyApplanix::ProxyApplanix(const int &argc, char **argv)
+    : DataTriggeredConferenceClientModule(argc, argv, "proxy-applanix")
+    , m_applanix()
+    , m_applanixStringDecoder() {}
 
-    ProxyApplanix::~ProxyApplanix() {}
+ProxyApplanix::~ProxyApplanix() {}
 
-    void ProxyApplanix::setUp() {
-        const string APPLANIX_IP = getKeyValueConfiguration().getValue<std::string>("proxy-applanix.ip");
-        const uint32_t APPLANIX_PORT = getKeyValueConfiguration().getValue<uint32_t>("proxy-applanix.port");
+void ProxyApplanix::setUp() {
+    const string APPLANIX_IP = getKeyValueConfiguration().getValue< std::string >("proxy-applanix.ip");
+    const uint32_t APPLANIX_PORT = getKeyValueConfiguration().getValue< uint32_t >("proxy-applanix.port");
 
-        // Separating string decoding for GPS messages received from Applanix unit from this class.
-        // Therefore, we need to pass the getConference() reference to the other instance so that it can send containers.
-        m_applanixStringDecoder = std::unique_ptr<ApplanixStringDecoder>(new ApplanixStringDecoder(getConference()));
+    // Separating string decoding for GPS messages received from Applanix unit from this class.
+    // Therefore, we need to pass the getConference() reference to the other instance so that it can send containers.
+    m_applanixStringDecoder = std::unique_ptr< ApplanixStringDecoder >(new ApplanixStringDecoder(getConference()));
 
-        try {
-            m_applanix = shared_ptr<TCPConnection>(TCPFactory::createTCPConnectionTo(APPLANIX_IP, APPLANIX_PORT));
-            m_applanix->setRaw(true);
+    try {
+        m_applanix = shared_ptr< TCPConnection >(TCPFactory::createTCPConnectionTo(APPLANIX_IP, APPLANIX_PORT));
+        m_applanix->setRaw(true);
 
-            // m_applanixStringDecoder is handling data from the Applanix unit.
-            m_applanix->setStringListener(m_applanixStringDecoder.get());
-            m_applanix->start();
-        }
-        catch(string &exception) {
-            cerr << "[" << getName() << "] Could not connect to Applanix: " << exception << endl;
-        }
+        // m_applanixStringDecoder is handling data from the Applanix unit.
+        m_applanix->setStringListener(m_applanixStringDecoder.get());
+        m_applanix->start();
+    } catch (string &exception) {
+        cerr << "[" << getName() << "] Could not connect to Applanix: " << exception << endl;
     }
+}
 
-    void ProxyApplanix::tearDown() {
-        m_applanix->stop();
-        m_applanix->setStringListener(NULL);
-    }
+void ProxyApplanix::tearDown() {
+    m_applanix->stop();
+    m_applanix->setStringListener(NULL);
+}
 
-    void ProxyApplanix::nextContainer(odcore::data::Container & /*c*/) {}
-
-} } } } // opendlv::core::system::proxy
-
+void ProxyApplanix::nextContainer(odcore::data::Container & /*c*/) {}
+}
+}
+}
+} // opendlv::core::system::proxy

@@ -29,24 +29,26 @@ namespace core {
 namespace system {
 namespace proxy {
 
-    /**
+/**
      * This class decodes data from the Applanix unit.
      */
-    class ApplanixStringDecoder : public odcore::io::StringListener {
-        private:
-            ApplanixStringDecoder(ApplanixStringDecoder const &) = delete;
-            ApplanixStringDecoder &operator=(ApplanixStringDecoder const &) = delete;
+class ApplanixStringDecoder : public odcore::io::StringListener {
+   private:
+    ApplanixStringDecoder(ApplanixStringDecoder const &) = delete;
+    ApplanixStringDecoder &operator=(ApplanixStringDecoder const &) = delete;
 
-        public:
-            ApplanixStringDecoder(odcore::io::conference::ContainerConference &);
-            virtual ~ApplanixStringDecoder();
+   public:
+    ApplanixStringDecoder(odcore::io::conference::ContainerConference &);
+    virtual ~ApplanixStringDecoder();
 
-            virtual void nextString(const std::string &s);
+    virtual void nextString(const std::string &s);
 
-        private:
-            odcore::io::conference::ContainerConference &m_conference;
-    };
-
-} } } } // opendlv::core::system::proxy
+   private:
+    odcore::io::conference::ContainerConference &m_conference;
+};
+}
+}
+}
+} // opendlv::core::system::proxy
 
 #endif
