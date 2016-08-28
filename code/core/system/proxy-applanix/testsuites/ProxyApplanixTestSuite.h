@@ -29,6 +29,7 @@
 
 // Include local header files.
 #include "../include/ProxyApplanix.h"
+#include "../include/ApplanixStringDecoder.h"
 
 using namespace std;
 using namespace odcore::io::conference;
@@ -42,7 +43,28 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
 
     void testApplication() {
         shared_ptr<ContainerConference> conf = ContainerConferenceFactory::getInstance().getContainerConference("225.0.0.199");
-        (void)conf;
+        ApplanixStringDecoder asd(*(conf.get()));
+
+        fstream data("test2.net", ios::binary | ios::in);
+
+        uint32_t overallCounter = 0;
+        while (overallCounter < 50) {
+            uint32_t count = 0;
+            stringstream sstr;
+            while (data.good()) {
+                char c = data.get();
+                sstr.write(&c, sizeof(c));
+                count++;
+
+                if (count > 20) break;
+            }
+            const string s = sstr.str();
+            if (s.size() > 0) {
+                asd.nextString(s);
+            }
+            overallCounter++;
+        }
+        data.close();
         TS_ASSERT(true);
     }
 };

@@ -21,6 +21,8 @@
 #ifndef PROXY_APPLANIXSTRINGDECODER_H
 #define PROXY_APPLANIXSTRINGDECODER_H
 
+#include <sstream>
+
 #include <opendavinci/odcore/io/StringListener.h>
 #include <opendavinci/odcore/io/conference/ContainerConference.h>
 
@@ -45,6 +47,7 @@ class ApplanixStringDecoder : public odcore::io::StringListener {
 
    private:
     odcore::io::conference::ContainerConference &m_conference;
+    std::stringstream m_buffer;
 };
 }
 }
