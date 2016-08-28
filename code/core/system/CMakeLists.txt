@@ -49,6 +49,7 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
 # Add subfolders with sources.
 add_subdirectory(proxy-applanix)
 add_subdirectory(proxy-fh16truck)
+add_subdirectory(ps3controller)
 
 #install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../config/configuration DESTINATION . COMPONENT system)
 
