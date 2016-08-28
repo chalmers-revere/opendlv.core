@@ -87,18 +87,19 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
     static uint32_t toRemove = 0;
 
     // TODO: Fill this data structure.
-    opendlv::core::sensors::applanix::Grp1Data g1data;
-    cout << g1data.toString() << endl;
+//    opendlv::core::sensors::applanix::Grp1Data g1data;
+//    cout << g1data.toString() << endl;
 
-cout << "S1 = " <<  m_buffer.str().size() << endl;
+//cout << "S1 = " <<  m_buffer.str().size() << endl;
     const string old = m_buffer.str();
     const string newString = old + data;
     m_buffer.str(newString);
     string s = m_buffer.str();
-cout << "S2 = " <<  m_buffer.str().size() << endl;
+//cout << "S2 = " <<  m_buffer.str().size() << endl;
 
-    while ( (s.size() > 8) && (toRemove < s.size())) {
+    while ( (s.size() > 8) && ((toRemove + 8) < s.size())) {
         s = m_buffer.str();
+//cout << "S.l = " << s.size() << endl;
 
         // Wait for more data.
         if (buffering && (s.size() < PAYLOAD_SIZE)) {
@@ -133,7 +134,10 @@ cout << "S2 = " <<  m_buffer.str().size() << endl;
                  << msg.speed << " "
                  << endl;
 
-            const string s2 = s.substr(PAYLOAD_SIZE);
+            const uint32_t length = s.size();
+//cout << "L = " << length << endl;
+            const string s2 = s.substr(PAYLOAD_SIZE, length);
+//cout << "S2.l = " << s2.size() << endl;
             m_buffer.seekp(0);
             m_buffer.seekg(0);
             m_buffer.str(s2);
@@ -143,10 +147,11 @@ cout << "S2 = " <<  m_buffer.str().size() << endl;
             PAYLOAD_SIZE = 0;
             toRemove = 0;
             s = m_buffer.str();
-            continue;
+//cout << "S.l = " << s.size() << endl;
+//            continue;
         }
 
-        if (!foundHeader && s.size() >= 8) {
+        if ( !foundHeader && (s.size() >= 8) ) {
             // Decode header.
             GRPHDR_MSG hdr;
             m_buffer.seekg(toRemove);

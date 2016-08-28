@@ -56,7 +56,7 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
                 sstr.write(&c, sizeof(c));
                 count++;
 
-                if (count > 20) break;
+                if (count == 15) break;
             }
             const string s = sstr.str();
             if (s.size() > 0) {
