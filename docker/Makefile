@@ -26,6 +26,7 @@ CMAKE=$(shell which cmake)
 
 ###############################################################################
 # Determine Git-related setting.
+VERSION=v$(shell head -1 ../VERSION | cut -f1 -d" ")
 GIT_CURRENT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 GIT_HASH=$(shell git rev-parse --short HEAD)
 GIT_COMMITS_IN_CURRENT_BRANCH=$(shell git rev-list --count `git rev-parse --abbrev-ref HEAD`)
@@ -47,12 +48,12 @@ PACKAGES_DIR=$(BUILD_PATH)
 ###############################################################################
 # Docker settings.
 DOCKERFILE_BASEIMAGE=s%BASEIMAGE%$(BASE_IMAGE)%
-DOCKER_REPOSITORY_NAME=chalmersrevere
+DOCKER_REPOSITORY_NAME=seresearch
 DOCKER_IMAGE_NAME=$(DOCKER_IMAGE_NAME_PREFIX)$(shell echo $(BASE_IMAGE) | cut -f2 -d"/")
 DOCKER_IMAGE_NAME_WITH_GIT_HASH=$(DOCKER_IMAGE_NAME)-$(GIT_HASH)
 DOCKER_NETWORK_NAME=nw_$(DOCKER_IMAGE_NAME_PREFIX)$(DOCKER_IMAGE_NAME_WITH_GIT_HASH)
 DOCKER_IMAGE_NAME_WITH_GIT_COMMITS_IN_CURRENT_BRANCH=$(DOCKER_IMAGE_NAME_PREFIX)$(shell echo $(BASE_IMAGE) | cut -f2 -d"/")-$(GIT_HASH):$(GIT_COMMITS_IN_CURRENT_BRANCH)
-DOCKER_IMAGE_NAME_SHORT_NAME=$(DOCKER_REPOSITORY_NAME)/$(DOCKER_IMAGE_NAME):latest
+DOCKER_IMAGE_NAME_SHORT_NAME=$(DOCKER_REPOSITORY_NAME)/$(DOCKER_IMAGE_NAME)
 
 ###############################################################################
 
@@ -112,10 +113,12 @@ createDockerImage:
 	cat $(SOURCE_TREE_PATH)/docker/Dockerfile.template | sed -e $(DOCKERFILE_BASEIMAGE) > $(BUILD_PATH)/Dockerfile
 	echo $(MAPPED_VOLUME_BUILD) > $(BUILD_PATH)/.dockerignore
 	cd $(BUILD_PATH) && $(DOCKER) build -t $(DOCKER_REPOSITORY_NAME)/$(DOCKER_IMAGE_NAME_WITH_GIT_COMMITS_IN_CURRENT_BRANCH) . | tee $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD)/build.log || exit 1
-	$(DOCKER) images | grep $$(tail -1 $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD)/build.log | cut -f3 -d" ") | grep "latest" && exit 0 || $(DOCKER) tag $$(tail -1 $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD)/build.log | cut -f3 -d" ") $(DOCKER_IMAGE_NAME_SHORT_NAME)
+	$(DOCKER) images | grep $$(tail -1 $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD)/build.log | cut -f3 -d" ") | grep "latest" && exit 0 || $(DOCKER) tag $$(tail -1 $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD)/build.log | cut -f3 -d" ") $(DOCKER_IMAGE_NAME_SHORT_NAME):latest
+	$(DOCKER) tag $(DOCKER_IMAGE_NAME_SHORT_NAME):latest $(DOCKER_IMAGE_NAME_SHORT_NAME):$(VERSION)
 
 ###############################################################################
 
 pushDockerImage: createDockerImage
-	$(DOCKER) push $(DOCKER_IMAGE_NAME_SHORT_NAME)
+	$(DOCKER) push $(DOCKER_IMAGE_NAME_SHORT_NAME):latest
+	$(DOCKER) push $(DOCKER_IMAGE_NAME_SHORT_NAME):$(VERSION)
 
