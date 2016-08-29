@@ -44,14 +44,21 @@ INCLUDE (CheckCxxTestEnvironment)
 # Find OpenDaVINCI.
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
+###########################################################################
+# Find OpenDaVINCI.
+FIND_PACKAGE(OpenCV REQUIRED)
+
 ###############################################################################
+# Set header files from OpenCV.
+INCLUDE_DIRECTORIES (SYSTEM ${OpenCV_INCLUDE_DIR})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set include directory.
 INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
-set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
+set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
+              ${OpenCV_LIBS})
 
 ###############################################################################
 # Build this project.

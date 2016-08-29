@@ -21,6 +21,8 @@
 
 #include <iostream>
 
+#include "opencv2/highgui/highgui.hpp"
+
 #include "ProxyCamera.h"
 
 namespace opendlv {
@@ -41,6 +43,10 @@ void ProxyCamera::setUp() {}
 void ProxyCamera::tearDown() {}
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyCamera::body() {
+    // TODO: Remove me.
+    // Test whether OpenCV is found and linked correctly.
+    cvWaitKey(10);
+
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
         cout << "Inside the main processing loop." << endl;
     }
