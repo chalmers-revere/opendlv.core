@@ -45,10 +45,12 @@ PS3Controller::PS3Controller(const int &argc, char **argv)
 PS3Controller::~PS3Controller() {}
 
 void PS3Controller::setUp() {
+    stringstream info;
     string const PS3CONTROLLER_DEVICE_NODE =
     getKeyValueConfiguration().getValue<string>("tools-can-ps3controller.ps3controllerdevicenode");
 
-    cout << "[PS3Controller] Trying to open ps3controller " << PS3CONTROLLER_DEVICE_NODE << endl;
+    info << "[PS3Controller] Trying to open ps3controller " << PS3CONTROLLER_DEVICE_NODE << endl;
+    toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
     
     // Setup ps3controller control.
     #if !defined(WIN32) && !defined(__gnu_hurd__) && !defined(__APPLE__)
@@ -57,6 +59,9 @@ void PS3Controller::setUp() {
     int name_of_ps3controller[80];
 
     if ((m_ps3controllerDevice = open(PS3CONTROLLER_DEVICE_NODE.c_str(), O_RDONLY)) == -1) {
+        stringstream err;
+        err << "[PS3Controller] Could not open ps3controller " << PS3CONTROLLER_DEVICE_NODE << endl;
+        toLogger(odcore::data::LogMessage::LogLevel::INFO, err.str());
         cerr << "[PS3Controller] Could not open ps3controller " << PS3CONTROLLER_DEVICE_NODE << endl;
         exit(1);
     }
@@ -66,14 +71,22 @@ void PS3Controller::setUp() {
     ioctl(m_ps3controllerDevice, JSIOCGNAME(80), &name_of_ps3controller);
 
     m_axes = (int *)calloc(num_of_axes, sizeof(int));
-    cerr << "[PS3Controller] PS3Controller found " << name_of_ps3controller
-    << ", number of axes: " << num_of_axes
-    << ", number of buttons: " << num_of_buttons << endl;
 
+    info.str("");
+    info << "[PS3Controller] PS3Controller found " << name_of_ps3controller
+         << ", number of axes: " << num_of_axes
+         << ", number of buttons: " << num_of_buttons << endl;
+    toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
+    
     // Use non blocking reading.
     fcntl(m_ps3controllerDevice, F_SETFL, O_NONBLOCK);
+    
     #else
-    cerr << "[PS3Controller] This code will not work on this computer architecture " << endl;
+    cout << "[PS3Controller] This code will not work on this computer architecture " << endl;
+    
+    info.str("");
+    info << "[PS3Controller] This code will not work on this computer architecture" << endl;
+    toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
     #endif
 }
 
@@ -96,6 +109,10 @@ void PS3Controller::sendActuationRequest(double acceleration, double steering, b
     
     odcore::data::Container c(actuationRequest);
     getConference().send(c);
+    
+    stringstream debug;
+    debug << "[PS3Controller] Sent ActuationRequest with values: acceleration->"<<acceleration<<" : steering->"<<steering<<" : isValid->"<<isValid<< endl;
+    toLogger(odcore::data::LogMessage::LogLevel::DEBUG, debug.str());
 }
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() {
@@ -107,6 +124,8 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() 
     * smaller maximum value for the deceleration could be dangerous as well, since it
     * could impair the possiblity to perform an emergency brake while using the controller.
     */
+    
+    stringstream debug,info;
     const double RANGE_ACCELERATION_MIN = 0; // acceleration can be between 0%...
     const double RANGE_ACCELERATION_MAX = 50; // ...and 50% 
     const double RANGE_DECELERATION_MIN = 0; // deceleration can be between 0 m/s^2...
@@ -132,17 +151,18 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() 
                     m_axes[js.number] = js.value;
                     if(js.number==0) // LEFT ANALOG STICK
                     {
-                        CLOG3 << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value;
+                        debug.str("");
+                        debug << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value;
                         // this will return a percent value over the whole range
                         percent=(double)(js.value-MIN_AXES_VALUE)/(double)(MAX_AXES_VALUE-MIN_AXES_VALUE)*100;
                         if(percent>49.95 && percent<50.05)
                         {
-                            CLOG3<<" : going straight "<<endl;
+                            debug<<" : going straight "<<endl;
                         }
                         else
                         {
                             // this will return values in the range [0-100] for both a left or right turn (instead of [0-50] for left and [50-100] for right)
-                            CLOG3<<" : turning "<< (js.value<0?"left":"right") <<" at "<< (js.value<0?(100.0-2*percent):(2*percent-100.0)) <<"%"<<endl;
+                            debug<<" : turning "<< (js.value<0?"left":"right") <<" at "<< (js.value<0?(100.0-2*percent):(2*percent-100.0)) <<"%"<<endl;
                         }
 
                         // map the steering from percentage to its range
@@ -150,16 +170,18 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() 
                         
                         // modify in steps of 0.5
                         steering=round(2*steering)/2;
+                        toLogger(odcore::data::LogMessage::LogLevel::DEBUG, debug.str());
                     }
 
                     // no else-if as many of these events can occur simultaneously
                     if(js.number==3) // RIGHT ANALOG STICK
                     {
-                        CLOG3 << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value;
+                        debug.str("");
+                        debug << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value;
                         // this will return a percent value over the whole range
                         percent=(double)(js.value-MIN_AXES_VALUE)/(double)(MAX_AXES_VALUE-MIN_AXES_VALUE)*100;
                         // this will return values in the range [0-100] for both accelerating and braking (instead of [50-0] for accelerating and [50-100] for braking)
-                        CLOG3<<" : "<< (js.value<0?"accelerating":"braking") <<" at "<< (js.value<0?(100.0-2*percent):(2*percent-100.0)) <<"%"<<endl;
+                        debug<<" : "<< (js.value<0?"accelerating":"braking") <<" at "<< (js.value<0?(100.0-2*percent):(2*percent-100.0)) <<"%"<<endl;
 
                         if(js.value<0)
                         {
@@ -177,12 +199,15 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() 
 
                         // to avoid showing "-0" (just "0" looks better imo)
                         if(acceleration<0.01 && acceleration>-0.01) acceleration=0.0;
+                        toLogger(odcore::data::LogMessage::LogLevel::DEBUG, debug.str());
                     }
 
                     // no else-if as many of these events can occur simultaneously
                     if(js.number==18) // X BUTTON AXIS
                     {
-                        CLOG3 << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value << " (X BUTTON AXIS)"<<endl;
+                        debug.str("");
+                        debug << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value << " (X BUTTON AXIS)"<<endl;
+                        toLogger(odcore::data::LogMessage::LogLevel::DEBUG, debug.str());
                         // kills the steering
                         sendActuationRequest(acceleration, 0.0, true);
                         steering=0.0;
@@ -191,7 +216,9 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() 
                     // no else-if as many of these events can occur simultaneously
                     if(js.number==17) // CIRCLE BUTTON AXIS
                     {
-                        CLOG3 << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value << " (CIRCLE BUTTON AXIS)"<<endl;
+                        debug.str("");
+                        debug << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value << " (CIRCLE BUTTON AXIS)"<<endl;
+                        toLogger(odcore::data::LogMessage::LogLevel::DEBUG, debug.str());
                         // kills the acceleration
                         sendActuationRequest(0.0, steering, true);
                         acceleration=0.0;
@@ -200,7 +227,9 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() 
                     // no else-if as many of these events can occur simultaneously
                     if(js.number==19) // SQUARE BUTTON AXIS
                     {
-                        CLOG3 << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value << " (SQUARE BUTTON AXIS)"<<endl;
+                        debug.str("");
+                        debug << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value << " (SQUARE BUTTON AXIS)"<<endl;
+                        toLogger(odcore::data::LogMessage::LogLevel::DEBUG, debug.str());
                         // kills the acceleration
                         acceleration=0.0;
                         sendActuationRequest(acceleration, steering, true);
@@ -209,7 +238,9 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() 
                     // no else-if as many of these events can occur simultaneously
                     if(js.number==16) // TRIANGLE BUTTON AXIS
                     {
-                        CLOG3 << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value << " (TRIANGLE BUTTON AXIS)"<<endl;
+                        debug.str("");
+                        debug << "[PS3Controller] Axis number " << (int)js.number << " with value " << (int)js.value << " (TRIANGLE BUTTON AXIS)"<<endl;
+                        toLogger(odcore::data::LogMessage::LogLevel::DEBUG, debug.str());
                         // kills the steering
                         steering=0.0;
                         sendActuationRequest(acceleration, steering, true);
@@ -229,18 +260,17 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body() 
 
         /* EAGAIN is returned when the queue is empty */
         if (errno != EAGAIN) {
-            cerr << "[PS3Controller] An error occurred in the PS3 joystick event handling" << endl;
+            info.str("");
+            info << "[PS3Controller] An error occurred in the PS3 joystick event handling" << endl;
+            toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
             return odcore::data::dmcp::ModuleExitCodeMessage::SERIOUS_ERROR;
         }
 
-        #else
-        // Accelerating
-        acceleration = 0.0;
-        // Steering
-        steering = 0.0;
         #endif
 
-        CLOG2 << "[PS3Controller] Values: Acceleration: " << acceleration << ", Steering: " << steering << endl;
+        info.str("");
+        info << "[PS3Controller] Values: Acceleration: " << acceleration << ", Steering: " << steering << endl;
+        toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
 
         {
             // send out the commands to the truck
