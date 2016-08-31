@@ -28,12 +28,10 @@
 #include <opendavinci/odcore/reflection/Message.h>
 #include <opendavinci/odcore/reflection/MessageFromVisitableVisitor.h>
 #include <opendavinci/odcore/strings/StringToolbox.h>
-//#include <odcantools/MessageToCANDataStore.h>
 #include <odcantools/CANDevice.h>
-//#include <automotivedata/generated/automotive/GenericCANMessage.h>
 
-#include <fh16mapping/GeneratedHeaders_fh16mapping.h>
 #include "ProxyFH16Truck.h"
+#include "CANMessageDataStore.h"
 
 namespace opendlv {
 namespace core {

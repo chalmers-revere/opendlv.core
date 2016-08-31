@@ -30,6 +30,7 @@
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/reflection/CSVFromVisitableVisitor.h>
 #include <odcantools/GenericCANMessageListener.h>
+#include <fh16mapping/GeneratedHeaders_fh16mapping.h>
 
 namespace automotive {
 class GenericCANMessage;
