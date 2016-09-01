@@ -219,7 +219,7 @@ ExternalProject_Add(libfh16mapping
 ###########################################################################
 # This "external project" builds and installs the system software stack.
 ExternalProject_Add(system
-    DEPENDS libodvdopendlvdatamodel libodvdapplanix libodvdvehicle libodvdfh16truck libfh16mapping
+    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libfh16mapping libodvdopendlvdatamodel
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ""
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/code/core/system"

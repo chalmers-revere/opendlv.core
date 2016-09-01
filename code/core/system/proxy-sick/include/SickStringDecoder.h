@@ -24,7 +24,7 @@
 
 #include <opendavinci/odcore/io/StringListener.h>
 #include <opendavinci/odcore/io/conference/ContainerConference.h>
-#include "odvdsystemdatamodel/generated/opendlv/core/sensors/EchoReading.h"
+#include "odvdopendlvdatamodel/generated/opendlv/core/sensors/EchoReading.h"
 
 namespace opendlv {
 namespace core {
