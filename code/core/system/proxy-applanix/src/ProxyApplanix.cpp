@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 
-#include <iostream>
+#include <sstream>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
 #include <opendavinci/odcore/io/tcp/TCPFactory.h>
@@ -58,7 +58,9 @@ void ProxyApplanix::setUp() {
         m_applanix->setStringListener(m_applanixStringDecoder.get());
         m_applanix->start();
     } catch (string &exception) {
-        cerr << "[" << getName() << "] Could not connect to Applanix: " << exception << endl;
+        stringstream info;
+        info << "[" << getName() << "] Could not connect to Applanix: " << exception << endl;
+        toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
     }
 }
 
