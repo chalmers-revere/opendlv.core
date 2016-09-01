@@ -50,6 +50,7 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
 add_subdirectory(proxy-applanix)
 add_subdirectory(proxy-camera)
 add_subdirectory(proxy-fh16truck)
+add_subdirectory(proxy-sick)
 add_subdirectory(proxy-velodyne)
 add_subdirectory(ps3controller)
 
