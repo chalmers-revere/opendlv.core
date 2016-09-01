@@ -58,9 +58,9 @@ void ProxyApplanix::setUp() {
         m_applanix->setStringListener(m_applanixStringDecoder.get());
         m_applanix->start();
     } catch (string &exception) {
-        stringstream info;
-        info << "[" << getName() << "] Could not connect to Applanix: " << exception << endl;
-        toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
+        stringstream sstrWarning;
+        sstrWarning << "[" << getName() << "] Could not connect to Applanix: " << exception << endl;
+        toLogger(odcore::data::LogMessage::LogLevel::WARN, sstrWarning.str());
     }
 }
 

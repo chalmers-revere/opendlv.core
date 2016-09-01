@@ -1,6 +1,6 @@
 /**
  * proxy-sick - Interface to Sick.
- * Copyright (C) 2016 Christian Berger
+ * Copyright (C) 2016 Chalmers REVERE
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,7 +20,13 @@
 #ifndef PROXY_PROXYSICK_H
 #define PROXY_PROXYSICK_H
 
+#include <memory>
+
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/data/Container.h>
+#include <opendavinci/odcore/wrapper/SerialPort.h>
+
+#include "SickStringDecoder.h"
 
 namespace opendlv {
 namespace core {
@@ -52,6 +58,17 @@ class ProxySick : public odcore::base::module::TimeTriggeredConferenceClientModu
     void setUp();
     void tearDown();
     odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+
+   private:
+    void status();
+    void startScan();
+    void stopScan();
+    void settingsMode();
+    void setCentimeterMode();
+
+   private:
+    std::shared_ptr<odcore::wrapper::SerialPort> m_sick;
+    std::unique_ptr<SickStringDecoder> m_sickStringDecoder;
 };
 }
 }
