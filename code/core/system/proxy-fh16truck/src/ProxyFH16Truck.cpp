@@ -64,7 +64,7 @@ ProxyFH16Truck::~ProxyFH16Truck() {}
 
 void ProxyFH16Truck::setUp() {
   string const DEVICE_NODE =
-  getKeyValueConfiguration().getValue<string>("proxy-can.devicenode");
+  getKeyValueConfiguration().getValue<string>("proxy-fh16truck.devicenode");
 
   // Try to open CAN device and register this instance as receiver for
   // GenericCANMessages.
@@ -86,13 +86,13 @@ void ProxyFH16Truck::setUp() {
     const string TIMESTAMP = strTimeStampNoSpace.str();
 
     const bool RECORD_GCM =
-    (getKeyValueConfiguration().getValue<int>("proxy-can.record_gcm") == 1);
+    (getKeyValueConfiguration().getValue<int>("proxy-fh16truck.record_gcm") == 1);
     if (RECORD_GCM) {
       setUpRecordingGenericCANMessage(TIMESTAMP);
     }
 
     const bool RECORD_MAPPED =
-    (getKeyValueConfiguration().getValue<int>("proxy-can.record_mapped_data") == 1);
+    (getKeyValueConfiguration().getValue<int>("proxy-fh16truck.record_mapped_data") == 1);
     if (RECORD_MAPPED) {
       setUpRecordingMappedGenericCANMessage(TIMESTAMP);
     }
