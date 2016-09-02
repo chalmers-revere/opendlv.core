@@ -17,8 +17,8 @@
  * USA.
  */
 
-#ifndef PROXY_CANMESSAGEDATASTORE_HPP_
-#define PROXY_CANMESSAGEDATASTORE_HPP_
+#ifndef PROXY_CANMESSAGEDATASTOREFH16_HPP_
+#define PROXY_CANMESSAGEDATASTOREFH16_HPP_
 
 #include <memory>
 
@@ -67,4 +67,4 @@ class CanMessageDataStore
 } // core
 } // opendlv
 
-#endif
+#endif // CANMESSAGEDATASTOREFH16
