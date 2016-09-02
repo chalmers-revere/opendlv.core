@@ -1,5 +1,5 @@
 /**
- * proxy-fh16truck - Interface to FH16 truck.
+ * proxy-fh16 - Interface to FH16 truck.
  * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -58,13 +58,13 @@ using namespace std;
 /**
  * Interface to FH16 truck.
  */
-class ProxyFH16Truck : public odcore::base::module::TimeTriggeredConferenceClientModule,
+class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModule,
     public automotive::odcantools::GenericCANMessageListener {
     public:
-        ProxyFH16Truck(int32_t const &, char **);
-        ProxyFH16Truck(ProxyFH16Truck const &) = delete;
-        ProxyFH16Truck &operator=(ProxyFH16Truck const &) = delete;
-        virtual ~ProxyFH16Truck();
+        ProxyFH16(int32_t const &, char **);
+        ProxyFH16(ProxyFH16 const &) = delete;
+        ProxyFH16 &operator=(ProxyFH16 const &) = delete;
+        virtual ~ProxyFH16();
 
         virtual void nextGenericCANMessage(const automotive::GenericCANMessage &gcm);
 

@@ -21,12 +21,10 @@
 
 #include <opendavinci/odcore/base/Lock.h>
 #include <opendavinci/odcore/data/Container.h>
-//#include <automotivedata/generated/automotive/GenericCANMessage.h>
 #include <odcantools/CANDevice.h>
 #include <fh16mapping/GeneratedHeaders_fh16mapping.h>
 
 #include "CANMessageDataStore.h"
-//#include "opendlvdata/GeneratedHeaders_opendlvdata.h"
 #include <odvdvehicle/GeneratedHeaders_ODVDVehicle.h> // for ActuationRequest
 
 namespace opendlv {

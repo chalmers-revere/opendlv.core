@@ -1,4 +1,4 @@
-# proxy-fh16truck - Interface to FH16 truck.
+# proxy-fh16 - Interface to FH16 truck.
 # Copyright (C) 2016 Christian Berger
 #
 # This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (opendlv-core-system-proxy-fh16truck)
+PROJECT (opendlv-core-system-proxy-fh16)
 
 ###########################################################################
 # Set the search path for .cmake files.
