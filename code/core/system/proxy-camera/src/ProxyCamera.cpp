@@ -18,10 +18,21 @@
  */
 
 #include <stdint.h>
-
+#include <ctype.h>
+#include <cstring>
+#include <cmath>
 #include <iostream>
 
+#include "opendavinci/odcore/base/KeyValueConfiguration.h"
+#include "opendavinci/odcore/data/Container.h"
+#include "opendavinci/odcore/data/TimeStamp.h"
+
 #include "opencv2/highgui/highgui.hpp"
+#include "OpenCVCamera.h"
+
+#ifdef HAVE_UEYE
+    #include "uEyeCamera.h"
+#endif
 
 #include "ProxyCamera.h"
 
@@ -32,25 +43,98 @@ namespace proxy {
 
 using namespace std;
 using namespace odcore::base;
+using namespace odcore::data;
+using namespace odtools::recorder;
 
 ProxyCamera::ProxyCamera(const int &argc, char **argv)
-    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-camera") {}
+    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-camera"),
+    m_recorder(),
+    m_camera() {}
 
 ProxyCamera::~ProxyCamera() {}
 
-void ProxyCamera::setUp() {}
+void ProxyCamera::setUp() {
+            // This method will be call automatically _before_ running body().
+            if (getFrequency() < 20) {
+                cerr << endl << endl << "proxy-camera: WARNING! Running proxy-camera with a LOW frequency (consequence: data updates are too seldom and will influence your algorithms in a negative manner!) --> suggestions: --freq=20 or higher! Current frequency: " << getFrequency() << " Hz." << endl << endl << endl;
+            }
+
+            // Get configuration data.
+            KeyValueConfiguration kv = getKeyValueConfiguration();
+
+            // Create built-in recorder.
+            const bool useRecorder = kv.getValue<uint32_t>("proxy-camera.useRecorder") == 1;
+            if (useRecorder) {
+                // URL for storing containers.
+                stringstream recordingURL;
+                recordingURL << "file://" << "proxy_camera" << TimeStamp().getYYYYMMDD_HHMMSS() << ".rec";
+                // Size of memory segments.
+                const uint32_t MEMORY_SEGMENT_SIZE = getKeyValueConfiguration().getValue<uint32_t>("global.buffer.memorySegmentSize");
+                // Number of memory segments.
+                const uint32_t NUMBER_OF_SEGMENTS = getKeyValueConfiguration().getValue<uint32_t>("global.buffer.numberOfMemorySegments");
+                // Run recorder in asynchronous mode to allow real-time recording in background.
+                const bool THREADING = true;
+                // Dump shared images and shared data?
+                const bool DUMP_SHARED_DATA = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.recorder.dumpshareddata") == 1;
+
+                m_recorder = unique_ptr<Recorder>(new Recorder(recordingURL.str(), MEMORY_SEGMENT_SIZE, NUMBER_OF_SEGMENTS, THREADING, DUMP_SHARED_DATA));
+            }
+
+            // Create the camera grabber.
+            const string NAME = getKeyValueConfiguration().getValue<string>("proxy-camera.camera.name");
+            string TYPE = getKeyValueConfiguration().getValue<string>("proxy-camera.camera.type");
+            std::transform(TYPE.begin(), TYPE.end(), TYPE.begin(), ::tolower);
+            const uint32_t ID = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.camera.id");
+            const uint32_t WIDTH = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.camera.width");
+            const uint32_t HEIGHT = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.camera.height");
+            const uint32_t BPP = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.camera.bpp");
+
+            if (TYPE.compare("opencv") == 0) {
+                m_camera = unique_ptr<Camera>(new OpenCVCamera(NAME, ID, WIDTH, HEIGHT, BPP));
+            }
+            if (TYPE.compare("ueye") == 0) {
+#ifdef HAVE_UEYE
+                m_camera = unique_ptr<Camera>(new uEyeCamera(NAME, ID, WIDTH, HEIGHT, BPP));
+#endif
+            }
+
+            if (m_camera.get() == NULL) {
+                cerr << "No valid camera type defined." << endl;
+            }
+        }
 
 void ProxyCamera::tearDown() {}
+
+void ProxyCamera::distribute(Container c) {
+            // Store data to recorder.
+            if (m_recorder.get() != NULL) {
+                // Time stamp data before storing.
+                c.setReceivedTimeStamp(TimeStamp());
+                m_recorder->store(c);
+            }
+
+            // Share data.
+            getConference().send(c);
+        }
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyCamera::body() {
     // TODO: Remove me.
     // Test whether OpenCV is found and linked correctly.
     cvWaitKey(10);
-
+    uint32_t captureCounter = 0;
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-        cout << "Inside the main processing loop." << endl;
-    }
+                // Capture frame.
+                if (m_camera.get() != NULL) {
+                    odcore::data::image::SharedImage si = m_camera->capture();
 
+                    Container c(si);
+                    distribute(c);
+                    captureCounter++;
+                }
+
+                // Get sensor data from IR/US.
+    }
+    cout << "Proxy-camera: Captured " << captureCounter << " frames." << endl;
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 }
