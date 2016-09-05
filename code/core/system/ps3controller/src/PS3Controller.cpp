@@ -37,7 +37,7 @@ using namespace std;
 using namespace odcore::base;
 
 PS3Controller::PS3Controller(const int &argc, char **argv)
-    : TimeTriggeredConferenceClientModule(argc, argv, "ps3controller")
+    : TimeTriggeredConferenceClientModule(argc, argv, "system-ps3controller")
     , m_ps3controllerDevice(0)
     , m_axes(0) 
     {}
@@ -47,7 +47,7 @@ PS3Controller::~PS3Controller() {}
 void PS3Controller::setUp() {
     stringstream info;
     string const PS3CONTROLLER_DEVICE_NODE =
-    getKeyValueConfiguration().getValue<string>("tools-can-ps3controller.ps3controllerdevicenode");
+    getKeyValueConfiguration().getValue<string>("system-ps3controller.ps3controllerdevicenode");
 
     info << "[PS3Controller] Trying to open ps3controller " << PS3CONTROLLER_DEVICE_NODE << endl;
     toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
