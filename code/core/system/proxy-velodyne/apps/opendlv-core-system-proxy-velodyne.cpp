@@ -20,6 +20,6 @@
 #include "ProxyVelodyne.h"
 
 int32_t main(int32_t argc, char **argv) {
-    opendlv::core::system::proxy::ProxyVelodyne camera(argc, argv);
-    return camera.runModule();
+    opendlv::core::system::proxy::ProxyVelodyne velodyne(argc, argv);
+    return velodyne.runModule();
 }

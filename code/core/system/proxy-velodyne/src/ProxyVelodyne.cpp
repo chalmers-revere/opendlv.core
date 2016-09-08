@@ -20,6 +20,14 @@
 #include <stdint.h>
 
 #include <iostream>
+#include <fstream>
+#include <memory>
+
+#include "opendavinci/odcore/data/Container.h"
+#include "opendavinci/odcore/io/conference/ContainerConference.h"
+#include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
+#include "automotivedata/GeneratedHeaders_AutomotiveData.h"
+#include "opendavinci/odcore/base/Lock.h"
 
 #include "ProxyVelodyne.h"
 
@@ -30,21 +38,44 @@ namespace proxy {
 
 using namespace std;
 using namespace odcore::base;
+using namespace odcore::data;
+using namespace odcore::wrapper;
+using namespace odcore::base::module;
+using namespace odcore::io::udp;
 
 ProxyVelodyne::ProxyVelodyne(const int &argc, char **argv)
-    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-camera") {}
+    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-velodyne"),
+        m_pcap(),
+        VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
+        m_vListener(VelodyneSharedMemory,getConference()),
+        udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
+        handler(m_pcap),
+        rfb(){}
 
 ProxyVelodyne::~ProxyVelodyne() {}
 
-void ProxyVelodyne::setUp() {}
+void ProxyVelodyne::setUp() {
+    m_pcap.setContainerListener(&m_vListener);
+    udpreceiver->setStringListener(&handler);
+    // Start receiving bytes.
+    udpreceiver->start();
+}
 
-void ProxyVelodyne::tearDown() {}
+void ProxyVelodyne::tearDown() {
+    udpreceiver->stop();
+    udpreceiver->setStringListener(NULL);
+}
 
+// This method will do the main data processing job.
+//While running this module, adjust the frequency to get desired frame rate of the replay. For instance, for an input date rate 3*10⁶Bps, 30Hz gives a good frame rate. Note that too low frame rate may lead to buffer overflow!
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne::body() {
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-        cout << "Inside the main processing loop." << endl;
+        while(handler.getBuffer().size()>CONSUME){
+            odcore::base::Lock l(rfb);
+            m_pcap.nextString(handler.getBuffer().substr(0,CONSUME));
+            handler.consume(CONSUME);
+        } 
     }
-
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 }
