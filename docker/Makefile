@@ -18,11 +18,13 @@
 ###############################################################################
 # Parameters for this Makefile.
 BASE_IMAGE=seresearch/opendavinci-ubuntu-16.04-complete
+BASE_IMAGE_VERSION=v4.0.6
 
 ###############################################################################
 # Tools.
 DOCKER=$(shell which docker)
 CMAKE=$(shell which cmake)
+ONLINE=1  # Set this to 0 to avoid Docker image updating.
 
 ###############################################################################
 # Determine Git-related setting.
@@ -61,7 +63,7 @@ DOCKER_IMAGE_NAME_SHORT_NAME=$(DOCKER_REPOSITORY_NAME)/$(DOCKER_IMAGE_NAME)
 
 ###############################################################################
 
-all: buildIncremental createDockerImage
+all: buildComplete createDockerImage
 
 ###############################################################################
 
@@ -82,7 +84,9 @@ removeExistingDockerImages:
 	$(DOCKER) rmi -f `$(DOCKER) images | grep $(DOCKER_IMAGE_NAME)- | tr -s " " ";" | cut -f3 -d";"` || exit 0
 
 updateDockerBaseImage:
-	$(DOCKER) pull $(BASE_IMAGE):latest
+ifeq ($(ONLINE),1)
+	$(DOCKER) pull $(BASE_IMAGE):$(BASE_IMAGE_VERSION)
+endif
 
 ###############################################################################
 define compile
@@ -92,7 +96,7 @@ define compile
 	$(CMAKE) -E make_directory $(BUILD_PATH)/opendlv.core.deb
 	$(DOCKER) network inspect $(DOCKER_NETWORK_NAME) || $(DOCKER) network create $(DOCKER_NETWORK_NAME)
 	$(DOCKER) network ls
-	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(SOURCE_TREE_PATH)/docker/completeBuild.sh:/opt/completeBuild.sh -w /opt $(BASE_IMAGE):latest /opt/completeBuild.sh $(RUN_BUILD_AS)
+	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(SOURCE_TREE_PATH)/docker/completeBuild.sh:/opt/completeBuild.sh -w /opt $(BASE_IMAGE):$(BASE_IMAGE_VERSION) /opt/completeBuild.sh $(RUN_BUILD_AS)
 	$(DOCKER) network rm $(DOCKER_NETWORK_NAME)
 	mkdir -p $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME) && for i in $$(find $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD) -type f -name "*deb" | grep -v CPack); do cp $$i $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME); done
 	touch $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD)/build.incremental
@@ -104,7 +108,7 @@ buildComplete: updateDockerBaseImage
 	$(call compile)
 
 buildIncremental:
-	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(SOURCE_TREE_PATH)/docker/incrementalBuild.sh:/opt/incrementalBuild.sh -w /opt $(BASE_IMAGE):latest /opt/incrementalBuild.sh $(RUN_BUILD_AS)
+	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(SOURCE_TREE_PATH)/docker/incrementalBuild.sh:/opt/incrementalBuild.sh -w /opt $(BASE_IMAGE):$(BASE_IMAGE_VERSION) /opt/incrementalBuild.sh $(RUN_BUILD_AS)
 	mkdir -p $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME) && for i in $$(find $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD) -type f -name "*deb" | grep -v CPack); do cp $$i $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME); done
 
 ###############################################################################
