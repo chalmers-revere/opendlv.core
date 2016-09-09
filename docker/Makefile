@@ -24,7 +24,7 @@ BASE_IMAGE_VERSION=v4.0.6
 # Tools.
 DOCKER=$(shell which docker)
 CMAKE=$(shell which cmake)
-ONLINE=1  # Set this to 0 to avoid Docker image updating.
+OFFLINE=0 # Set to 1 to update the Docker base image.
 
 ###############################################################################
 # Determine Git-related setting.
@@ -59,11 +59,11 @@ DOCKER_IMAGE_NAME_SHORT_NAME=$(DOCKER_REPOSITORY_NAME)/$(DOCKER_IMAGE_NAME)
 
 ###############################################################################
 
-.PHONY: all buildComplete buildIncremental createDockerImage pushDockerImage clean cleanAll cleanDocker removeExitedContainers removeNoneDockerImages  removeExistingDockerImages updateDockerBaseImage
+.PHONY: all buildComplete buildIncremental createDockerImage pushDockerImage clean cleanAll cleanDocker removeExitedContainers removeNoneDockerImages removeExistingDockerImages updateDockerBaseImage
 
 ###############################################################################
 
-all: buildComplete createDockerImage
+all: updateBuildComplete createDockerImage
 
 ###############################################################################
 
@@ -84,9 +84,7 @@ removeExistingDockerImages:
 	$(DOCKER) rmi -f `$(DOCKER) images | grep $(DOCKER_IMAGE_NAME)- | tr -s " " ";" | cut -f3 -d";"` || exit 0
 
 updateDockerBaseImage:
-ifeq "$(ONLINE)" "1"
 	$(DOCKER) pull $(BASE_IMAGE):$(BASE_IMAGE_VERSION)
-endif
 
 ###############################################################################
 define compile
@@ -104,7 +102,10 @@ endef
 
 ###############################################################################
 # Build targets using the selected Docker image.
-buildComplete: updateDockerBaseImage
+buildComplete:
+	$(call compile)
+
+updateBuildComplete: updateDockerBaseImage
 	$(call compile)
 
 buildIncremental:
