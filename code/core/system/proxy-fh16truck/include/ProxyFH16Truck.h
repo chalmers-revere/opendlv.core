@@ -20,7 +20,34 @@
 #ifndef PROXY_PROXYFH16TRUCK_H
 #define PROXY_PROXYFH16TRUCK_H
 
+#include <fstream>
+#include <map>
+#include <memory>
+#include <string>
+
+#include <opendavinci/odcore/base/FIFOQueue.h>
+#include <opendavinci/odcore/base/Mutex.h>
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/reflection/CSVFromVisitableVisitor.h>
+#include <odcantools/GenericCANMessageListener.h>
+
+#include "fh16mapping/GeneratedHeaders_fh16mapping.h"
+
+#include "ProxyFH16TruckCANMessageDataStore.h"
+
+namespace automotive {
+class GenericCANMessage;
+}
+namespace automotive {
+namespace odcantools {
+class CANDevice;
+}
+}
+namespace odtools {
+namespace recorder {
+class Recorder;
+}
+}
 
 namespace opendlv {
 namespace core {
@@ -32,7 +59,8 @@ using namespace std;
 /**
  * Interface to FH16 truck.
  */
-class ProxyFH16Truck : public odcore::base::module::TimeTriggeredConferenceClientModule {
+class ProxyFH16Truck : public odcore::base::module::TimeTriggeredConferenceClientModule,
+                       public automotive::odcantools::GenericCANMessageListener {
    private:
     ProxyFH16Truck(const ProxyFH16Truck & /*obj*/) = delete;
     ProxyFH16Truck &operator=(const ProxyFH16Truck & /*obj*/) = delete;
@@ -49,10 +77,41 @@ class ProxyFH16Truck : public odcore::base::module::TimeTriggeredConferenceClien
     virtual ~ProxyFH16Truck();
 
    private:
-    void setUp();
-    void tearDown();
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    virtual void setUp();
+    virtual void tearDown();
+    virtual odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+
+    virtual void nextGenericCANMessage(const automotive::GenericCANMessage &gcm);
+
+   private:
+    void setUpRecordingGenericCANMessage(const std::string &timeStampForFileName);
+    void setUpRecordingMappedGenericCANMessage(const std::string &timeStampForFileName);
+
+   private:
+    odcore::data::Container addCANTimeStamp(odcore::data::Container &c, const odcore::data::TimeStamp &ts);
+    void dumpASCData(const automotive::GenericCANMessage &gcm);
+    void dumpCSVData(odcore::data::Container &c);
+    void handleBeacons();
+    void disableCANRequests();
+
+   private:
+    odcore::base::FIFOQueue m_fifoGenericCanMessages;
+    std::unique_ptr<odtools::recorder::Recorder> m_recorderGenericCanMessages;
+
+    odcore::base::FIFOQueue m_fifoMappedCanMessages;
+    std::unique_ptr<odtools::recorder::Recorder> m_recorderMappedCanMessages;
+
+    std::shared_ptr<automotive::odcantools::CANDevice> m_device;
+    std::unique_ptr<ProxyFH16TruckCANMessageDataStore> m_canMessageDataStore;
+
+    canmapping::CanMapping m_revereFh16CanMessageMapping;
+
+    odcore::data::TimeStamp m_startOfRecording;
+    std::shared_ptr<std::fstream> m_ASCfile;
+    std::map<uint32_t, std::shared_ptr<std::fstream>> m_mapOfCSVFiles;
+    std::map<uint32_t, std::shared_ptr<odcore::reflection::CSVFromVisitableVisitor>> m_mapOfCSVVisitors;
 };
+
 }
 }
 }
