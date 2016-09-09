@@ -84,7 +84,7 @@ removeExistingDockerImages:
 	$(DOCKER) rmi -f `$(DOCKER) images | grep $(DOCKER_IMAGE_NAME)- | tr -s " " ";" | cut -f3 -d";"` || exit 0
 
 updateDockerBaseImage:
-ifeq ($(ONLINE),1)
+ifeq "$(ONLINE)" "1"
 	$(DOCKER) pull $(BASE_IMAGE):$(BASE_IMAGE_VERSION)
 endif
 
