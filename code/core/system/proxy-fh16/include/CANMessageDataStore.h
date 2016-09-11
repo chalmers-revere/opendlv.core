@@ -22,8 +22,8 @@
 
 #include <memory>
 
-#include <opendavinci/odcore/base/Mutex.h>
 #include "odcantools/MessageToCANDataStore.h"
+#include <opendavinci/odcore/base/Mutex.h>
 
 namespace automotive {
 namespace odcantools {
@@ -47,19 +47,19 @@ namespace proxy {
  */
 class CanMessageDataStore
 : public automotive::odcantools::MessageToCANDataStore {
- public:
-  CanMessageDataStore(
-  std::shared_ptr<automotive::odcantools::CANDevice> canDevice);
-  virtual void add(odcore::data::Container &container);
+   public:
+    CanMessageDataStore(
+    std::shared_ptr< automotive::odcantools::CANDevice > canDevice);
+    virtual void add(odcore::data::Container &container);
 
-  bool IsAutonomousEnabled();
-  bool IsOverridden();
+    bool IsAutonomousEnabled();
+    bool IsOverridden();
 
- private:
-  odcore::base::Mutex m_dataStoreMutex;
-  bool m_enabled;
-  bool m_overridden;
-  bool m_overrideToggleStatus;
+   private:
+    odcore::base::Mutex m_dataStoreMutex;
+    bool m_enabled;
+    bool m_overridden;
+    bool m_overrideToggleStatus;
 };
 
 } // proxy

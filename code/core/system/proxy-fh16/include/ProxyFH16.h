@@ -25,12 +25,12 @@
 #include <memory>
 #include <string>
 
+#include <fh16mapping/GeneratedHeaders_fh16mapping.h>
+#include <odcantools/GenericCANMessageListener.h>
 #include <opendavinci/odcore/base/FIFOQueue.h>
 #include <opendavinci/odcore/base/Mutex.h>
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/reflection/CSVFromVisitableVisitor.h>
-#include <odcantools/GenericCANMessageListener.h>
-#include <fh16mapping/GeneratedHeaders_fh16mapping.h>
 
 namespace automotive {
 class GenericCANMessage;
@@ -59,47 +59,47 @@ using namespace std;
  * Interface to FH16 truck.
  */
 class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModule,
-    public automotive::odcantools::GenericCANMessageListener {
-    public:
-        ProxyFH16(int32_t const &, char **);
-        ProxyFH16(ProxyFH16 const &) = delete;
-        ProxyFH16 &operator=(ProxyFH16 const &) = delete;
-        virtual ~ProxyFH16();
+                  public automotive::odcantools::GenericCANMessageListener {
+   public:
+    ProxyFH16(int32_t const &, char **);
+    ProxyFH16(ProxyFH16 const &) = delete;
+    ProxyFH16 &operator=(ProxyFH16 const &) = delete;
+    virtual ~ProxyFH16();
 
-        virtual void nextGenericCANMessage(const automotive::GenericCANMessage &gcm);
+    virtual void nextGenericCANMessage(const automotive::GenericCANMessage &gcm);
 
-    private:
-        void setUp();
-        void tearDown();
-        odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+   private:
+    void setUp();
+    void tearDown();
+    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
-        void setUpRecordingGenericCANMessage(const std::string &timeStampForFileName);
-        void setUpRecordingMappedGenericCANMessage(const std::string &timeStampForFileName);
+    void setUpRecordingGenericCANMessage(const std::string &timeStampForFileName);
+    void setUpRecordingMappedGenericCANMessage(const std::string &timeStampForFileName);
 
-        odcore::data::Container addCANTimeStamp(odcore::data::Container &c, const odcore::data::TimeStamp &ts);
-        void dumpASCData(const automotive::GenericCANMessage &gcm);
-        void dumpCSVData(odcore::data::Container &c);
+    odcore::data::Container addCANTimeStamp(odcore::data::Container &c, const odcore::data::TimeStamp &ts);
+    void dumpASCData(const automotive::GenericCANMessage &gcm);
+    void dumpCSVData(odcore::data::Container &c);
 
-        // method from opendlv disabled as not relevant for ps3controller
-        //void handleBeacons();
+    // method from opendlv disabled as not relevant for ps3controller
+    //void handleBeacons();
 
-        void disableCANRequests();
+    void disableCANRequests();
 
-        odcore::base::FIFOQueue m_fifoGenericCanMessages;
-        std::unique_ptr<odtools::recorder::Recorder> m_recorderGenericCanMessages;
+    odcore::base::FIFOQueue m_fifoGenericCanMessages;
+    std::unique_ptr< odtools::recorder::Recorder > m_recorderGenericCanMessages;
 
-        odcore::base::FIFOQueue m_fifoMappedCanMessages;
-        std::unique_ptr<odtools::recorder::Recorder> m_recorderMappedCanMessages;
+    odcore::base::FIFOQueue m_fifoMappedCanMessages;
+    std::unique_ptr< odtools::recorder::Recorder > m_recorderMappedCanMessages;
 
-        std::shared_ptr<automotive::odcantools::CANDevice> m_device;
-        std::unique_ptr<CanMessageDataStore> m_canMessageDataStore;
+    std::shared_ptr< automotive::odcantools::CANDevice > m_device;
+    std::unique_ptr< CanMessageDataStore > m_canMessageDataStore;
 
-        canmapping::CanMapping m_revereFh16CanMessageMapping;
+    canmapping::CanMapping m_revereFh16CanMessageMapping;
 
-        odcore::data::TimeStamp m_startOfRecording;
-        std::shared_ptr<std::fstream> m_ASCfile;
-        std::map<uint32_t, std::shared_ptr<std::fstream>> m_mapOfCSVFiles;
-        std::map<uint32_t, std::shared_ptr<odcore::reflection::CSVFromVisitableVisitor>> m_mapOfCSVVisitors;
+    odcore::data::TimeStamp m_startOfRecording;
+    std::shared_ptr< std::fstream > m_ASCfile;
+    std::map< uint32_t, std::shared_ptr< std::fstream > > m_mapOfCSVFiles;
+    std::map< uint32_t, std::shared_ptr< odcore::reflection::CSVFromVisitableVisitor > > m_mapOfCSVVisitors;
 };
 } // proxy
 } // system
