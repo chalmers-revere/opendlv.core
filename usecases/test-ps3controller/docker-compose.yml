@@ -24,8 +24,8 @@ services:
         build: .
         network_mode: "host"
         volumes:
-        - .:/opt/copplar.data
-        command: "/opt/od4/bin/odsupercomponent --cid=224 --verbose=1 --configuration=/opt/copplar.data/configuration"
+        - .:/opt/opendlv.data
+        command: "/opt/od4/bin/odsupercomponent --cid=224 --verbose=1 --configuration=/opt/opendlv.data/configuration"
 
     # micro service for proxy-fh16.
     proxy-fh16:
@@ -46,6 +46,6 @@ services:
         - "/dev/input/js0:/dev/input/js0"
         depends_on:
             - odsupercomponent
-            - proxy-xc90
+            - proxy-fh16
         command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=224 --freq=100"
 
