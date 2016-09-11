@@ -1,5 +1,5 @@
 /**
- * proxy-fh16truck - Interface to FH16 truck.
+ * proxy-fh16 - Interface to FH16 truck.
  * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -17,9 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <stdint.h>
-
 #include <iostream>
+#include <iomanip>
+#include <string>
+#include <vector>
 
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
@@ -27,15 +28,10 @@
 #include <opendavinci/odcore/reflection/Message.h>
 #include <opendavinci/odcore/reflection/MessageFromVisitableVisitor.h>
 #include <opendavinci/odcore/strings/StringToolbox.h>
-#include <odcantools/MessageToCANDataStore.h>
 #include <odcantools/CANDevice.h>
-#include <automotivedata/generated/automotive/GenericCANMessage.h>
 
-#include "odvdfh16truck/GeneratedHeaders_ODVDFH16Truck.h"
-#include "odvdvehicle/GeneratedHeaders_ODVDVehicle.h"
-#include "fh16mapping/GeneratedHeaders_fh16mapping.h"
-
-#include "ProxyFH16Truck.h"
+#include "ProxyFH16.h"
+#include "CANMessageDataStore.h"
 
 namespace opendlv {
 namespace core {
@@ -49,9 +45,8 @@ using namespace odcore::reflection;
 using namespace odtools::recorder;
 using namespace automotive::odcantools;
 
-ProxyFH16Truck::ProxyFH16Truck(int32_t const &a_argc, char **a_argv)
-    : odcore::base::module::TimeTriggeredConferenceClientModule(
-      a_argc, a_argv, "proxy-fh16truck")
+ProxyFH16::ProxyFH16(const int &argc, char **argv)
+    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-fh16")
     , GenericCANMessageListener()
     , m_fifoGenericCanMessages()
     , m_recorderGenericCanMessages()
@@ -63,19 +58,13 @@ ProxyFH16Truck::ProxyFH16Truck(int32_t const &a_argc, char **a_argv)
     , m_startOfRecording()
     , m_ASCfile()
     , m_mapOfCSVFiles()
-    , m_mapOfCSVVisitors()
-{
-}
+    , m_mapOfCSVVisitors() {}
 
-ProxyFH16Truck::~ProxyFH16Truck()
-{
-}
+ProxyFH16::~ProxyFH16() {}
 
-
-void ProxyFH16Truck::setUp()
-{
+void ProxyFH16::setUp() {
   string const DEVICE_NODE =
-  getKeyValueConfiguration().getValue<string>("proxy-fh16truck.devicenode");
+  getKeyValueConfiguration().getValue<string>("proxy-fh16.devicenode");
 
   // Try to open CAN device and register this instance as receiver for
   // GenericCANMessages.
@@ -97,13 +86,13 @@ void ProxyFH16Truck::setUp()
     const string TIMESTAMP = strTimeStampNoSpace.str();
 
     const bool RECORD_GCM =
-    (getKeyValueConfiguration().getValue<int>("proxy-fh16truck.record_gcm") == 1);
+    (getKeyValueConfiguration().getValue<int>("proxy-fh16.record_gcm") == 1);
     if (RECORD_GCM) {
       setUpRecordingGenericCANMessage(TIMESTAMP);
     }
 
     const bool RECORD_MAPPED =
-    (getKeyValueConfiguration().getValue<int>("proxy-fh16truck.record_mapped_data") == 1);
+    (getKeyValueConfiguration().getValue<int>("proxy-fh16.record_mapped_data") == 1);
     if (RECORD_MAPPED) {
       setUpRecordingMappedGenericCANMessage(TIMESTAMP);
     }
@@ -111,7 +100,7 @@ void ProxyFH16Truck::setUp()
     // Create a data sink that automatically receives all Containers and
     // selectively relays them based on the Container type to the CAN device.
     m_canMessageDataStore =
-    unique_ptr<ProxyFH16TruckCANMessageDataStore>(new ProxyFH16TruckCANMessageDataStore(m_device));
+    unique_ptr<CanMessageDataStore>(new CanMessageDataStore(m_device));
     addDataStoreFor(*m_canMessageDataStore);
 
     // Start the wrapped CAN device to receive CAN messages concurrently.
@@ -119,40 +108,26 @@ void ProxyFH16Truck::setUp()
   }
 }
 
+void ProxyFH16::tearDown() {
+  // Stop the wrapper CAN device.
+  if (m_device.get()) {
+    m_device->stop();
+  }
 
-void ProxyFH16Truck::setUpRecordingGenericCANMessage(const string &timeStampForFileName)
-{
-  // URL for storing containers containing GenericCANMessages.
-  stringstream recordingUrl;
-  recordingUrl << "file://"
-               << "CID-" << getCID() << "_"
-               << "can_gcm_" << timeStampForFileName << ".rec";
-  // Size of memory segments (not needed for recording GenericCANMessages).
-  const uint32_t MEMORY_SEGMENT_SIZE = 0;
-  // Number of memory segments (not needed for recording
-  // GenericCANMessages).
-  const uint32_t NUMBER_OF_SEGMENTS = 0;
-  // Run recorder in asynchronous mode to allow real-time recording in
-  // background.
-  const bool THREADING = true;
-  // Dump shared images and shared data (not needed for recording
-  // GenericCANMessages)?
-  const bool DUMP_SHARED_DATA = false;
+  // Flush output to CSV files.
+  for (auto it = m_mapOfCSVFiles.begin(); it != m_mapOfCSVFiles.end(); it++) {
+    it->second->flush();
+    it->second->close();
+  }
 
-  // Create a recorder instance.
-  m_recorderGenericCanMessages = unique_ptr<Recorder>(new Recorder(recordingUrl.str(),
-  MEMORY_SEGMENT_SIZE, NUMBER_OF_SEGMENTS, THREADING, DUMP_SHARED_DATA));
-
-  // Create a file to dump CAN data in ASC format.
-  stringstream fileName;
-  fileName << "CID-" << getCID() << "_"
-           << "can_data_" << timeStampForFileName << ".asc";
-  m_ASCfile = shared_ptr<fstream>(new fstream(fileName.str(), ios::out));
-  (*m_ASCfile) << "Time (s) Channel ID RX/TX d Length Byte 1 Byte 2 Byte 3 Byte 4 Byte 5 Byte 6 Byte 7 Byte 8" << endl;
+  // Flush output to ASC file.
+  if (m_ASCfile.get() != NULL) {
+    m_ASCfile->flush();
+    m_ASCfile->close();
+  }
 }
 
-
-void ProxyFH16Truck::setUpRecordingMappedGenericCANMessage(const string &timeStampForFileName)
+void ProxyFH16::setUpRecordingMappedGenericCANMessage(const string &timeStampForFileName)
 {
   // URL for storing containers containing GenericCANMessages.
   stringstream recordingUrl;
@@ -222,8 +197,7 @@ void ProxyFH16Truck::setUpRecordingMappedGenericCANMessage(const string &timeSta
   }
 }
 
-
-void ProxyFH16Truck::disableCANRequests()
+void ProxyFH16::disableCANRequests()
 {
   opendlv::proxy::reverefh16::BrakeRequest brakeRequest;
   brakeRequest.setEnableRequest(false);
@@ -257,28 +231,80 @@ void ProxyFH16Truck::disableCANRequests()
 }
 
 
-void ProxyFH16Truck::tearDown()
+void ProxyFH16::setUpRecordingGenericCANMessage(const string &timeStampForFileName)
 {
-  // Stop the wrapper CAN device.
-  if (m_device.get()) {
-    m_device->stop();
-  }
+  // URL for storing containers containing GenericCANMessages.
+  stringstream recordingUrl;
+  recordingUrl << "file://"
+               << "CID-" << getCID() << "_"
+               << "can_gcm_" << timeStampForFileName << ".rec";
+  // Size of memory segments (not needed for recording GenericCANMessages).
+  const uint32_t MEMORY_SEGMENT_SIZE = 0;
+  // Number of memory segments (not needed for recording
+  // GenericCANMessages).
+  const uint32_t NUMBER_OF_SEGMENTS = 0;
+  // Run recorder in asynchronous mode to allow real-time recording in
+  // background.
+  const bool THREADING = true;
+  // Dump shared images and shared data (not needed for recording
+  // GenericCANMessages)?
+  const bool DUMP_SHARED_DATA = false;
 
-  // Flush output to CSV files.
-  for (auto it = m_mapOfCSVFiles.begin(); it != m_mapOfCSVFiles.end(); it++) {
-    it->second->flush();
-    it->second->close();
-  }
+  // Create a recorder instance.
+  m_recorderGenericCanMessages = unique_ptr<Recorder>(new Recorder(recordingUrl.str(),
+  MEMORY_SEGMENT_SIZE, NUMBER_OF_SEGMENTS, THREADING, DUMP_SHARED_DATA));
 
-  // Flush output to ASC file.
-  if (m_ASCfile.get() != NULL) {
-    m_ASCfile->flush();
-    m_ASCfile->close();
-  }
+  // Create a file to dump CAN data in ASC format.
+  stringstream fileName;
+  fileName << "CID-" << getCID() << "_"
+           << "can_data_" << timeStampForFileName << ".asc";
+  m_ASCfile = shared_ptr<fstream>(new fstream(fileName.str(), ios::out));
+  (*m_ASCfile) << "Time (s) Channel ID RX/TX d Length Byte 1 Byte 2 Byte 3 Byte 4 Byte 5 Byte 6 Byte 7 Byte 8" << endl;
 }
 
+void ProxyFH16::nextGenericCANMessage(const automotive::GenericCANMessage &gcm)
+{
+    static int counter = 0;
+    const int CAN_MESSAGE_COUNTER_WHEN_TO_SEND = 1;
+    const int CAN_MESSAGES_TO_IGNORE = 10;
+    counter++;
+    if (counter > CAN_MESSAGES_TO_IGNORE) {
+        counter = 0;
+    }
 
-Container ProxyFH16Truck::addCANTimeStamp(Container &c, const TimeStamp &ts)
+    // Log raw CAN data in ASC format.
+    dumpASCData(gcm);
+
+    // Map CAN message to high-level data structures as defined in the ODVD file.
+    vector<Container> result = m_revereFh16CanMessageMapping.mapNext(gcm);
+
+    for (auto c : result) {
+    // Add CAN device driver time stamp to message.
+        Container cTimeStamped = addCANTimeStamp(c, gcm.getDriverTimeStamp());
+
+        // Enqueue mapped container for direct recording.
+        if (m_recorderMappedCanMessages.get()) {
+            cTimeStamped.setReceivedTimeStamp(gcm.getDriverTimeStamp());
+            m_fifoMappedCanMessages.add(cTimeStamped);
+        }
+
+        // Send container to conference only every tenth message.
+        {
+            if (counter == CAN_MESSAGE_COUNTER_WHEN_TO_SEND) {
+                getConference().send(cTimeStamped);
+            }
+        }
+    }
+
+    // Enqueue CAN message wrapped as Container to be recorded if we have a valid
+    // recorder.
+    if (m_recorderGenericCanMessages.get()) {
+        Container c(gcm);
+        m_fifoGenericCanMessages.add(c);
+    }
+}
+
+Container ProxyFH16::addCANTimeStamp(Container &c, const TimeStamp &ts)
 {
   Container retVal = c;
 
@@ -316,112 +342,84 @@ Container ProxyFH16Truck::addCANTimeStamp(Container &c, const TimeStamp &ts)
   return retVal;
 }
 
+odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyFH16::body() {
+  while (getModuleStateAndWaitForRemainingTimeInTimeslice() ==
+  odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+    // Record GenericCANMessages.
+    if (m_recorderGenericCanMessages.get()) {
+      const uint32_t ENTRIES = m_fifoGenericCanMessages.getSize();
+      for (uint32_t i = 0; i < ENTRIES; i++) {
+        Container c = m_fifoGenericCanMessages.leave();
 
-void ProxyFH16Truck::dumpASCData(const automotive::GenericCANMessage &gcm)
-{
-  if (m_ASCfile.get() != NULL) {
-    TimeStamp now;
-    TimeStamp ts = (now - m_startOfRecording);
-    (*m_ASCfile) << (ts.getSeconds() + (static_cast<double>(ts.getFractionalMicroseconds()) / (1000.0 * 1000.0)))
-                 << " 1"
-                 << " " << gcm.getIdentifier()
-                 << " Rx"
-                 << " d"
-                 << " " << static_cast<uint32_t>(gcm.getLength());
-    uint64_t data = gcm.getData();
-    for (uint8_t i = 0; i < gcm.getLength(); i++) {
-      (*m_ASCfile) << " " << hex << (data & 0xFF);
-      data = data >> 8;
-    }
-    (*m_ASCfile) << endl;
-  }
-}
-
-
-void ProxyFH16Truck::nextGenericCANMessage(const automotive::GenericCANMessage &gcm)
-{
-  static int counter = 0;
-  const int CAN_MESSAGE_COUNTER_WHEN_TO_SEND = 1;
-  const int CAN_MESSAGES_TO_IGNORE = 10;
-  counter++;
-  if (counter > CAN_MESSAGES_TO_IGNORE) {
-    counter = 0;
-  }
-
-  // Log raw CAN data in ASC format.
-  dumpASCData(gcm);
-
-  // Map CAN message to high-level data structures as defined in the ODVD file.
-  vector<Container> result = m_revereFh16CanMessageMapping.mapNext(gcm);
-
-  for (auto c : result) {
-    // Add CAN device driver time stamp to message.
-    Container cTimeStamped = addCANTimeStamp(c, gcm.getDriverTimeStamp());
-
-    // Enqueue mapped container for direct recording.
-    if (m_recorderMappedCanMessages.get()) {
-      cTimeStamped.setReceivedTimeStamp(gcm.getDriverTimeStamp());
-      m_fifoMappedCanMessages.add(cTimeStamped);
-    }
-
-    // Send container to conference only every tenth message.
-    {
-      if (counter == CAN_MESSAGE_COUNTER_WHEN_TO_SEND) {
-        getConference().send(cTimeStamped);
+        // Store container to dump file.
+        m_recorderGenericCanMessages->store(c);
       }
     }
-  }
 
-  // Enqueue CAN message wrapped as Container to be recorded if we have a valid
-  // recorder.
-  if (m_recorderGenericCanMessages.get()) {
-    Container c(gcm);
-    m_fifoGenericCanMessages.add(c);
+    // Record mapped messages from GenericCANMessages.
+    if (m_recorderMappedCanMessages.get()) {
+      const uint32_t ENTRIES = m_fifoMappedCanMessages.getSize();
+      for (uint32_t i = 0; i < ENTRIES; i++) {
+        Container c = m_fifoMappedCanMessages.leave();
+
+        // Store container to dump file.
+        m_recorderMappedCanMessages->store(c);
+
+        // Transform container to CSV file.
+        dumpCSVData(c);
+      }
+    }
+
+    // Indicate with lamps the truck's status.
+    // method from opendlv disabled as not relevant for ps3controller
+    //handleBeacons();
   }
+  return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 
-
-void ProxyFH16Truck::handleBeacons()
+/*
+// method from opendlv disabled as not relevant for ps3controller
+void ProxyFH16::handleBeacons()
 {
-//  // Send messages to the beacon relays
-//  if (m_canMessageDataStore->IsAutonomousEnabled() && !m_canMessageDataStore->IsOverridden()) {
-//    // Activate green
-//    string deviceIdGreen = "0";
-//    uint32_t relayIndexGreen = 0;
-//    bool relayValueGreen = false;
-//    opendlv::proxy::RelayRequest relayRequestGreen(relayValueGreen, relayIndexGreen, deviceIdGreen);
-//    Container objectContainerGreen(relayRequestGreen);
-//    getConference().send(objectContainerGreen);
+  // Send messages to the beacon relays
+  if (m_canMessageDataStore->IsAutonomousEnabled() && !m_canMessageDataStore->IsOverridden()) {
+    // Activate green
+    string deviceIdGreen = "0";
+    uint32_t relayIndexGreen = 0;
+    bool relayValueGreen = false;
+    opendlv::proxy::RelayRequest relayRequestGreen(relayValueGreen, relayIndexGreen, deviceIdGreen);
+    Container objectContainerGreen(relayRequestGreen);
+    getConference().send(objectContainerGreen);
 
 
-//    string deviceIdRed = "0";
-//    uint32_t relayIndexRed = 1;
-//    bool relayValueRed = true;
-//    opendlv::proxy::RelayRequest relayRequestRed(relayValueRed, relayIndexRed, deviceIdRed);
-//    Container objectContainerRed(relayRequestRed);
-//    getConference().send(objectContainerRed);
-//  }
-//  else {
-//    // Activate red
-//    string deviceIdGreen = "0";
-//    uint32_t relayIndexGreen = 0;
-//    bool relayValueGreen = true;
-//    opendlv::proxy::RelayRequest relayRequestGreen(relayValueGreen, relayIndexGreen, deviceIdGreen);
-//    Container objectContainerGreen(relayRequestGreen);
-//    getConference().send(objectContainerGreen);
+    string deviceIdRed = "0";
+    uint32_t relayIndexRed = 1;
+    bool relayValueRed = true;
+    opendlv::proxy::RelayRequest relayRequestRed(relayValueRed, relayIndexRed, deviceIdRed);
+    Container objectContainerRed(relayRequestRed);
+    getConference().send(objectContainerRed);
+  }
+  else {
+    // Activate red
+    string deviceIdGreen = "0";
+    uint32_t relayIndexGreen = 0;
+    bool relayValueGreen = true;
+    opendlv::proxy::RelayRequest relayRequestGreen(relayValueGreen, relayIndexGreen, deviceIdGreen);
+    Container objectContainerGreen(relayRequestGreen);
+    getConference().send(objectContainerGreen);
 
 
-//    string deviceIdRed = "0";
-//    uint32_t relayIndexRed = 1;
-//    bool relayValueRed = false;
-//    opendlv::proxy::RelayRequest relayRequestRed(relayValueRed, relayIndexRed, deviceIdRed);
-//    Container objectContainerRed(relayRequestRed);
-//    getConference().send(objectContainerRed);
-//  }
+    string deviceIdRed = "0";
+    uint32_t relayIndexRed = 1;
+    bool relayValueRed = false;
+    opendlv::proxy::RelayRequest relayRequestRed(relayValueRed, relayIndexRed, deviceIdRed);
+    Container objectContainerRed(relayRequestRed);
+    getConference().send(objectContainerRed);
+  }
 }
+*/
 
-
-void ProxyFH16Truck::dumpCSVData(Container &c)
+void ProxyFH16::dumpCSVData(Container &c)
 {
   // Add time stamps for CSV output.
   const uint64_t receivedFromCAN = c.getReceivedTimeStamp().toMicroseconds();
@@ -464,42 +462,25 @@ void ProxyFH16Truck::dumpCSVData(Container &c)
 }
 
 
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyFH16Truck::body()
+void ProxyFH16::dumpASCData(const automotive::GenericCANMessage &gcm)
 {
-  while (getModuleStateAndWaitForRemainingTimeInTimeslice() ==
-  odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-    // Record GenericCANMessages.
-    if (m_recorderGenericCanMessages.get()) {
-      const uint32_t ENTRIES = m_fifoGenericCanMessages.getSize();
-      for (uint32_t i = 0; i < ENTRIES; i++) {
-        Container c = m_fifoGenericCanMessages.leave();
-
-        // Store container to dump file.
-        m_recorderGenericCanMessages->store(c);
-      }
+  if (m_ASCfile.get() != NULL) {
+    TimeStamp now;
+    TimeStamp ts = (now - m_startOfRecording);
+    (*m_ASCfile) << (ts.getSeconds() + (static_cast<double>(ts.getFractionalMicroseconds()) / (1000.0 * 1000.0)))
+                 << " 1"
+                 << " " << gcm.getIdentifier()
+                 << " Rx"
+                 << " d"
+                 << " " << static_cast<uint32_t>(gcm.getLength());
+    uint64_t data = gcm.getData();
+    for (uint8_t i = 0; i < gcm.getLength(); i++) {
+      (*m_ASCfile) << " " << hex << (data & 0xFF);
+      data = data >> 8;
     }
-
-    // Record mapped messages from GenericCANMessages.
-    if (m_recorderMappedCanMessages.get()) {
-      const uint32_t ENTRIES = m_fifoMappedCanMessages.getSize();
-      for (uint32_t i = 0; i < ENTRIES; i++) {
-        Container c = m_fifoMappedCanMessages.leave();
-
-        // Store container to dump file.
-        m_recorderMappedCanMessages->store(c);
-
-        // Transform container to CSV file.
-        dumpCSVData(c);
-      }
-    }
-
-    // Indicate with lamps the truck's status.
-    handleBeacons();
+    (*m_ASCfile) << endl;
   }
-  return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
-
-
 }
 }
 }

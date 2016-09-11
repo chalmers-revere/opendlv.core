@@ -269,6 +269,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body()
     }
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
+
 } // system
 } // core
 } // opendlv::core::system

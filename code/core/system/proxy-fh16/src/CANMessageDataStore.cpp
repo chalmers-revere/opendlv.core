@@ -21,22 +21,18 @@
 
 #include <opendavinci/odcore/base/Lock.h>
 #include <opendavinci/odcore/data/Container.h>
-#include <automotivedata/generated/automotive/GenericCANMessage.h>
 #include <odcantools/CANDevice.h>
+#include <fh16mapping/GeneratedHeaders_fh16mapping.h>
 
-#include "odvdfh16truck/GeneratedHeaders_ODVDFH16Truck.h"
-#include "odvdvehicle/GeneratedHeaders_ODVDVehicle.h"
-#include "fh16mapping/GeneratedHeaders_fh16mapping.h"
-
-
-#include "ProxyFH16TruckCANMessageDataStore.h"
+#include "CANMessageDataStore.h"
+#include <odvdvehicle/GeneratedHeaders_ODVDVehicle.h> // for ActuationRequest
 
 namespace opendlv {
 namespace core {
 namespace system {
 namespace proxy {
 
-ProxyFH16TruckCANMessageDataStore::ProxyFH16TruckCANMessageDataStore(
+CanMessageDataStore::CanMessageDataStore(
 std::shared_ptr<automotive::odcantools::CANDevice> canDevice)
     : automotive::odcantools::MessageToCANDataStore(canDevice)
     , m_dataStoreMutex()
@@ -46,7 +42,7 @@ std::shared_ptr<automotive::odcantools::CANDevice> canDevice)
 {
 }
 
-void ProxyFH16TruckCANMessageDataStore::add(odcore::data::Container &a_container)
+void CanMessageDataStore::add(odcore::data::Container &a_container)
 {
   odcore::base::Lock l(m_dataStoreMutex);
 
@@ -54,34 +50,32 @@ void ProxyFH16TruckCANMessageDataStore::add(odcore::data::Container &a_container
   odcore::data::Container &container = const_cast<odcore::data::Container &>(
   a_container);
 
+/*
+  if (container.getDataType() == opendlv::proxy::ControlState::ID()) {
+    opendlv::proxy::ControlState controlState = container.getData<opendlv::proxy::ControlState>();
+    bool enabledPrevious = m_enabled;
 
-//  if (container.getDataType() == opendlv::proxy::ControlState::ID()) {
-//    opendlv::proxy::ControlState controlState = container.getData<opendlv::proxy::ControlState>();
-//    bool enabledPrevious = m_enabled;
+    m_enabled = controlState.getIsAutonomous();
 
-//    m_enabled = controlState.getIsAutonomous();
+    if (m_overridden && !m_enabled && enabledPrevious) {
+      m_overridden = false;
+      std::cout << "Reset override flag" << std::endl;
+    }
 
-//    if (m_overridden && !m_enabled && enabledPrevious) {
-//      m_overridden = false;
-//      std::cout << "Reset override flag" << std::endl;
-//    }
+    std::cout << "Enable: " << m_enabled << std::endl;
+  }
+  else if (container.getDataType() == opendlv::proxy::ControlOverrideState::ID()) {
+    opendlv::proxy::ControlOverrideState controlOverrideState = container.getData<opendlv::proxy::ControlOverrideState>();
 
-//    std::cout << "Enable: " << m_enabled << std::endl;
-//  }
-//  else if (container.getDataType() == opendlv::proxy::ControlOverrideState::ID()) {
-//    opendlv::proxy::ControlOverrideState controlOverrideState = container.getData<opendlv::proxy::ControlOverrideState>();
+    bool isOverridden = controlOverrideState.getIsOverridden();
+    if (isOverridden) {
+      // When override is once set to true, can only be reset when receiving certain ControlState
+      m_overridden = true;
+    }
 
-//    bool isOverridden = controlOverrideState.getIsOverridden();
-//    if (isOverridden) {
-//      // When override is once set to true, can only be reset when receiving certain ControlState
-//      m_overridden = true;
-//    }
-
-//    std::cout << "Overridden: " << m_overridden << std::endl;
-//  }
-//  else if (container.getDataType() == opendlv::proxy::ActuationRequest::ID()) {
-  // TODO: Obey ControlState!
-  m_enabled = true;
+    std::cout << "Overridden: " << m_overridden << std::endl;
+  }
+  else */
   if (container.getDataType() == opendlv::proxy::ActuationRequest::ID()) {
 
     opendlv::proxy::ActuationRequest actuationRequest = container.getData<opendlv::proxy::ActuationRequest>();
@@ -125,7 +119,7 @@ void ProxyFH16TruckCANMessageDataStore::add(odcore::data::Container &a_container
     opendlv::proxy::reverefh16::SteeringRequest steeringRequest;
     steeringRequest.setEnableRequest(m_enabled);
     steeringRequest.setSteeringRoadWheelAngle(steering);
-    // Must be -33.535 to disable deltatorque.
+    // Must be 33.535 to disable deltatorque.
     steeringRequest.setSteeringDeltaTorque(33.535);
     odcore::data::Container steeringRequestContainer(steeringRequest);
 
@@ -137,18 +131,17 @@ void ProxyFH16TruckCANMessageDataStore::add(odcore::data::Container &a_container
 }
 
 
-bool ProxyFH16TruckCANMessageDataStore::IsAutonomousEnabled()
+bool CanMessageDataStore::IsAutonomousEnabled()
 {
   return m_enabled;
 }
 
-bool ProxyFH16TruckCANMessageDataStore::IsOverridden()
+bool CanMessageDataStore::IsOverridden()
 {
   return m_overridden;
 }
 
-}
-}
-}
-} // opendlv::core::system::proxy
-
+} // proxy
+} // system
+} // core
+} // opendlv

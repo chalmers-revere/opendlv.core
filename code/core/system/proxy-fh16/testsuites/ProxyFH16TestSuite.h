@@ -17,9 +17,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "ProxyFH16Truck.h"
+#ifndef PROXY_PROXYFH16TRUCK_TESTSUITE_H
+#define PROXY_PROXYFH16TRUCK_TESTSUITE_H
 
-int32_t main(int32_t argc, char **argv) {
-    opendlv::core::system::proxy::ProxyFH16Truck truck(argc, argv);
-    return truck.runModule();
-}
+#include "cxxtest/TestSuite.h"
+
+// Include local header files.
+#include "../include/ProxyFH16.h"
+
+using namespace std;
+using namespace opendlv::core::system::proxy;
+
+class ProxyFH16TruckTest : public CxxTest::TestSuite {
+   public:
+    void setUp() {}
+
+    void tearDown() {}
+
+    void testApplication() {
+        TS_ASSERT(true);
+    }
+};
+
+#endif /*PROXY_PROXYFH16TRUCK_TESTSUITE_H*/
