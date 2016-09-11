@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_PROXYFH16TRUCK_H
-#define PROXY_PROXYFH16TRUCK_H
+#ifndef PROXY_PROXYFH16_H
+#define PROXY_PROXYFH16_H
 
 #include <fstream>
 #include <map>
@@ -69,22 +69,21 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
     virtual void nextGenericCANMessage(const automotive::GenericCANMessage &gcm);
 
    private:
-    void setUp();
-    void tearDown();
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    virtual void setUp();
+    virtual void tearDown();
+    virtual odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
+   private:
     void setUpRecordingGenericCANMessage(const std::string &timeStampForFileName);
     void setUpRecordingMappedGenericCANMessage(const std::string &timeStampForFileName);
 
+   private:
     odcore::data::Container addCANTimeStamp(odcore::data::Container &c, const odcore::data::TimeStamp &ts);
     void dumpASCData(const automotive::GenericCANMessage &gcm);
     void dumpCSVData(odcore::data::Container &c);
-
-    // method from opendlv disabled as not relevant for ps3controller
-    //void handleBeacons();
-
     void disableCANRequests();
 
+   private:
     odcore::base::FIFOQueue m_fifoGenericCanMessages;
     std::unique_ptr< odtools::recorder::Recorder > m_recorderGenericCanMessages;
 
@@ -106,4 +105,5 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
 } // core
 } // opendlv::core::system::proxy
 
-#endif /*PROXY_PROXYFH16TRUCK_H*/
+#endif /*PROXY_PROXYFH16_H*/
+

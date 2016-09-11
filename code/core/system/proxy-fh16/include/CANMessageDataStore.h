@@ -17,12 +17,12 @@
  * USA.
  */
 
-#ifndef PROXY_CANMESSAGEDATASTOREFH16_HPP_
-#define PROXY_CANMESSAGEDATASTOREFH16_HPP_
+#ifndef PROXY_CANMESSAGEDATASTORE_H
+#define PROXY_CANMESSAGEDATASTORE_H
 
 #include <memory>
 
-#include "odcantools/MessageToCANDataStore.h"
+#include <odcantools/MessageToCANDataStore.h>
 #include <opendavinci/odcore/base/Mutex.h>
 
 namespace automotive {
@@ -45,15 +45,10 @@ namespace proxy {
 /**
  * This class maps selected messages to CAN messages.
  */
-class CanMessageDataStore
-: public automotive::odcantools::MessageToCANDataStore {
+class CanMessageDataStore : public automotive::odcantools::MessageToCANDataStore {
    public:
-    CanMessageDataStore(
-    std::shared_ptr< automotive::odcantools::CANDevice > canDevice);
+    CanMessageDataStore(std::shared_ptr< automotive::odcantools::CANDevice > canDevice);
     virtual void add(odcore::data::Container &container);
-
-    bool IsAutonomousEnabled();
-    bool IsOverridden();
 
    private:
     odcore::base::Mutex m_dataStoreMutex;
