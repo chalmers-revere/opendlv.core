@@ -70,7 +70,8 @@ void ProxyFH16::setUp() {
 
     // If the device could be successfully opened, create a recording file to dump of the data.
     if (m_device.get() && m_device->isOpen()) {
-        cout << "[" << getName() << "]: " << "Successfully opened CAN device '" << DEVICE_NODE << "'." << endl;
+        cout << "[" << getName() << "]: "
+             << "Successfully opened CAN device '" << DEVICE_NODE << "'." << endl;
 
         // Automatically record all received raw CAN messages.
         m_startOfRecording = TimeStamp();
@@ -99,9 +100,9 @@ void ProxyFH16::setUp() {
 
         // Start the wrapped CAN device to receive CAN messages concurrently.
         m_device->start();
-    }
-    else {
-        cerr << "[" << getName() << "]: " << "Failed to open CAN device '" << DEVICE_NODE << "'." << endl;
+    } else {
+        cerr << "[" << getName() << "]: "
+             << "Failed to open CAN device '" << DEVICE_NODE << "'." << endl;
     }
 }
 
@@ -301,28 +302,23 @@ Container ProxyFH16::addCANTimeStamp(Container &c, const TimeStamp &ts) {
         opendlv::proxy::reverefh16::ManualControl temp = c.getData< opendlv::proxy::reverefh16::ManualControl >();
         temp.setFromSensor(ts);
         retVal = Container(temp);
-    }
-    else if (c.getDataType() == opendlv::proxy::reverefh16::VehicleState::ID()) {
+    } else if (c.getDataType() == opendlv::proxy::reverefh16::VehicleState::ID()) {
         opendlv::proxy::reverefh16::VehicleState temp = c.getData< opendlv::proxy::reverefh16::VehicleState >();
         temp.setFromSensor(ts);
         retVal = Container(temp);
-    }
-    else if (c.getDataType() == opendlv::proxy::reverefh16::Wheels::ID()) {
+    } else if (c.getDataType() == opendlv::proxy::reverefh16::Wheels::ID()) {
         opendlv::proxy::reverefh16::Wheels temp = c.getData< opendlv::proxy::reverefh16::Wheels >();
         temp.setFromSensor(ts);
         retVal = Container(temp);
-    }
-    else if (c.getDataType() == opendlv::proxy::reverefh16::Axles::ID()) {
+    } else if (c.getDataType() == opendlv::proxy::reverefh16::Axles::ID()) {
         opendlv::proxy::reverefh16::Axles temp = c.getData< opendlv::proxy::reverefh16::Axles >();
         temp.setFromSensor(ts);
         retVal = Container(temp);
-    }
-    else if (c.getDataType() == opendlv::proxy::reverefh16::Steering::ID()) {
+    } else if (c.getDataType() == opendlv::proxy::reverefh16::Steering::ID()) {
         opendlv::proxy::reverefh16::Steering temp = c.getData< opendlv::proxy::reverefh16::Steering >();
         temp.setFromSensor(ts);
         retVal = Container(temp);
-    }
-    else if (c.getDataType() == opendlv::proxy::reverefh16::Propulsion::ID()) {
+    } else if (c.getDataType() == opendlv::proxy::reverefh16::Propulsion::ID()) {
         opendlv::proxy::reverefh16::Propulsion temp = c.getData< opendlv::proxy::reverefh16::Propulsion >();
         temp.setFromSensor(ts);
         retVal = Container(temp);
@@ -373,8 +369,8 @@ void ProxyFH16::dumpCSVData(Container &c) {
     m_receivedTS_ptr->setFieldDataType(reflection::AbstractField::UINT64_T);
     m_receivedTS_ptr->setSize(sizeof(uint64_t));
 
-    if ( (m_mapOfCSVFiles.count(c.getDataType()) == 1) &&
-         (m_mapOfCSVVisitors.count(c.getDataType()) == 1) ) {
+    if ((m_mapOfCSVFiles.count(c.getDataType()) == 1) &&
+    (m_mapOfCSVVisitors.count(c.getDataType()) == 1)) {
         // We have a CSV file and a transformation available.
         if (c.getDataType() == opendlv::proxy::reverefh16::ManualControl::ID()) {
             opendlv::proxy::reverefh16::ManualControl temp = c.getData< opendlv::proxy::reverefh16::ManualControl >();

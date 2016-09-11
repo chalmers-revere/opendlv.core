@@ -46,7 +46,7 @@ CanMessageDataStore::CanMessageDataStore(shared_ptr< automotive::odcantools::CAN
 void CanMessageDataStore::add(odcore::data::Container &container) {
     odcore::base::Lock l(m_dataStoreMutex);
 
-/*
+    /*
   if (container.getDataType() == opendlv::proxy::ControlState::ID()) {
     opendlv::proxy::ControlState controlState = container.getData<opendlv::proxy::ControlState>();
     bool enabledPrevious = m_enabled;
@@ -94,8 +94,7 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
             canmapping::opendlv::proxy::reverefh16::BrakeRequest brakeRequestMapping;
             automotive::GenericCANMessage genericCanMessage = brakeRequestMapping.encode(brakeRequestContainer);
             m_canDevice->write(genericCanMessage);
-        }
-        else {
+        } else {
             opendlv::proxy::reverefh16::AccelerationRequest accelerationRequest;
             accelerationRequest.setEnableRequest(m_enabled);
 

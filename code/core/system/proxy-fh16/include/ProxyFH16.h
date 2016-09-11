@@ -106,4 +106,3 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
 } // opendlv::core::system::proxy
 
 #endif /*PROXY_PROXYFH16_H*/
-
