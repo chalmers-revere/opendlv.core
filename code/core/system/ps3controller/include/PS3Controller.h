@@ -93,6 +93,13 @@ using namespace std;
 
             int m_ps3controllerDevice;
             int *m_axes;
+            
+            double m_ACCELERATION_MIN = 0;
+            double m_ACCELERATION_MAX = 0;
+            double m_DECELERATION_MIN = 0;
+            double m_DECELERATION_MAX = 0;
+            double m_STEERING_MIN = 0;
+            double m_STEERING_MAX = 0;
     };
 }
 }

@@ -46,8 +46,21 @@ PS3Controller::~PS3Controller() {}
 
 void PS3Controller::setUp() {
     stringstream info;
-    string const PS3CONTROLLER_DEVICE_NODE =
-    getKeyValueConfiguration().getValue<string>("system-ps3controller.ps3controllerdevicenode");
+    string const PS3CONTROLLER_DEVICE_NODE = getKeyValueConfiguration().getValue<string>("system-ps3controller.ps3controllerdevicenode");
+    
+    string const ACC_MIN = getKeyValueConfiguration().getValue<string>("system-ps3controller.acceleration.min");
+    string const ACC_MAX = getKeyValueConfiguration().getValue<string>("system-ps3controller.acceleration.max");
+    string const DEC_MIN = getKeyValueConfiguration().getValue<string>("system-ps3controller.deceleration.min");
+    string const DEC_MAX = getKeyValueConfiguration().getValue<string>("system-ps3controller.deceleration.max");
+    string const STE_MIN = getKeyValueConfiguration().getValue<string>("system-ps3controller.steering.min");
+    string const STE_MAX = getKeyValueConfiguration().getValue<string>("system-ps3controller.steering.max");
+
+    m_ACCELERATION_MIN=std::stod(ACC_MIN,NULL);
+    m_ACCELERATION_MAX=std::stod(ACC_MAX,NULL);
+    m_DECELERATION_MIN=std::stod(DEC_MIN,NULL);
+    m_DECELERATION_MAX=std::stod(DEC_MAX,NULL);
+    m_STEERING_MIN=std::stod(STE_MIN,NULL);
+    m_STEERING_MAX=std::stod(STE_MAX,NULL);
 
     info << "[PS3Controller] Trying to open ps3controller " << PS3CONTROLLER_DEVICE_NODE << endl;
     toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
@@ -123,12 +136,6 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body()
     * smaller maximum value for the deceleration could be dangerous as well, since it
     * could impair the possiblity to perform an emergency brake while using the controller.
     */
-    const double RANGE_ACCELERATION_MIN = 0; // acceleration can be between 0 m/s^2...
-    const double RANGE_ACCELERATION_MAX = 3; // ...and 3 m/s^2 
-    const double RANGE_DECELERATION_MIN = 0; // deceleration can be between 0 m/s^2...
-    const double RANGE_DECELERATION_MAX = -10; // ...and -10 m/s^2
-    const double RANGE_ROTATION_MIN = -6.5; // the torque can be between -10 Nm...
-    const double RANGE_ROTATION_MAX = 6.5; // ...and 10 Nm
 
     double acceleration = 0;
     double steering = 0;
@@ -163,7 +170,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body()
                         }
 
                         // map the steering from percentage to its range
-                        steering=percent/100*(RANGE_ROTATION_MAX-RANGE_ROTATION_MIN)+RANGE_ROTATION_MIN;
+                        steering=percent/100*(m_STEERING_MAX-m_STEERING_MIN)+m_STEERING_MIN;
                         steering*=-1;
                         // modify in steps of 0.25
                         steering=round(4*steering)/4;
@@ -184,12 +191,12 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode PS3Controller::body()
                         if(js.value<0)
                         {
                             // map the acceleration from percentage to its range
-                            acceleration=(100.0-2*percent)/100*(RANGE_ACCELERATION_MAX-RANGE_ACCELERATION_MIN)+RANGE_ACCELERATION_MIN;
+                            acceleration=(100.0-2*percent)/100*(m_ACCELERATION_MAX-m_ACCELERATION_MIN)+m_ACCELERATION_MIN;
                         }
                         else
                         {
                             // map the acceleration from percentage to its range
-                            acceleration=(2*percent-100.0)/100*(RANGE_DECELERATION_MAX-RANGE_DECELERATION_MIN);
+                            acceleration=(2*percent-100.0)/100*(m_DECELERATION_MAX-m_DECELERATION_MIN);
                         }
 
                         // modify in steps of 0.25
