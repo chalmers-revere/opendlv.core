@@ -1,5 +1,5 @@
 /**
- * proxy-fh16truck - Interface to FH16 truck.
+ * proxy-sick - Interface to Sick.
  * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -21,11 +21,7 @@
 
 #include <iostream>
 
-#include "odvdfh16truck/GeneratedHeaders_ODVDFH16Truck.h"
-#include "odvdvehicle/GeneratedHeaders_ODVDVehicle.h"
-#include "fh16mapping/GeneratedHeaders_fh16mapping.h"
-
-#include "ProxyFH16Truck.h"
+#include "ProxySick.h"
 
 namespace opendlv {
 namespace core {
@@ -35,26 +31,16 @@ namespace proxy {
 using namespace std;
 using namespace odcore::base;
 
-ProxyFH16Truck::ProxyFH16Truck(const int &argc, char **argv)
-    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-fh16truck") {}
+ProxySick::ProxySick(const int &argc, char **argv)
+    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-sick") {}
 
-ProxyFH16Truck::~ProxyFH16Truck() {}
+ProxySick::~ProxySick() {}
 
-void ProxyFH16Truck::setUp() {}
+void ProxySick::setUp() {}
 
-void ProxyFH16Truck::tearDown() {}
+void ProxySick::tearDown() {}
 
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyFH16Truck::body() {
-    // TODO: Listen for messages of type opendlv::proxy::ActuationRequest to map them on the appropriate FH16 truck messages.
-    opendlv::proxy::ActuationRequest ar;
-    (void)ar;
-
-    opendlv::proxy::reverefh16::AccelerationRequest ar2;
-    (void)ar2;
-
-    canmapping::opendlv::proxy::reverefh16::AccelerationRequest mar2;
-    (void)mar2;
-
+odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body() {
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
         cout << "Inside the main processing loop." << endl;
     }

@@ -1,5 +1,5 @@
 /**
- * proxy-fh16truck - Interface to FH16 truck.
+ * proxy-sick - Interface to Sick.
  * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -17,9 +17,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "ProxyFH16Truck.h"
+#ifndef PROXY_PROXYSICK_TESTSUITE_H
+#define PROXY_PROXYSICK_TESTSUITE_H
 
-int32_t main(int32_t argc, char **argv) {
-    opendlv::core::system::proxy::ProxyFH16Truck truck(argc, argv);
-    return truck.runModule();
-}
+#include "cxxtest/TestSuite.h"
+
+// Include local header files.
+#include "../include/ProxySick.h"
+
+using namespace std;
+using namespace opendlv::core::system::proxy;
+
+class ProxySickTest : public CxxTest::TestSuite {
+   public:
+    void setUp() {}
+
+    void tearDown() {}
+
+    void testApplication() {
+        TS_ASSERT(true);
+    }
+};
+
+#endif /*PROXY_PROXYSICK_TESTSUITE_H*/

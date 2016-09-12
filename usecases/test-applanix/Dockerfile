@@ -1,6 +1,4 @@
-#!/bin/bash
-
-# completeBuild.sh - Script to build opendlv.core.
+# Dockerfile - Dockerfile to run OpenDLV software.
 # Copyright (C) 2016 Christian Berger
 #
 # This program is free software; you can redistribute it and/or
@@ -17,25 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-BUILD_AS=$1
+# Date: 2016-09-09
 
-# Adding user for building.
-groupadd $BUILD_AS
-useradd $BUILD_AS -g $BUILD_AS
-
-cat <<EOF > /opt/opendlv.core.build/build.sh
-#!/bin/bash
-cd /opt/opendlv.core.build
-
-echo "[opendlv.core Docker builder] Complete build."
-cmake -E remove_directory .
-PATH=/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core /opt/opendlv.core.sources
-make -j4
-EOF
-
-chmod 755 /opt/opendlv.core.build/build.sh
-chown $BUILD_AS:$BUILD_AS /opt/opendlv.core.build/build.sh
-chown -R $BUILD_AS:$BUILD_AS /opt
-
-su -m `getent passwd 1000|cut -f1 -d":"` -c /opt/opendlv.core.build/build.sh
+FROM seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
 

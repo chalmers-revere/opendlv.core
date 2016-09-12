@@ -1,5 +1,5 @@
 /**
- * proxy-fh16truck - Interface to FH16 truck.
+ * proxy-velodyne - Interface to Velodyne.
  * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -17,10 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_PROXYFH16TRUCK_H
-#define PROXY_PROXYFH16TRUCK_H
+#include <stdint.h>
 
-#include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include <iostream>
+
+#include "ProxyVelodyne.h"
 
 namespace opendlv {
 namespace core {
@@ -28,34 +29,25 @@ namespace system {
 namespace proxy {
 
 using namespace std;
+using namespace odcore::base;
 
-/**
- * Interface to FH16 truck.
- */
-class ProxyFH16Truck : public odcore::base::module::TimeTriggeredConferenceClientModule {
-   private:
-    ProxyFH16Truck(const ProxyFH16Truck & /*obj*/) = delete;
-    ProxyFH16Truck &operator=(const ProxyFH16Truck & /*obj*/) = delete;
+ProxyVelodyne::ProxyVelodyne(const int &argc, char **argv)
+    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-camera") {}
 
-   public:
-    /**
-     * Constructor.
-     *
-     * @param argc Number of command line arguments.
-     * @param argv Command line arguments.
-     */
-    ProxyFH16Truck(const int &argc, char **argv);
+ProxyVelodyne::~ProxyVelodyne() {}
 
-    virtual ~ProxyFH16Truck();
+void ProxyVelodyne::setUp() {}
 
-   private:
-    void setUp();
-    void tearDown();
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
-};
+void ProxyVelodyne::tearDown() {}
+
+odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne::body() {
+    while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+        cout << "Inside the main processing loop." << endl;
+    }
+
+    return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+}
 }
 }
 }
 } // opendlv::core::system::proxy
-
-#endif /*PROXY_PROXYFH16TRUCK_H*/
