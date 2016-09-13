@@ -25,7 +25,7 @@ services:
         network_mode: "host"
         volumes:
         - .:/opt/opendlv.data
-        command: "/opt/od4/bin/odsupercomponent --cid=224 --verbose=1 --configuration=/opt/opendlv.data/configuration"
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
 
     # micro service for proxy-fh16.
     proxy-fh16:
@@ -35,7 +35,7 @@ services:
         - "/dev/pcanpci32:/dev/pcan32"
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=224 --freq=100"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
 
 
     # micro service for PS3 controller.
@@ -47,5 +47,5 @@ services:
         depends_on:
             - odsupercomponent
             - proxy-fh16
-        command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=224 --freq=100"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=${CID} --freq=100"
 

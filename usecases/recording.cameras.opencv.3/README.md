@@ -16,7 +16,7 @@ Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-
     
 ### Use proxy-camera with Docker Compose
 
-Go to the folder usecases/recordings.cameras.opencv.3. Copy the configuration file and docker-compose file docker-compose.yml, and the environment file .env and paste them at ~/recordings. The environment file .env defines an environment variable CID which is referred to by the docker-compose file. CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111.  Change the current directory to ~/recordings and run Docker Compose:
+Go to the folder usecases/recordings.cameras.opencv.3. This folder contains a configuration file, a docker-compose file docker-compose.yml, and an environment file .env. The environment file .env defines an environment variable CID which is referred to by the docker-compose file. CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111.  Run Docker Compose:
     
     $ docker-compose up
 

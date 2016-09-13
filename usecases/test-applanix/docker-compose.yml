@@ -25,7 +25,7 @@ services:
         network_mode: "host"
         volumes:
         - .:/opt/copplar.data
-        command: "/opt/od4/bin/odsupercomponent --cid=212 --verbose=1 --configuration=/opt/copplar.data/configuration"
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/copplar.data/configuration"
         
     # micro service for proxy-applanix.
     proxy-applanix:
@@ -33,5 +33,5 @@ services:
         network_mode: "host"
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-applanix --cid=212"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-applanix --cid=${CID}"
 
