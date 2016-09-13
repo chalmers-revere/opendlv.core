@@ -8,6 +8,8 @@ version: '2'
 #volumes:
 #- /tmp/.X11-unix:/tmp/.X11-unix
 
+#In addition, run "xhost +" to grant access to your Xserver before running docker-compose up.
+
 ############################
 #Run the following to replay the recordings:
 #docker run -ti --rm --net=host -v $HOME/recordings:/opt/recordings seresearch/opendavinci-ubuntu-16.04-complete:latest /opt/od4/bin/odsupercomponent --cid=111 --verbose=1  --configuration=/opt/recordings/configuration
