@@ -116,15 +116,15 @@ odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes
 #
 # CONFIGURATION FOR PROXY
 #
-proxy:1.debug = 0
-proxy:1.useRecorder = 0 # 1 = record all captured data directly, 0 otherwise. 
-proxy:1.recorder.output = file://recs/
-proxy:1.camera.name = WebCam1
-proxy:1.camera.type = OpenCV # OpenCV or UEYE
-proxy:1.camera.id = 0 # Select here the proper ID for OpenCV
-proxy:1.camera.width = 640 #752-UEYE, 640-OpenCV 
-proxy:1.camera.height = 480
-proxy:1.camera.bpp = 3 #3- openCV, 1-UEYE
+proxy-camera:1.debug = 0
+proxy-camera:1.useRecorder = 0 # 1 = record all captured data directly, 0 otherwise. 
+proxy-camera:1.recorder.output = file://recs/
+proxy-camera:1.camera.name = WebCam1
+proxy-camera:1.camera.type = OpenCV # OpenCV or UEYE
+proxy-camera:1.camera.id = 0 # Select here the proper ID for OpenCV
+proxy-camera:1.camera.width = 640 #752-UEYE, 640-OpenCV 
+proxy-camera:1.camera.height = 480
+proxy-camera:1.camera.bpp = 3 #3- openCV, 1-UEYE
 
 #################
 proxy-camera:2.debug = 0
