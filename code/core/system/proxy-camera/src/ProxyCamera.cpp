@@ -24,7 +24,6 @@
 #include <iostream>
 
 #include "opendavinci/odcore/base/KeyValueConfiguration.h"
-#include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/data/TimeStamp.h"
 
 #include "opencv2/highgui/highgui.hpp"
@@ -49,25 +48,23 @@ using namespace odtools::recorder;
 ProxyCamera::ProxyCamera(const int &argc, char **argv)
     : TimeTriggeredConferenceClientModule(argc, argv, "proxy-camera"),
     m_recorder(),
-    m_camera() {}
+    m_camera(),
+    m_startOfRecording() {}
 
 ProxyCamera::~ProxyCamera() {}
 
 void ProxyCamera::setUp() {
-            // This method will be call automatically _before_ running body().
-            if (getFrequency() < 20) {
-                cerr << endl << endl << "proxy-camera: WARNING! Running proxy-camera with a LOW frequency (consequence: data updates are too seldom and will influence your algorithms in a negative manner!) --> suggestions: --freq=20 or higher! Current frequency: " << getFrequency() << " Hz." << endl << endl << endl;
-            }
-
             // Get configuration data.
             KeyValueConfiguration kv = getKeyValueConfiguration();
 
             // Create built-in recorder.
             const bool useRecorder = kv.getValue<uint32_t>("proxy-camera.useRecorder") == 1;
+            const string CAMERA_NAME = getKeyValueConfiguration().getValue<string>("proxy-camera.camera.name");
             if (useRecorder) {
                 // URL for storing containers.
                 stringstream recordingURL;
-                recordingURL << "file://" << "proxy_camera" << TimeStamp().getYYYYMMDD_HHMMSS() << ".rec";
+                m_startOfRecording = TimeStamp();
+                recordingURL << "file://" << "CID-" << getCID() << "" << getName() << "" << CAMERA_NAME << "_" << m_startOfRecording.getYYYYMMDD_HHMMSS() << ".rec";
                 // Size of memory segments.
                 const uint32_t MEMORY_SEGMENT_SIZE = getKeyValueConfiguration().getValue<uint32_t>("global.buffer.memorySegmentSize");
                 // Number of memory segments.
@@ -106,18 +103,6 @@ void ProxyCamera::setUp() {
 
 void ProxyCamera::tearDown() {}
 
-void ProxyCamera::distribute(Container c) {
-            // Store data to recorder.
-            if (m_recorder.get() != NULL) {
-                // Time stamp data before storing.
-                c.setReceivedTimeStamp(TimeStamp());
-                m_recorder->store(c);
-            }
-
-            // Share data.
-            getConference().send(c);
-        }
-
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyCamera::body() {
     // TODO: Remove me.
     // Test whether OpenCV is found and linked correctly.
@@ -128,8 +113,6 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyCamera::body() {
                 if (m_camera.get() != NULL) {
                     odcore::data::image::SharedImage si = m_camera->capture();
 
-                    Container c(si);
-                    distribute(c);
                     captureCounter++;
                 }
 
