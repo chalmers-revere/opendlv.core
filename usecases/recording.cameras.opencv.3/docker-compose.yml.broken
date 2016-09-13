@@ -29,8 +29,8 @@ services:
         build: .
         image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         volumes:
-        - .:/opt/data
-        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1  --configuration=/opt/data/configuration"
+        - ~/recordings:/opt/recordings
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1  --configuration=/opt/recordings/configuration"
         
     #camera 1
     proxy1:
@@ -38,15 +38,41 @@ services:
         image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
         ipc: host
         user: root
-        environment:
-        - DISPLAY=$DISPLAY
-        volumes:
-        - /tmp/.X11-unix:/tmp/.X11-unix
+        restart: always
         devices:
         - "/dev/video0:/dev/video0"
         links:
             - odsupercomponent
-        command: "/opt/od4/bin/miniature/proxy --cid=${CID}  --id=1 --freq=20"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=1 --freq=20"
+        
+    #camera 2
+    proxy2:
+        build: .
+        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
+        ipc: host
+        user: root
+        restart: always
+        devices:
+        - "/dev/video1:/dev/video1"
+        links:
+            - odsupercomponent
+            - proxy1
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=2 --freq=20"
+        
+    #camera 3
+    proxy3:
+        build: .
+        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
+        ipc: host
+        user: root
+        restart: always
+        devices:
+        - "/dev/video2:/dev/video2"
+        links:
+            - odsupercomponent
+            - proxy1
+            - proxy2
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=3 --freq=20"
         
     #odrecorderh264
     odrecorderh264:
@@ -60,6 +86,8 @@ services:
         links:
             - odsupercomponent
             - proxy1
+            - proxy2
+            - proxy3
         command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
         
 
