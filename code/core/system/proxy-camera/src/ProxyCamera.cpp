@@ -24,6 +24,7 @@
 #include <iostream>
 
 #include "opendavinci/odcore/base/KeyValueConfiguration.h"
+#include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/data/TimeStamp.h"
 
 #include "opencv2/highgui/highgui.hpp"
@@ -103,15 +104,28 @@ void ProxyCamera::setUp() {
 
 void ProxyCamera::tearDown() {}
 
+void ProxyCamera::distribute(Container c) {
+            // Store data to recorder.
+            if (m_recorder.get() != NULL) {
+                // Time stamp data before storing.
+                c.setReceivedTimeStamp(TimeStamp());
+                m_recorder->store(c);
+            }
+
+            // Share data.
+            getConference().send(c);
+        }
+
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyCamera::body() {
     // TODO: Remove me.
     // Test whether OpenCV is found and linked correctly.
-    cvWaitKey(10);
     uint32_t captureCounter = 0;
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
                 // Capture frame.
                 if (m_camera.get() != NULL) {
                     odcore::data::image::SharedImage si = m_camera->capture();
+                    Container c(si);
+                    distribute(c);
 
                     captureCounter++;
                 }
