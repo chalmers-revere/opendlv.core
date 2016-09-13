@@ -22,10 +22,12 @@
 #include <cstring>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 #include "opendavinci/odcore/base/KeyValueConfiguration.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/data/TimeStamp.h"
+#include <opendavinci/odcore/strings/StringToolbox.h>
 
 #include "opencv2/highgui/highgui.hpp"
 #include "OpenCVCamera.h"
@@ -65,7 +67,14 @@ void ProxyCamera::setUp() {
                 // URL for storing containers.
                 stringstream recordingURL;
                 m_startOfRecording = TimeStamp();
-                recordingURL << "file://" << "CID-" << getCID() << "" << getName() << "" << CAMERA_NAME << "_" << m_startOfRecording.getYYYYMMDD_HHMMSS() << ".rec";
+                vector< string > timeStampNoSpace = odcore::strings::StringToolbox::split(m_startOfRecording.getYYYYMMDD_HHMMSS(), ' ');
+        stringstream strTimeStampNoSpace;
+        strTimeStampNoSpace << timeStampNoSpace.at(0);
+        if (timeStampNoSpace.size() == 2) {
+            strTimeStampNoSpace << "_" << timeStampNoSpace.at(1);
+        }
+        const string TIMESTAMP = strTimeStampNoSpace.str();
+                recordingURL << "file://" << "CID-" << getCID() << "" << getName() << "" << CAMERA_NAME << "_" << TIMESTAMP << ".rec";
                 // Size of memory segments.
                 const uint32_t MEMORY_SEGMENT_SIZE = getKeyValueConfiguration().getValue<uint32_t>("global.buffer.memorySegmentSize");
                 // Number of memory segments.

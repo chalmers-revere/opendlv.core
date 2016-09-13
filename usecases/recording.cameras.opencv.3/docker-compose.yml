@@ -45,6 +45,35 @@ services:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=1 --freq=20"
         
+    #camera 2
+    proxy2:
+        build: .
+        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
+        ipc: host
+        user: root
+        restart: always
+        devices:
+        - "/dev/video1:/dev/video1"
+        links:
+            - odsupercomponent
+            - proxy1
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=2 --freq=20"
+        
+    #camera 3
+    proxy3:
+        build: .
+        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
+        ipc: host
+        user: root
+        restart: always
+        devices:
+        - "/dev/video2:/dev/video2"
+        links:
+            - odsupercomponent
+            - proxy1
+            - proxy2
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=3 --freq=20"
+        
     #odrecorderh264
     odrecorderh264:
         build: .
@@ -57,6 +86,8 @@ services:
         links:
             - odsupercomponent
             - proxy1
+            - proxy2
+            - proxy3
         command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
         
 
