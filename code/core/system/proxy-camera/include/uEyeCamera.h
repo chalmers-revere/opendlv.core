@@ -68,8 +68,9 @@ namespace proxy {
                  * @param width
                  * @param height
                  * @param bpp
+                 * @param debug
                  */
-                uEyeCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp);
+                uEyeCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug);
 
                 virtual ~uEyeCamera();
 
@@ -81,6 +82,7 @@ namespace proxy {
                 virtual bool captureFrame();
 
             private:
+                bool m_debug;
                 HIDS m_capture;
                 char *m_imageMemory;
                 void *m_ueyeImagePtr;

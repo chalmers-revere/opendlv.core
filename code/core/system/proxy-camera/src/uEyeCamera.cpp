@@ -31,8 +31,9 @@ namespace core {
 namespace system {
 namespace proxy {
 
-        uEyeCamera::uEyeCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp) :
+        uEyeCamera::uEyeCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug) :
             Camera(name, id, width, height, bpp),
+            m_debug(debug),
             m_capture(0),
             m_imageMemory(NULL),
             m_ueyeImagePtr(NULL),
