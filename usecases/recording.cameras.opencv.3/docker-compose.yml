@@ -35,10 +35,8 @@ services:
     #camera 1
     proxy1:
         build: .
-        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
         ipc: host
         user: root
-        restart: always
         devices:
         - "/dev/video0:/dev/video0"
         links:
@@ -48,10 +46,8 @@ services:
     #camera 2
     proxy2:
         build: .
-        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
         ipc: host
         user: root
-        restart: always
         devices:
         - "/dev/video1:/dev/video1"
         links:
@@ -62,10 +58,8 @@ services:
     #camera 3
     proxy3:
         build: .
-        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
         ipc: host
         user: root
-        restart: always
         devices:
         - "/dev/video2:/dev/video2"
         links:
