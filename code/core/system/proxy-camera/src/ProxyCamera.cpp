@@ -74,7 +74,7 @@ void ProxyCamera::setUp() {
             strTimeStampNoSpace << "_" << timeStampNoSpace.at(1);
         }
         const string TIMESTAMP = strTimeStampNoSpace.str();
-                recordingURL << "file://" << "CID-" << getCID() << "" << getName() << "" << CAMERA_NAME << "_" << TIMESTAMP << ".rec";
+                recordingURL << "file://" << "CID-" << getCID() << "-" << getName() << "-" << CAMERA_NAME << "_" << TIMESTAMP << ".rec";
                 // Size of memory segments.
                 const uint32_t MEMORY_SEGMENT_SIZE = getKeyValueConfiguration().getValue<uint32_t>("global.buffer.memorySegmentSize");
                 // Number of memory segments.

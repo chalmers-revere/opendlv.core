@@ -29,8 +29,8 @@ services:
         build: .
         image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         volumes:
-        - .:/opt/recordings
-        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1  --configuration=/opt/recordings/configuration"
+        - .:/opt/opendlv.data
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
         
     #camera 1
     proxy1:

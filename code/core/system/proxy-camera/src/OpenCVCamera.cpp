@@ -86,8 +86,8 @@ namespace proxy {
                 ::memcpy(dest, m_image->imageData, size);
                 if(m_debug==1){
                     cvShowImage("WindowShowImage", m_image);
+                    cvWaitKey(10);
                 }
-                cvWaitKey(10);
 
                 retVal = true;
             }
