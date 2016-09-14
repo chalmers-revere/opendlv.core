@@ -1,4 +1,4 @@
-This folder provides the instructions for recording with proxy-camera, which can be executed from a docker-compose file to start all micro-services to record video streams from three OpenCV cameras with lossless H264 compression. It is assumed that git, Docker, and Docker Compose are installed and all the three cameras are properly connected. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/
+This folder provides the instructions for video recording with a single OpenCV camera. A docker-compose file is provided to start all micro-services to record video streams from the OpenCV camera with lossless H264 compression. It includes three services: odsupercomponent, opendlv-core-system-proxy-camera (or proxy-camera for short), and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. proxy-camera activates the camera and odrecorderh264 records the video. It is assumed that git, Docker, and Docker Compose are installed and the camera is properly connected. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/.
     
 ### Prepare proxy-camera
 
@@ -20,7 +20,7 @@ Go to the folder usecases/recordings.cameras.opencv.3. This folder contains a co
     
     $ docker-compose up
 
-Then proxy-camera will start the recording with all the three cameras. To stop the recording, run
+Then proxy-camera will start the recording with the camera. To stop the recording, run
 
     $ docker-compose stop
     
@@ -28,7 +28,7 @@ Then remove all stopped containers:
 
     $ docker-compose rm
 
-After the recording, the recording files are stored at ~/recordings. The three recording files from the three cameras are recorder.rec-WebCam1.h264, recorder.rec-WebCam2.h264, and recorder.rec-WebCam3.h264.
+After the recording, the recording files are stored at ~/recordings, with recorder.rec-WebCam1.h264 being the actual recording with lossless H264 compression. 
 
 Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes odsupercomponent, proxy-camera, and odrecorderh264 run with cid 123 instead of 111:
 
