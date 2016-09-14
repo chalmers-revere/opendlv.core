@@ -11,8 +11,8 @@ services:
         - .:/opt/opendlv.data
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
         
-    #proxy-velodyne
-    velodyne:
+    #odcockpit
+    odcockpit:
         build: .
         image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         network_mode: "host"
