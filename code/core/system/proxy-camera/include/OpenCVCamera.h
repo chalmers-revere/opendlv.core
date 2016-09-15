@@ -65,7 +65,7 @@ namespace proxy {
                  * @param height
                  * @param bpp
                  */
-                OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const uint32_t &debug);
+                OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const uint32_t &debug, const bool &flipped);
 
                 virtual ~OpenCVCamera();
 
@@ -80,6 +80,7 @@ namespace proxy {
                 CvCapture *m_capture;
                 IplImage *m_image;
                 uint32_t m_debug; 
+                bool m_flipped;
         };
 }
 }

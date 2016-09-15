@@ -1,4 +1,4 @@
-This folder provides the instructions for video recording with a single OpenCV camera. A docker-compose file is provided to start all micro-services to record video streams from the OpenCV camera with lossless H264 compression. It includes three services: odsupercomponent, opendlv-core-system-proxy-camera (or proxy-camera for short), and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. proxy-camera activates the camera and odrecorderh264 records the video. It is assumed that git, Docker, and Docker Compose are installed and the camera is properly connected. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/.
+This folder provides the instructions for video recording with a single OpenCV camera. A docker-compose file is provided to start all micro-services to record video streams from the OpenCV camera with lossless H264 compression. It includes three services: odsupercomponent, opendlv-core-system-proxy-camera (or proxy-camera for short), and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. proxy-camera activates the camera and odrecorderh264 records the video. The recording is performed in headless mode, i.e., without display during the recording. Please follow the instructions in the header of the docker-compose file to support non-headless mode. It is assumed that git, Docker, and Docker Compose are installed and the camera is properly connected. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/.
     
 ### Prepare proxy-camera
 
@@ -18,7 +18,7 @@ Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-
 
 Go to the folder usecases/recordings.cameras.opencv.3. This folder contains a configuration file, a docker-compose file docker-compose.yml, and an environment file .env. The environment file .env defines an environment variable CID which is referred to by the docker-compose file. CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111.  Run Docker Compose:
     
-    $ docker-compose up
+    $ docker-compose up --build
 
 Then proxy-camera will start the recording with the camera. To stop the recording, run
 
@@ -35,4 +35,6 @@ Note that the value of CID defined in .env can be manually overwritten by preced
     $ CID=123 docker-compose up
     
 Then CID=123 should also be used for docker-compose stop and docker-compose rm accordingly.
+
+Finally, note that this use case assumes that the camera is mounted upside down. Hence video images are flipped for that reason. The configuration file in this folder includes a parameter proxy-camera.camera.flipped which is set to 1. In order to disable flipped images, change its value to 0.
 

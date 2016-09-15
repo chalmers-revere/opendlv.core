@@ -41,7 +41,7 @@ services:
         - "/dev/video0:/dev/video0"
         links:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=1 --freq=20"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID} --freq=20"
         
         
     #odrecorderh264

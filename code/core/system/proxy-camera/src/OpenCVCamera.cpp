@@ -29,11 +29,12 @@ namespace core {
 namespace system {
 namespace proxy {
 
-        OpenCVCamera::OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const uint32_t &debug) :
+        OpenCVCamera::OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const uint32_t &debug,const bool &flipped) :
             Camera(name, id, width, height, bpp),
             m_capture(NULL),
             m_image(NULL),
-            m_debug(debug) {
+            m_debug(debug),
+            m_flipped(flipped) {
 
             m_capture = cvCaptureFromCAM(id);
             if (m_capture) {
@@ -83,6 +84,9 @@ namespace proxy {
             bool retVal = false;
 
             if ( (dest != NULL) && (size > 0) && (m_image != NULL) ) {
+                if(m_flipped){
+                    cvFlip(m_image, m_image, -1);
+                }
                 ::memcpy(dest, m_image->imageData, size);
                 if(m_debug==1){
                     cvShowImage("WindowShowImage", m_image);

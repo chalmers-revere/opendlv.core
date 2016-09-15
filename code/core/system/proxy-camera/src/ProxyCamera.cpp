@@ -95,10 +95,11 @@ void ProxyCamera::setUp() {
             const uint32_t WIDTH = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.camera.width");
             const uint32_t HEIGHT = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.camera.height");
             const uint32_t BPP = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.camera.bpp");
-            const uint32_t DEBUG = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.debug");
+            const uint32_t DEBUG = getKeyValueConfiguration().getValue<uint32_t>("proxy-camera.camera.debug");
+            const bool FLIPPED = getKeyValueConfiguration().getValue<bool>("proxy-camera.camera.flipped");
 
             if (TYPE.compare("opencv") == 0) {
-                m_camera = unique_ptr<Camera>(new OpenCVCamera(NAME, ID, WIDTH, HEIGHT, BPP, DEBUG));
+                m_camera = unique_ptr<Camera>(new OpenCVCamera(NAME, ID, WIDTH, HEIGHT, BPP, DEBUG, FLIPPED));
             }
             if (TYPE.compare("ueye") == 0) {
 #ifdef HAVE_UEYE
