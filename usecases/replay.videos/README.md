@@ -5,7 +5,7 @@ This folder contains a configuration file, a docker-compose file docker-compose.
 
     $ xhost +
     
-    $ docker-compose up
+    $ docker-compose up --build
 
 This will activate odsupercomponent and the visualization tool odcockpit. Open the SharedImageViewer plugin in odcockpit. Multiple windows can be started to replay multiple recordings separately in parallel.
 
@@ -25,7 +25,7 @@ Then remove all stopped containers:
 
 Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes odsupercomponent and odcockpit run with cid 123 instead of 111:
 
-    $ CID=123 docker-compose up
+    $ CID=123 docker-compose up --build
     
 Consequently, odplayerh264 has to run with cid=123 as well.
 
