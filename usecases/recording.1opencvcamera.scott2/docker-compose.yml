@@ -59,3 +59,9 @@ services:
         command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
         
 
+#    webdav:
+#        image: sashgorokhov/webdav
+#        ports:
+#        - 80:80
+#        volumes:
+#        - ~/recordings:/media

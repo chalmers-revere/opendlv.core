@@ -31,13 +31,16 @@ namespace core {
 namespace system {
 namespace proxy {
 
-        uEyeCamera::uEyeCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp) :
+        uEyeCamera::uEyeCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped) :
             Camera(name, id, width, height, bpp),
+            m_debug(debug),
             m_capture(0),
             m_imageMemory(NULL),
             m_ueyeImagePtr(NULL),
             m_pid(0),
-            m_image(NULL) {
+            m_image(NULL),
+            m_debug(debug),
+            m_flipped(flipped) {
 
             int retVal = is_InitCamera(&m_capture, NULL);
 
@@ -95,11 +98,16 @@ namespace proxy {
             bool retVal = false;
 
             if ( (dest != NULL) && (size > 0) && (m_image != NULL) && (m_ueyeImagePtr != NULL) ) {
+                if(m_flipped){
+                    cvFlip(m_image, m_image, -1);
+                }
                 ::memcpy(dest, m_ueyeImagePtr, size);
                 m_image->imageData = (char*)m_ueyeImagePtr;
-
-                cvShowImage("WindowShowImage", m_image);
-                cvWaitKey(10);
+                
+                if(m_debug){
+                    cvShowImage("WindowShowImage", m_image);
+                    cvWaitKey(10);
+                }
 
                 retVal = true;
             }
