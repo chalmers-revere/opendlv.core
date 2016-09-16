@@ -20,7 +20,14 @@
 #ifndef PROXY_PROXYCAMERA_H
 #define PROXY_PROXYCAMERA_H
 
+#include <map>
+#include <memory>
+
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include "opendavinci/odcore/data/Container.h"
+#include "opendavinci/odtools/recorder/Recorder.h"
+
+#include "Camera.h"
 
 namespace opendlv {
 namespace core {
@@ -52,6 +59,11 @@ class ProxyCamera : public odcore::base::module::TimeTriggeredConferenceClientMo
     void setUp();
     void tearDown();
     odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    void distribute(odcore::data::Container c);
+   private:
+    unique_ptr<odtools::recorder::Recorder> m_recorder;
+    unique_ptr<Camera> m_camera;
+    odcore::data::TimeStamp m_startOfRecording;
 };
 }
 }
