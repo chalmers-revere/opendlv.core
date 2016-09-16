@@ -21,9 +21,14 @@
 #include <iostream>
 #include <string>
 
+#include <opendavinci/odcore/serialization/Serializable.h>
+#include <opendavinci/odcore/data/Container.h>
+#include <opendavinci/odcore/reflection/Message.h>
+#include <opendavinci/odcore/reflection/MessagePrettyPrinterVisitor.h>
+#include <odvdfh16truck/GeneratedHeaders_ODVDFH16Truck.h>
+#include <odvdfh16truck/GeneratedHeaders_ODVDFH16Truck_Helper.h>
+
 #include "MappedCanExtractor.h"
-#include "opendavinci/odcore/serialization/Serializable.h"
-#include "opendavinci/odcore/data/Container.h"
 
 namespace mappedcanextractor {
 
@@ -31,6 +36,7 @@ namespace mappedcanextractor {
     using namespace odcore;
     using namespace odcore::base;
     using namespace odcore::data;
+    using namespace odcore::reflection;
 
     MappedCanExtractor::MappedCanExtractor() {}
 
@@ -63,6 +69,14 @@ namespace mappedcanextractor {
 
                         // If the data is from SHARED_IMAGE, skip the raw data from the shared memory segment.
                         cout << "[MappedCanExtractor]: Found data type '" << c.getDataType() << "'." << endl;
+
+                        bool successfullyMapped = false;
+                        Message msg = GeneratedHeaders_ODVDFH16Truck_Helper::__map(c, successfullyMapped);
+                        if (successfullyMapped) {
+                            MessagePrettyPrinterVisitor mppv;
+                            msg.accept(mppv);
+                            mppv.getOutput(cout);
+                        }
 
                         float percentage = (float)(currPos*100.0)/(float)length;
 

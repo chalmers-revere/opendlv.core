@@ -44,14 +44,21 @@ INCLUDE (CheckCxxTestEnvironment)
 # Find OpenDaVINCI.
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
+###########################################################################
+# Find ODVDFH16Truck.
+find_package(ODVDFH16Truck REQUIRED)
+
 ###############################################################################
+# Set header files from ODVDFH16Truck.
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDFH16TRUCK_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set include directory.
 INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
-set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
+set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
+              ${ODVDFH16TRUCK_LIBRARIES})
 
 ###############################################################################
 # Build this project.
