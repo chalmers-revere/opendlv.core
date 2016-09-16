@@ -16,7 +16,7 @@ Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-
     
 ### Use proxy-camera with Docker Compose
 
-Go to the folder usecases/recordings.cameras.opencv.3. This folder contains a configuration file, a docker-compose file docker-compose.yml, and an environment file .env. The environment file .env defines an environment variable CID which is referred to by the docker-compose file. CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111.  Run Docker Compose:
+Go to the folder usecases/recording.cameras.opencv.3. This folder contains a configuration file, a docker-compose file docker-compose.yml, and an environment file .env. The environment file .env defines an environment variable CID which is referred to by the docker-compose file. CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111.  Run Docker Compose:
     
     $ docker-compose up --build
 
@@ -28,7 +28,7 @@ Then remove all stopped containers:
 
     $ docker-compose rm
 
-After the recording, the recording files are stored at ~/recordings. The three recording files from the three cameras are recorder.rec-WebCam1.h264, recorder.rec-WebCam2.h264, and recorder.rec-WebCam3.h264.
+After the recording, the recording files are stored at ~/recordings, including three .h264 files as the actual recordings with lossless H264 compression. The recording file format is CID-xxx-odrecorderh264_yyy, where xxx is the cid number and yyy is the timestamp.
 
 Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes odsupercomponent, proxy-camera, and odrecorderh264 run with cid 123 instead of 111:
 

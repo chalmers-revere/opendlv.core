@@ -100,7 +100,7 @@ odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes
 #
 # CONFIGURATION FOR PROXY
 #
-proxy-camera:1.debug = 0
+proxy-camera:1.camera.debug = 0
 proxy-camera:1.useRecorder = 0 # 1 = record all captured data directly, 0 otherwise. 
 proxy-camera:1.recorder.output = file://recs/
 proxy-camera:1.camera.name = WebCam1
@@ -109,9 +109,10 @@ proxy-camera:1.camera.id = 0 # Select here the proper ID for OpenCV
 proxy-camera:1.camera.width = 640 #752-UEYE, 640-OpenCV 
 proxy-camera:1.camera.height = 480
 proxy-camera:1.camera.bpp = 3 #3- openCV, 1-UEYE
+proxy-camera:1.camera.flipped = 0 # 1=flipped image, 0=not flipped image
 
 #################
-proxy-camera:2.debug = 0
+proxy-camera:2.camera.debug = 0
 proxy-camera:2.useRecorder = 0 # 1 = record all captured data directly, 0 otherwise. 
 proxy-camera:2.recorder.output = file://recs/
 proxy-camera:2.camera.name = WebCam2
@@ -120,9 +121,10 @@ proxy-camera:2.camera.id = 1 # Select here the proper ID for OpenCV
 proxy-camera:2.camera.width = 640 #752-UEYE, 640-OpenCV 
 proxy-camera:2.camera.height = 480
 proxy-camera:2.camera.bpp = 3 #3- openCV, 1-UEYE
+proxy-camera:2.camera.flipped = 0 # 1=flipped image, 0=not flipped image
 
 #################
-proxy-camera:3.debug = 0
+proxy-camera:3.camera.debug = 0
 proxy-camera:3.useRecorder = 0 # 1 = record all captured data directly, 0 otherwise. 
 proxy-camera:3.recorder.output = file://recs/
 proxy-camera:3.camera.name = WebCam3
@@ -131,9 +133,10 @@ proxy-camera:3.camera.id = 2 # Select here the proper ID for OpenCV
 proxy-camera:3.camera.width = 640 #752-UEYE, 640-OpenCV 
 proxy-camera:3.camera.height = 480
 proxy-camera:3.camera.bpp = 3 #3- openCV, 1-UEYE
+proxy-camera:3.camera.flipped = 0 # 1=flipped image, 0=not flipped image
 
 #################
-proxy-camera:4.debug = 0
+proxy-camera:4.camera.debug = 0
 proxy-camera:4.useRecorder = 0 # 1 = record all captured data directly, 0 otherwise. 
 proxy-camera:4.recorder.output = file://recs/
 proxy-camera:4.camera.name = WebCam4
@@ -142,9 +145,10 @@ proxy-camera:4.camera.id = 3 # Select here the proper ID for OpenCV
 proxy-camera:4.camera.width = 640 #752-UEYE, 640-OpenCV 
 proxy-camera:4.camera.height = 480
 proxy-camera:4.camera.bpp = 3 #3- openCV, 1-UEYE
+proxy-camera:4.camera.flipped = 0 # 1=flipped image, 0=not flipped image
 
 #################
-proxy-camera:5.debug = 0
+proxy-camera:5.camera.debug = 0
 proxy-camera:5.useRecorder = 0 # 1 = record all captured data directly, 0 otherwise. 
 proxy-camera:5.recorder.output = file://recs/
 proxy-camera:5.camera.name = WebCam5
@@ -153,4 +157,5 @@ proxy-camera:5.camera.id = 4 # Select here the proper ID for OpenCV
 proxy-camera:5.camera.width = 640 #752-UEYE, 640-OpenCV 
 proxy-camera:5.camera.height = 480
 proxy-camera:5.camera.bpp = 3 #3- openCV, 1-UEYE
+proxy-camera:5.camera.flipped = 0 # 1=flipped image, 0=not flipped image
 
