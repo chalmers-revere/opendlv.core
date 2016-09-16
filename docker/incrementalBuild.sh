@@ -31,8 +31,13 @@ echo "[opendlv.core Docker builder] Incremental build."
 
 mkdir -p build.system && cd build.system
 PATH=/opt/od4/bin:$PATH cmake -D CXXTEST_INCLUDE_DIR=/opt/opendlv.core.sources/thirdparty/cxxtest -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core /opt/opendlv.core.sources/code/core/system
-
 make -j4 && make test && make install
+
+cd ..
+mkdir -p build.tools && cd build.tools
+PATH=/opt/od4/bin:$PATH cmake -D CXXTEST_INCLUDE_DIR=/opt/opendlv.core.sources/thirdparty/cxxtest -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core /opt/opendlv.core.sources/code/core/tools
+make -j4 && make test && make install
+
 EOF
 
 chmod 755 /opt/opendlv.core.build/build.sh
