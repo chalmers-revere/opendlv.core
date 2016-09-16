@@ -18,13 +18,17 @@
  */
 
 #include <fstream>
+#include <map>
+#include <memory>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include <opendavinci/odcore/serialization/Serializable.h>
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/reflection/Message.h>
 #include <opendavinci/odcore/reflection/MessagePrettyPrinterVisitor.h>
+#include <opendavinci/odcore/reflection/CSVFromVisitableVisitor.h>
 #include <odvdfh16truck/GeneratedHeaders_ODVDFH16Truck.h>
 #include <odvdfh16truck/GeneratedHeaders_ODVDFH16Truck_Helper.h>
 
@@ -59,6 +63,9 @@ namespace mappedcanextractor {
                 int32_t length = fin.tellg();
                 fin.seekg(0, fin.beg);
 
+                vector< shared_ptr<fstream> > listOfCSVFiles;
+                map< uint32_t, shared_ptr<CSVFromVisitableVisitor> > mapOfCSVConverters;
+
                 int32_t oldPercentage = -1;
                 while (fin.good()) {
                     Container c;
@@ -73,9 +80,26 @@ namespace mappedcanextractor {
                         bool successfullyMapped = false;
                         Message msg = GeneratedHeaders_ODVDFH16Truck_Helper::__map(c, successfullyMapped);
                         if (successfullyMapped) {
+                            if (mapOfCSVConverters.count(c.getDataType()) == 0) {
+                                // Create new CSV exporter.
+                                stringstream csvFilename;
+                                csvFilename << c.getDataType() << ".csv";
+                                const string s = csvFilename.str();
+                                shared_ptr<fstream> csvFile = shared_ptr<fstream>(new fstream(s.c_str(), ios_base::out));
+                                listOfCSVFiles.push_back(csvFile);
+
+                                const bool ADD_HEADER = true;
+                                const char DELIMITER = ',';
+                                shared_ptr<CSVFromVisitableVisitor> csv = shared_ptr<CSVFromVisitableVisitor>(new CSVFromVisitableVisitor(*csvFile, ADD_HEADER, DELIMITER));
+                                mapOfCSVConverters[c.getDataType()] = csv;
+                            }
+
                             MessagePrettyPrinterVisitor mppv;
                             msg.accept(mppv);
-                            mppv.getOutput(cout);
+//                            mppv.getOutput(cout);
+
+                            // Dump to CSV.
+                            msg.accept(*(mapOfCSVConverters[c.getDataType()]));
                         }
 
                         float percentage = (float)(currPos*100.0)/(float)length;
@@ -85,6 +109,10 @@ namespace mappedcanextractor {
                             oldPercentage = (int32_t)percentage;
                         }
                     }
+                }
+                for(auto it : listOfCSVFiles) {
+                    it->flush();
+                    it->close();
                 }
             }
             else {
