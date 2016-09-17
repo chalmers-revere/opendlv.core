@@ -75,6 +75,15 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 ###############################################################################
 ###############################################################################
 #
+# CONFIGURATION FOR HEALTH
+#
+health.script = ./checkHealth.sh
+health.sleep = 60 # Sleep between health checks in seconds
+
+
+###############################################################################
+###############################################################################
+#
 # CONFIGURATION FOR ODRECORDERH264
 #
 #odrecorderh264.output = file://recorder.rec # If this parameter is not present, odrecorderh264 will autogenerate a filename.
