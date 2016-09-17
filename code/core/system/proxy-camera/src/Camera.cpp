@@ -1,5 +1,5 @@
 /**
- * proxy-camera - Sample application to encapsulate HW/SW interfacing with embedded systems.
+ * proxy-camera - Interface to OpenCV-based cameras.
  * Copyright (C) 2012 - 2015 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -19,10 +19,8 @@
 
 #include <iostream>
 
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/highgui/highgui.hpp"
-
-#include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
+#include <opendavinci/odcore/base/Lock.h>
+#include <opendavinci/odcore/wrapper/SharedMemoryFactory.h>
 
 #include "Camera.h"
 
@@ -31,25 +29,26 @@ namespace core {
 namespace system {
 namespace proxy {
 
-Camera::Camera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp) :
-    m_sharedImage(),
-    m_sharedMemory(),
-    m_name(name),
-    m_id(id),
-    m_width(width),
-    m_height(height),
-    m_bpp(bpp),
-    m_size(0) {
+using namespace odcore::base;
 
-    m_sharedMemory = odcore::wrapper::SharedMemoryFactory::createSharedMemory(name, width * height * bpp);
+Camera::Camera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp)
+    : m_sharedImage()
+    , m_sharedMemory()
+    , m_name(name)
+    , m_id(id)
+    , m_width(width)
+    , m_height(height)
+    , m_bpp(bpp)
+    , m_size(0) {
+    m_size = width * height * bpp;
+
+    m_sharedMemory = odcore::wrapper::SharedMemoryFactory::createSharedMemory(name, m_size);
 
     m_sharedImage.setName(name);
+    m_sharedImage.setSize(m_size);
     m_sharedImage.setWidth(width);
     m_sharedImage.setHeight(height);
     m_sharedImage.setBytesPerPixel(bpp);
-
-    m_size = width * height * bpp;
-    m_sharedImage.setSize(m_size);
 }
 
 Camera::~Camera() {}
@@ -82,18 +81,15 @@ odcore::data::image::SharedImage Camera::capture() {
     if (isValid()) {
         if (captureFrame()) {
             if (m_sharedMemory.get() && m_sharedMemory->isValid()) {
-                m_sharedMemory->lock();
-                    copyImageTo((char*)m_sharedMemory->getSharedMemory(), m_size);
-                m_sharedMemory->unlock();
+                Lock l(m_sharedMemory);
+                copyImageTo((char *)m_sharedMemory->getSharedMemory(), m_size);
             }
         }
     }
 
     return m_sharedImage;
 }
-
 }
 }
 }
 } // opendlv::core::system::proxy
-

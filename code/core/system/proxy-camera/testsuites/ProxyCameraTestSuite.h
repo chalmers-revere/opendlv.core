@@ -1,5 +1,5 @@
 /**
- * proxy-fh16truck - Interface to cameras.
+ * proxy-camera - Interface to OpenCV-based cameras.
  * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -53,7 +53,7 @@ class ProxyCameraTest : public CxxTest::TestSuite {
    public:
     void setUp() {
             // Prepare the data that would be available from commandline.
-            string argv0("proxy-STM32F4");
+            string argv0("proxy-camera");
             string argv1("--cid=100");
             int32_t argc = 2;
             char **argv;

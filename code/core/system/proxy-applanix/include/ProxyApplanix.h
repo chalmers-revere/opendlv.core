@@ -43,11 +43,11 @@ class ProxyApplanix : public odcore::base::module::DataTriggeredConferenceClient
 
    public:
     /**
-             * Constructor.
-             *
-             * @param argc Number of command line arguments.
-             * @param argv Command line arguments.
-             */
+     * Constructor.
+     *
+     * @param argc Number of command line arguments.
+     * @param argv Command line arguments.
+     */
     ProxyApplanix(const int &argc, char **argv);
 
     virtual ~ProxyApplanix();

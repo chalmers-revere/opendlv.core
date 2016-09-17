@@ -1,5 +1,5 @@
 /**
- * proxy-camera - Sample application to encapsulate HW/SW interfacing with embedded systems.
+ * proxy-camera - Interface to OpenCV-based cameras.
  * Copyright (C) 2012 - 2015 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -20,7 +20,7 @@
 #ifndef OPENCVCAMERA_H_
 #define OPENCVCAMERA_H_
 
-#include "opencv2/highgui/highgui.hpp"
+#include <opencv2/highgui/highgui.hpp>
 
 #include "Camera.h"
 
@@ -29,60 +29,59 @@ namespace core {
 namespace system {
 namespace proxy {
 
-        using namespace std;
+using namespace std;
 
-        /**
-         * This class wraps an OpenCV camera and captures its data into a shared memory segment.
-         */
-        class OpenCVCamera : public Camera {
-            private:
-                /**
-                 * "Forbidden" copy constructor. Goal: The compiler should warn
-                 * already at compile time for unwanted bugs caused by any misuse
-                 * of the copy constructor.
-                 *
-                 * @param obj Reference to an object of this class.
-                 */
-                OpenCVCamera(const OpenCVCamera &/*obj*/);
+/**
+ * This class wraps an OpenCV camera and captures its data into a shared memory segment.
+ */
+class OpenCVCamera : public Camera {
+   private:
+    /**
+     * "Forbidden" copy constructor. Goal: The compiler should warn
+     * already at compile time for unwanted bugs caused by any misuse
+     * of the copy constructor.
+     *
+     * @param obj Reference to an object of this class.
+     */
+    OpenCVCamera(const OpenCVCamera & /*obj*/);
 
-                /**
-                 * "Forbidden" assignment operator. Goal: The compiler should warn
-                 * already at compile time for unwanted bugs caused by any misuse
-                 * of the assignment operator.
-                 *
-                 * @param obj Reference to an object of this class.
-                 * @return Reference to this instance.
-                 */
-                OpenCVCamera& operator=(const OpenCVCamera &/*obj*/);
+    /**
+     * "Forbidden" assignment operator. Goal: The compiler should warn
+     * already at compile time for unwanted bugs caused by any misuse
+     * of the assignment operator.
+     *
+     * @param obj Reference to an object of this class.
+     * @return Reference to this instance.
+     */
+    OpenCVCamera &operator=(const OpenCVCamera & /*obj*/);
 
-            public:
-                /**
-                 * Constructor.
-                 *
-                 * @param name Name of the shared memory segment.
-                 * @param id OpenCVCamera identifier.
-                 * @param width
-                 * @param height
-                 * @param bpp
-                 * @param debug
-                 */
+   public:
+    /**
+     * Constructor.
+     *
+     * @param name Name of the shared memory segment.
+     * @param id OpenCVCamera identifier.
+     * @param width
+     * @param height
+     * @param bpp
+     * @param debug
+     */
+    OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped);
+    virtual ~OpenCVCamera();
 
-                OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped);
-                virtual ~OpenCVCamera();
+   private:
+    virtual bool copyImageTo(char *dest, const uint32_t &size);
 
-            private:
-                virtual bool copyImageTo(char *dest, const uint32_t &size);
+    virtual bool isValid() const;
 
-                virtual bool isValid() const;
+    virtual bool captureFrame();
 
-                virtual bool captureFrame();
-
-            private:
-                CvCapture *m_capture;
-                IplImage *m_image;
-                bool m_debug; 
-                bool m_flipped;
-        };
+   private:
+    CvCapture *m_capture;
+    IplImage *m_image;
+    bool m_debug;
+    bool m_flipped;
+};
 }
 }
 }
