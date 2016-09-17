@@ -16,7 +16,7 @@ Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-
     
 ### Use proxy-camera with Docker Compose
 
-Go to the folder usecases/recording.1opencvcamera.scott2. This folder contains a configuration file, a docker-compose file docker-compose.yml, and an environment file .env. The environment file .env defines an environment variable CID which is referred to by the docker-compose file. CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111.  Run Docker Compose:
+Go to the folder usecases/recording.1opencvcamera.scott2. This folder contains a configuration file, a docker-compose file docker-compose.yml, and an environment file .env. The environment file .env defines an environment variable CID which is referred to by the docker-compose file. CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 201, thus in docker-compose.yml "${CID}" resolves to 201.  Run Docker Compose:
     
     $ docker-compose up --build
 
@@ -30,7 +30,7 @@ Then remove all stopped containers:
 
 After the recording, the recording files are stored at ~/recordings, including a .h264 file as the actual recording with lossless H264 compression. The recording file format is CID-xxx-odrecorderh264_yyy, where xxx is the cid number and yyy is the timestamp.
 
-Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes odsupercomponent, proxy-camera, and odrecorderh264 run with cid 123 instead of 111:
+Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes odsupercomponent, proxy-camera, and odrecorderh264 run with cid 123 instead of 201:
 
     $ CID=123 docker-compose up
     
