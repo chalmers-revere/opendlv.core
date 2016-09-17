@@ -30,6 +30,16 @@ global.buffer.numberOfMemorySegments = 20 # Number of memory segments.
 global.session.expectedModules = odrecorderh264,proxy-camera
 
 
+
+###############################################################################
+###############################################################################
+#
+# CONFIGURATION FOR ODCOCKPIT
+#
+odcockpit.plugins = configurationviewer,healthstatusviewer,livefeed,logmessage,sessionviewer,sharedimageviewer # List of modules to show in odcockpit; leave blank to show all.
+odcockpit.directoriesForSharedLibaries = /opt # List of directories to search for libodvd*.so files.
+
+
 ###############################################################################
 ###############################################################################
 #
