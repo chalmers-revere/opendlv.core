@@ -1,5 +1,5 @@
 /**
- * proxy-camera - Sample application to encapsulate HW/SW interfacing with embedded systems.
+ * proxy-camera - Interface to OpenCV-based cameras.
  * Copyright (C) 2012 - 2015 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -19,8 +19,8 @@
 
 #include <iostream>
 
-#include "opencv2/imgproc/imgproc_c.h"
-#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc/imgproc_c.h>
 
 #include "OpenCVCamera.h"
 
@@ -29,20 +29,19 @@ namespace core {
 namespace system {
 namespace proxy {
 
-OpenCVCamera::OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug,const bool &flipped) :
-    Camera(name, id, width, height, bpp),
-    m_capture(NULL),
-    m_image(NULL),
-    m_debug(debug),
-    m_flipped(flipped) {
+OpenCVCamera::OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped)
+    : Camera(name, id, width, height, bpp)
+    , m_capture(NULL)
+    , m_image(NULL)
+    , m_debug(debug)
+    , m_flipped(flipped) {
 
     m_capture = cvCaptureFromCAM(id);
     if (m_capture) {
         cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_WIDTH, width);
         cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_HEIGHT, height);
-    }
-    else {
-        cerr << "proxy-camera: Could not open camera '" << name << "' with ID: " << id << endl;
+    } else {
+        cerr << "[proxy-camera] Could not open camera '" << name << "' with ID: " << id << endl;
     }
 }
 
@@ -83,14 +82,14 @@ bool OpenCVCamera::captureFrame() {
 bool OpenCVCamera::copyImageTo(char *dest, const uint32_t &size) {
     bool retVal = false;
 
-    if ( (dest != NULL) && (size > 0) && (m_image != NULL) ) {
-        if(m_flipped){
+    if ((dest != NULL) && (size > 0) && (m_image != NULL)) {
+        if (m_flipped) {
             cvFlip(m_image, m_image, -1);
         }
         ::memcpy(dest, m_image->imageData, size);
 
-        if(m_debug){
-            cvShowImage("WindowShowImage", m_image);
+        if (m_debug) {
+            cvShowImage("[proxy-camera]", m_image);
             cvWaitKey(10);
         }
 
@@ -99,9 +98,7 @@ bool OpenCVCamera::copyImageTo(char *dest, const uint32_t &size) {
 
     return retVal;
 }
-
 }
 }
 }
 } // opendlv::core::system::proxy
-

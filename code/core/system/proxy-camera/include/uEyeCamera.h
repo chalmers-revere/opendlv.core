@@ -1,5 +1,5 @@
 /**
- * proxy-camera - Sample application to encapsulate HW/SW interfacing with embedded systems.
+ * proxy-camera - Interface to OpenCV-based cameras.
  * Copyright (C) 2012 - 2015 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@
 
 #ifdef HAVE_UEYE
 
-#include "opencv2/highgui/highgui.hpp"
+#include <opencv2/highgui/highgui.hpp>
 
 #include <ueye.h>
 
@@ -33,64 +33,64 @@ namespace core {
 namespace system {
 namespace proxy {
 
-        using namespace std;
+using namespace std;
 
-        /**
-         * This class wraps a uEye camera and captures its data into a shared memory segment.
-         */
-        class uEyeCamera : public Camera {
-            private:
-                /**
-                 * "Forbidden" copy constructor. Goal: The compiler should warn
-                 * already at compile time for unwanted bugs caused by any misuse
-                 * of the copy constructor.
-                 *
-                 * @param obj Reference to an object of this class.
-                 */
-                uEyeCamera(const uEyeCamera &/*obj*/);
+/**
+ * This class wraps a uEye camera and captures its data into a shared memory segment.
+ */
+class uEyeCamera : public Camera {
+   private:
+    /**
+     * "Forbidden" copy constructor. Goal: The compiler should warn
+     * already at compile time for unwanted bugs caused by any misuse
+     * of the copy constructor.
+     *
+     * @param obj Reference to an object of this class.
+     */
+    uEyeCamera(const uEyeCamera & /*obj*/);
 
-                /**
-                 * "Forbidden" assignment operator. Goal: The compiler should warn
-                 * already at compile time for unwanted bugs caused by any misuse
-                 * of the assignment operator.
-                 *
-                 * @param obj Reference to an object of this class.
-                 * @return Reference to this instance.
-                 */
-                uEyeCamera& operator=(const uEyeCamera &/*obj*/);
+    /**
+     * "Forbidden" assignment operator. Goal: The compiler should warn
+     * already at compile time for unwanted bugs caused by any misuse
+     * of the assignment operator.
+     *
+     * @param obj Reference to an object of this class.
+     * @return Reference to this instance.
+     */
+    uEyeCamera &operator=(const uEyeCamera & /*obj*/);
 
-            public:
-                /**
-                 * Constructor.
-                 *
-                 * @param name Name of the shared memory segment.
-                 * @param id uEyeCamera identifier.
-                 * @param width
-                 * @param height
-                 * @param bpp
-                 * @param debug
-                 */
-                uEyeCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped);
+   public:
+    /**
+     * Constructor.
+     *
+     * @param name Name of the shared memory segment.
+     * @param id uEyeCamera identifier.
+     * @param width
+     * @param height
+     * @param bpp
+     * @param debug
+     */
+    uEyeCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped);
 
-                virtual ~uEyeCamera();
+    virtual ~uEyeCamera();
 
-            private:
-                virtual bool copyImageTo(char *dest, const uint32_t &size);
+   private:
+    virtual bool copyImageTo(char *dest, const uint32_t &size);
 
-                virtual bool isValid() const;
+    virtual bool isValid() const;
 
-                virtual bool captureFrame();
+    virtual bool captureFrame();
 
-            private:
-                bool m_debug;
-                HIDS m_capture;
-                char *m_imageMemory;
-                void *m_ueyeImagePtr;
-                int m_pid;
-                IplImage *m_image;
-                bool m_debug; 
-                bool m_flipped;
-        };
+   private:
+    bool m_debug;
+    HIDS m_capture;
+    char *m_imageMemory;
+    void *m_ueyeImagePtr;
+    int m_pid;
+    IplImage *m_image;
+    bool m_debug;
+    bool m_flipped;
+};
 }
 }
 }
