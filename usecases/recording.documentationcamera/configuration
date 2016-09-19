@@ -33,6 +33,15 @@ global.session.expectedModules = odrecorderh264,proxy-camera
 ###############################################################################
 ###############################################################################
 #
+# CONFIGURATION FOR ODCOCKPIT
+#
+odcockpit.plugins = configurationviewer,healthstatusviewer,livefeed,logmessage,sessionviewer,sharedimageviewer # List of modules to show in odcockpit; leave blank to show all.
+odcockpit.directoriesForSharedLibaries = /opt # List of directories to search for libodvd*.so files.
+
+
+###############################################################################
+###############################################################################
+#
 # NEXT, THE CONFIGURATION FOR OpenDaVINCI TOOLS FOLLOWS. 
 #
 ###############################################################################
@@ -66,11 +75,20 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 ###############################################################################
 ###############################################################################
 #
-# CONFIGURATION FOR ODRECORDER
+# CONFIGURATION FOR HEALTH
+#
+health.script = ./checkHealth.sh
+health.sleep = 60 # Sleep between health checks in seconds
+
+
+###############################################################################
+###############################################################################
+#
+# CONFIGURATION FOR ODRECORDERH264
 #
 #odrecorderh264.output = file://recorder.rec # If this parameter is not present, odrecorderh264 will autogenerate a filename.
 odrecorderh264.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. start and stop recording)
-odrecorderh264.dumpSharedData = 1 # 0 = do not dump shared images and shared images, 1 = otherwise
+odrecorderh264.dumpSharedData = 0 # 0 = do not dump shared images and shared images, 1 = otherwise
 odrecorderh264.lossless = 1 # Set to 1 to enable h264 lossless encoding.
 odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes is connecting to the parent process via TCP using the base port plus its increasing ID.
 
@@ -80,12 +98,12 @@ odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes
 #
 # CONFIGURATION FOR PROXY
 #
-proxy-camera.camera.debug = 0
+proxy-camera.camera.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
 proxy-camera.camera.name = DocumentationCamera0
 proxy-camera.camera.type = OpenCV   # OpenCV or UEYE.
 proxy-camera.camera.id = 0          # Select here the proper ID for OpenCV.
 proxy-camera.camera.width = 640     # 752-UEYE, 640-OpenCV.
 proxy-camera.camera.height = 480
-proxy-camera.camera.bpp = 3         # 3- openCV, 1-UEYE.
-proxy-camera.camera.flipped = 1     # 1=flipped image, 0=not flipped image.
+proxy-camera.camera.bpp = 3         # 3 = openCV, 1 = UEYE (untested).
+proxy-camera.camera.flipped = 1     # 1 = flipped image, 0 = not flipped image.
 

@@ -17,7 +17,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(opendlv-core-system)
+project(opendlv-core-system-health)
 
 ###########################################################################
 # Set the search path for .cmake files.
@@ -47,6 +47,7 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
 
 ###########################################################################
 # Add subfolders with sources.
+add_subdirectory(health)
 add_subdirectory(proxy-applanix)
 add_subdirectory(proxy-camera)
 add_subdirectory(proxy-fh16)

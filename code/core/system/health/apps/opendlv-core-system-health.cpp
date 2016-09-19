@@ -1,5 +1,6 @@
-/*
- * Copyright (C) 2016 Chalmers REVERE
+/**
+ * health - Component to check the health of the runtime environment.
+ * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,14 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-// The following messages that are common to different vehicles.
-message opendlv.proxy.ActuationRequest [id = 160] {
-  float acceleration [id = 1];
-  float steering [id = 2];
-  bool isValid [id = 3];
-}
+#include "Health.h"
 
-// This message broadcasts the system's health as key/values.
-message opendlv.system.HealthStatus [id = 200] {
-    map<string,string> status [id = 1];
+int32_t main(int32_t argc, char **argv) {
+    opendlv::core::system::Health h(argc, argv);
+    return h.runModule();
 }

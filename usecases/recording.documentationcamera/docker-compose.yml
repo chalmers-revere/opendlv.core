@@ -22,35 +22,58 @@ services:
     odsupercomponent:
         build: .
         image: seresearch/opendavinci-ubuntu-16.04-complete:latest
+        network_mode: host
         volumes:
             - .:/opt/opendlv.core.configuration
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.core.configuration/configuration"
-        
+
+
+    # Micro-service for health.
+    # The host's /dev and /proc directories are mapped into the Docker container
+    # to check for expected properties like device nodes. The privileged flag
+    # allows the unrestricted access.
+    health:
+        build: .
+        depends_on:
+            - odsupercomponent
+        network_mode: host
+        restart: always
+        privileged: true
+        volumes:
+            - .:/opt/opendlv.core.configuration
+            - /dev:/from.host/dev
+            - /proc:/from.host/proc
+        working_dir: "/opt/opendlv.core.configuration"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-health --cid=${CID} --freq=1"
+
+
     # Micro-service for proxy-camera.
     proxy-camera:
         build: .
-        ipc: host
-        user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
 #        group_add:
 #            - video
+        depends_on:
+            - odsupercomponent
         devices:
             - "/dev/video0:/dev/video0"
-        links:
-            - odsupercomponent
+        user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
+        network_mode: host
+        ipc: host
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID} --freq=20"
-        
-        
+
+
     # Micro-service for odrecorderh264.
     odrecorderh264:
         build: .
         image: seresearch/opendavinci-ubuntu-16.04-complete:latest
-        volumes:
-            - ~/recordings:/opt/recordings
-        working_dir: "/opt/recordings"
-        ipc: host
-        user: root  # This parameter will be removed as soon as group_add parameter is available in docker-compose.
-        links:
+        depends_on:
             - odsupercomponent
             - proxy-camera
+        volumes:
+            - ~/recordings:/opt/recordings
+        user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
+        network_mode: host
+        ipc: host
+        working_dir: "/opt/recordings"
         command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
 
