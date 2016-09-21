@@ -1,0 +1,26 @@
+version: '2'
+# Please note that docker-compose does not prescribe a startup order
+
+services:
+    #odsupercomponent
+    odsupercomponent:
+        build: .
+        network_mode: "host"
+        volumes:
+        - .:/opt/opendlv.data
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
+        
+    #proxy-velodyne
+    velodyne:
+        build: .
+        network_mode: "host"
+        ipc: host
+        user: root
+        restart: always
+        depends_on:
+            - odsupercomponent
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne --cid=${CID} --freq=30"
+        
+
+        
+
