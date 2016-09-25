@@ -20,7 +20,7 @@ services:
         - /tmp/.X11-unix:/tmp/.X11-unix
         - .:/opt/opendlv.data
         ipc: host
-        user: root
+        user: odv
         depends_on:
             - odsupercomponent
         command: "/opt/od4/bin/odcockpit --cid=${CID}"
@@ -33,7 +33,7 @@ services:
         volumes:
         - .:/opt/opendlv.data
         ipc: host
-        user: root
+        user: odv
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne16 --cid=${CID} --freq=30"
