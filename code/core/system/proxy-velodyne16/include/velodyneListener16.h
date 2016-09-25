@@ -1,5 +1,5 @@
 /**
- * velodyneListener is used to decode Velodyne data realized with OpenDaVINCI
+ * velodyneListener16 is used to decode VLP-16 data realized with OpenDaVINCI
  * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef VELODYNELISTENER_H_
-#define VELODYNELISTENER_H_
+#ifndef VELODYNELISTENER16_H_
+#define VELODYNELISTENER16_H_
 
 #include <memory>
 
@@ -37,54 +37,51 @@ namespace proxy {
         /**
          * This class is a skeleton to send driving commands to Hesperia-light's vehicle driving dynamics simulation.
          */
-        class VelodyneListener : public odcore::io::conference::ContainerListener {
+        class VelodyneListener16 : public odcore::io::conference::ContainerListener {
             private:
                 /**
                  * "Forbidden" copy constructor. Goal: The compiler should warn
                  * already at compile time for unwanted bugs caused by any misuse
                  * of the copy constructor.
                  */
-                VelodyneListener(const VelodyneListener&);
+                VelodyneListener16(const VelodyneListener16&);
                 
                 /**
                  * "Forbidden" assignment operator. Goal: The compiler should warn
                  * already at compile time for unwanted bugs caused by any misuse
                  * of the assignment operator.
                  */
-                VelodyneListener& operator=(const VelodyneListener&);
+                VelodyneListener16& operator=(const VelodyneListener16&);
                 
         
             public:
-                VelodyneListener(std::shared_ptr<SharedMemory>,odcore::io::conference::ContainerConference&);
+                VelodyneListener16(std::shared_ptr<SharedMemory>,odcore::io::conference::ContainerConference&);
                 
-                virtual ~VelodyneListener();
+                virtual ~VelodyneListener16();
 
                 // This method is called by ControlledContainerConferenceFactory to send c to the registered ContainerListener from an app.
                 virtual void nextContainer(odcore::data::Container &c);
                 
             private:
-                const uint32_t MAX_POINT_SIZE=101000;  //The maximum number of points per frame is set based on the observation of the first 100 frames of the pcap file imeangowest.pcap. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
+                const uint32_t MAX_POINT_SIZE=30000;  // The maximum number of points per frame is set based on the observation of the first 100 frames of a sample pcap file. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
                 const uint32_t SIZE_PER_COMPONENT = sizeof(float);
                 const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4; // How many components do we have per vector?
                 const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT; // What is the total size of the shared memory?    
+                const int32_t LOAD_FRAME_NO=100;
                 const float PI=3.14159;
                 
-                //long packetNr;
                 long pointIndex;
-                int startID;
+                long startID;
                 long frameIndex;
                 float previousAzimuth;
-                bool upperBlock;
+                float deltaAzimuth;
                 float distance;
-                std::shared_ptr<SharedMemory> VelodyneSharedMemory;
-                float* segment;
+                std::shared_ptr<SharedMemory> VelodyneSharedMemory;//shared memory for the shared point cloud
+                float* segment;//temporary memory for transferring data of each frame to the shared memory
                 odcore::io::conference::ContainerConference& velodyneFrame;
-                odcore::data::SharedPointCloud spc;
-                float rotCorrection[64];
-                float vertCorrection[64];
-                float distCorrection[64];
-                float vertOffsetCorrection[64];
-                float horizOffsetCorrection[64];                
+                odcore::data::SharedPointCloud spc;//shared point cloud
+                bool stopReading;//a flag to determine when to stop reading a pcap file
+                float vertCorrection[16];  //Vertal angle of each sensor beam    
         };
 
 }
@@ -92,4 +89,4 @@ namespace proxy {
 }
 } // opendlv::core::system::proxy
 
-#endif /*VELODYNELISTENER_H_*/
+#endif /*VELODYNELISTENER16_H_*/

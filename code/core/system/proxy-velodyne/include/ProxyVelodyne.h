@@ -1,6 +1,6 @@
 /**
- * proxy-velodyne - Interface to Velodyne.
- * Copyright (C) 2016 Christian Berger
+ * proxy-velodyne - Interface to Velodyne 64
+ * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

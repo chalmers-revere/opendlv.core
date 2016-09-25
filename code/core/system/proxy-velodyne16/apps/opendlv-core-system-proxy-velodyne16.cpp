@@ -1,5 +1,5 @@
 /**
- * UDPReceiveBytes is used to buffer a pcap input stream
+ * proxy-velodyne16 - Interface to VLP-16.
  * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
@@ -17,37 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "UDPReceiveBytes.h"
-#include <string>
-#include "opendavinci/odcore/base/Lock.h"
+#include "ProxyVelodyne16.h"
 
-
-namespace opendlv {
-namespace core {
-namespace system {
-namespace proxy {
-
-    UDPReceiveBytes::UDPReceiveBytes(odcore::io::protocol::PCAPProtocol& pcap):
-    m_pcap(pcap),
-    buffer(""),
-    wtb(){}
-    
-    UDPReceiveBytes::~UDPReceiveBytes(){}
-
-    void UDPReceiveBytes::nextString(const std::string &s) {
-        odcore::base::Lock l(wtb);
-        buffer+=s;
-    }
-    
-    std::string UDPReceiveBytes::getBuffer(){
-        return buffer;
-    }
-    
-    void UDPReceiveBytes::consume(int i){
-        odcore::base::Lock l(wtb);
-        buffer.erase(0,i);
-    }
+int32_t main(int32_t argc, char **argv) {
+    opendlv::core::system::proxy::ProxyVelodyne16 velodyne16(argc, argv);
+    return velodyne16.runModule();
 }
-}
-}
-} // opendlv::core::system::proxy
