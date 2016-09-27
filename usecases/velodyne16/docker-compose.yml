@@ -8,6 +8,7 @@ services:
         network_mode: "host"
         volumes:
         - .:/opt/opendlv.data
+        user: odv
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
         
     #odcockpit
