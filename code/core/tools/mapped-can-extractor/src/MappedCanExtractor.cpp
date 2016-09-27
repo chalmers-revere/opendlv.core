@@ -80,10 +80,23 @@ namespace mappedcanextractor {
                         bool successfullyMapped = false;
                         Message msg = GeneratedHeaders_ODVDFH16Truck_Helper::__map(c, successfullyMapped);
                         if (successfullyMapped) {
+
+                            // Add timestamp
+                            uint64_t timestamp = c.getReceivedTimeStamp().toMicroseconds();
+
+                            shared_ptr<Field<uint64_t>> receivedTS_ptr = shared_ptr<Field<uint64_t>>(new Field<uint64_t>(timestamp));
+                            receivedTS_ptr->setFieldIdentifier(0);  
+                            receivedTS_ptr->setLongFieldName("Received_TimeStamp");
+                            receivedTS_ptr->setShortFieldName("Received_TimeStamp");
+                            receivedTS_ptr->setFieldDataType(odcore::data::reflection::AbstractField::UINT64_T);
+                            receivedTS_ptr->setSize(sizeof(uint64_t));
+                          
+                            msg.addField(receivedTS_ptr);
+
                             if (mapOfCSVConverters.count(c.getDataType()) == 0) {
                                 // Create new CSV exporter.
                                 stringstream csvFilename;
-                                csvFilename << c.getDataType() << ".csv";
+                                csvFilename << "signal_" << c.getDataType() << ".csv";
                                 const string s = csvFilename.str();
                                 shared_ptr<fstream> csvFile = shared_ptr<fstream>(new fstream(s.c_str(), ios_base::out));
                                 listOfCSVFiles.push_back(csvFile);
