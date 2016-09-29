@@ -52,18 +52,16 @@ namespace proxy {
 
         VelodyneListener16::VelodyneListener16(std::shared_ptr<SharedMemory> m,
         odcore::io::conference::ContainerConference& c):
-            //packetNr(0),
+            packetNr(0),
             pointIndex(0),
             startID(0),
-            frameIndex(0),
             previousAzimuth(0.0),
             deltaAzimuth(0.0),
             distance(0.0),
             VelodyneSharedMemory(m),
             segment(NULL),
             velodyneFrame(c),
-            spc(),
-            stopReading(false){
+            spc(){
                 //Initial setup of the shared point cloud
                 spc.setName(VelodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
                 //spc.setSize(pointIndex* NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT); // Size in raw bytes.
@@ -129,12 +127,12 @@ namespace proxy {
                     cout<<"Get the global header"<<endl;
             }
             if (c.getDataType() == odcore::data::pcap::PacketHeader::ID()) {
-                //packetNr++;
-                //cout<<"Received "<<packetNr<<" packets!"<<endl;
+                packetNr++;
+                cout<<"Received "<<packetNr<<" packets!"<<endl;
             }
             if (c.getDataType() == odcore::data::pcap::Packet::ID()) {
                 // Here, we have a valid packet.
-                //cout<<"Get a valid packet"<<endl;
+                cout<<"Get a valid packet"<<endl;
                 
                 //Decode VLP-16 data
                 pcap::Packet packet = c.getData<pcap::Packet>();
@@ -142,8 +140,6 @@ namespace proxy {
                 if(packetHeader.getIncl_len()==1248)
                 {
                     
-                    if(stopReading)
-                         return;
 
                     const string payload = packet.getPayload();
                     uint32_t position=42;//position specifies the starting position to read from the 1248 bytes, skip the 42-byte Ethernet header
@@ -177,14 +173,6 @@ namespace proxy {
                             Container imageFrame(spc);
                             velodyneFrame.send(imageFrame);
                             
-                            //Stop reading the file after a predefined number of frames
-                            if(frameIndex>=LOAD_FRAME_NO){
-                                stopReading=true;
-                                cout<<"Stop reading"<<endl;
-                            }
-                            else{
-                                frameIndex++;
-                            }
                             pointIndex=0;
                             startID=0;
                         }

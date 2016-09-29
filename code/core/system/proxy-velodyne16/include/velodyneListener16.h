@@ -67,12 +67,11 @@ namespace proxy {
                 const uint32_t SIZE_PER_COMPONENT = sizeof(float);
                 const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4; // How many components do we have per vector?
                 const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT; // What is the total size of the shared memory?    
-                const int32_t LOAD_FRAME_NO=100;
                 const float PI=3.14159;
                 
+                long packetNr;
                 long pointIndex;
                 long startID;
-                long frameIndex;
                 float previousAzimuth;
                 float deltaAzimuth;
                 float distance;
@@ -80,7 +79,6 @@ namespace proxy {
                 float* segment;//temporary memory for transferring data of each frame to the shared memory
                 odcore::io::conference::ContainerConference& velodyneFrame;
                 odcore::data::SharedPointCloud spc;//shared point cloud
-                bool stopReading;//a flag to determine when to stop reading a pcap file
                 float vertCorrection[16];  //Vertal angle of each sensor beam    
         };
 
