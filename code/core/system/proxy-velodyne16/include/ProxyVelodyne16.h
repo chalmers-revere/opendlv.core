@@ -29,7 +29,7 @@
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include <opendavinci/odcore/io/udp/UDPReceiver.h>
 #include <opendavinci/odcore/io/udp/UDPFactory.h>
-#include "UDPReceiveBytes.h"
+#include "UDPPacketReceiver.h"
 
 namespace opendlv {
 namespace core {
@@ -85,16 +85,16 @@ namespace proxy {
                 const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4; // How many components do we have per vector?
                 const uint32_t SIZE_PER_COMPONENT = sizeof(float);
                 const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT; // What is the total size of the shared memory? 
-                const string RECEIVER = "127.0.0.1";
-                //const string RECEIVER = "192.168.3.255";
+                //const string RECEIVER = "127.0.0.1";
+                const string RECEIVER = "0.0.0.0";
                 const uint32_t PORT = 2368;
                 uint32_t readBytes; //the number of bytes to be sent to the PCAP decoder each time
                 
-                odcore::io::protocol::PCAPProtocol m_pcap;
+                //odcore::io::protocol::PCAPProtocol m_pcap;
                 std::shared_ptr<SharedMemory> VelodyneSharedMemory;
                 VelodyneListener16 m_vListener;
                 std::shared_ptr<odcore::io::udp::UDPReceiver> udpreceiver;
-                opendlv::core::system::proxy::UDPReceiveBytes handler; 
+                opendlv::core::system::proxy::UDPPacketReceiver handler; 
                 odcore::base::Mutex rfb; 
         };
 }

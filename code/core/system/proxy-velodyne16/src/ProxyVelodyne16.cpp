@@ -46,41 +46,32 @@ namespace proxy {
         ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv) :
             TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16"),
             readBytes(0),
-            m_pcap(),
+            //m_pcap(),
             VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
             m_vListener(VelodyneSharedMemory,getConference()),
             udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
-            handler(m_pcap),
+            handler(),
             rfb(){}
 
         ProxyVelodyne16::~ProxyVelodyne16() {}
 
         void ProxyVelodyne16::setUp() {
             readBytes=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne16.readBytes");
-            m_pcap.setContainerListener(&m_vListener);
-            udpreceiver->setStringListener(&handler);
+            handler.setContainerListener(&m_vListener);
+            udpreceiver->setPacketListener(&handler);
             // Start receiving bytes.
-            cout<<"Read bytes:"<<readBytes<<endl;
             udpreceiver->start();
         }
 
         void ProxyVelodyne16::tearDown() {
             udpreceiver->stop();
-            udpreceiver->setStringListener(NULL);
+            udpreceiver->setPacketListener(NULL);
         }
 
         // This method will do the main data processing job.
         //While running this module, adjust the frequency to get desired frame rate of the replay. Note that too low frame rate may lead to buffer overflow!
         odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
             while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING){
-                while(handler.getBuffer().size()>readBytes){
-                    uint8_t temp=handler.getBuffer().size()/2000;
-                    for(uint8_t counter=0;counter<temp;counter++){
-                        odcore::base::Lock l(rfb);
-                        m_pcap.nextString(handler.getBuffer().substr(0,2000));
-                        handler.consume(2000);
-                    }
-                } 
             }
             return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
         }
