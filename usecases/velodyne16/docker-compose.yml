@@ -35,6 +35,7 @@ services:
         - .:/opt/opendlv.data
         ipc: host
         user: odv
+        working_dir: "/opt/opendlv.data"
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne16 --cid=${CID}"

@@ -18,7 +18,7 @@
 ###############################################################################
 # Parameters for this Makefile.
 BASE_IMAGE=seresearch/opendavinci-ubuntu-16.04-complete
-
+BASE_IMAGE_VERSION=v4.2.0
 ###############################################################################
 # Tools.
 DOCKER=$(shell which docker)

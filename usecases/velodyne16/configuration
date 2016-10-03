@@ -71,13 +71,3 @@ odsupercomponent.pulsetimeack.yield = 5000 # (in microseconds)
 # List of modules (without blanks) that will not get a pulse message from odsupercomponent.
 odsupercomponent.pulsetimeack.exclude = odcockpit
 
-###############################################################################
-###############################################################################
-#
-# CONFIGURATION FOR PROXY-VELODYNE
-
-#The following combination of parameters does not yield a smooth live visualization yet.
-#The frequency of PcapReplay is assumed to be 40, while the frequency of proxy-velodyne16 is 50
-ProxyVelodyne16.readBytes = 10000
-PcapReplay.bufferSize = 25000
-

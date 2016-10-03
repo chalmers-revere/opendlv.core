@@ -58,6 +58,8 @@ namespace proxy {
                 VelodyneListener16(std::shared_ptr<SharedMemory>,odcore::io::conference::ContainerConference&);
                 
                 virtual ~VelodyneListener16();
+                
+                void sendSPC(const float &oldAzimuth, const float &newAzimuth);
 
                 // This method is called by ControlledContainerConferenceFactory to send c to the registered ContainerListener from an app.
                 virtual void nextContainer(odcore::data::Container &c);
@@ -69,7 +71,7 @@ namespace proxy {
                 const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT; // What is the total size of the shared memory?    
                 const float PI=3.14159;
                 
-                long packetNr;
+                //long packetNr;
                 long pointIndex;
                 long startID;
                 float previousAzimuth;
@@ -79,7 +81,7 @@ namespace proxy {
                 float* segment;//temporary memory for transferring data of each frame to the shared memory
                 odcore::io::conference::ContainerConference& velodyneFrame;
                 odcore::data::SharedPointCloud spc;//shared point cloud
-                float vertCorrection[16];  //Vertal angle of each sensor beam    
+                float vertCorrection[16];  //Vertal angle of each sensor beam   
         };
 
 }
