@@ -132,7 +132,7 @@ namespace proxy {
             }*/
             if (c.getDataType() == odcore::data::pcap::Packet::ID()) {
                 // Here, we have a valid packet.
-                cout<<"Get a valid packet"<<endl;
+                //cout<<"Get a valid packet"<<endl;
                 
                 //Decode VLP-16 data
                 pcap::Packet packet = c.getData<pcap::Packet>();

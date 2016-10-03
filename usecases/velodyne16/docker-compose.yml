@@ -37,7 +37,7 @@ services:
         user: odv
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne16 --cid=${CID} --freq=30"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne16 --cid=${CID}"
         
 
         
