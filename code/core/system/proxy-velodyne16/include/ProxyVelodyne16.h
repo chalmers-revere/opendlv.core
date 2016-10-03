@@ -88,7 +88,7 @@ namespace proxy {
                 //const string RECEIVER = "127.0.0.1";
                 const string RECEIVER = "0.0.0.0";
                 const uint32_t PORT = 2368;
-                uint32_t readBytes; //the number of bytes to be sent to the PCAP decoder each time
+                //uint32_t readBytes; //the number of bytes to be sent to the PCAP decoder each time
                 
                 //odcore::io::protocol::PCAPProtocol m_pcap;
                 std::shared_ptr<SharedMemory> VelodyneSharedMemory;

@@ -27,7 +27,7 @@
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
 #include "automotivedata/GeneratedHeaders_AutomotiveData.h"
 #include "opendavinci/odcore/base/Lock.h"
-#include "opendavinci/odcore/base/KeyValueConfiguration.h"
+//#include "opendavinci/odcore/base/KeyValueConfiguration.h"
 #include "ProxyVelodyne16.h"
 
 
@@ -45,7 +45,7 @@ namespace proxy {
 
         ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv) :
             TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16"),
-            readBytes(0),
+            //readBytes(0),
             //m_pcap(),
             VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
             m_vListener(VelodyneSharedMemory,getConference()),
@@ -56,7 +56,7 @@ namespace proxy {
         ProxyVelodyne16::~ProxyVelodyne16() {}
 
         void ProxyVelodyne16::setUp() {
-            readBytes=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne16.readBytes");
+            //readBytes=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne16.readBytes");
             handler.setContainerListener(&m_vListener);
             udpreceiver->setPacketListener(&handler);
             // Start receiving bytes.
