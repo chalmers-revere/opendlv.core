@@ -1,5 +1,5 @@
 /**
- * proxy-velodyne - Interface to Velodyne.
+ * proxy-velodyne64 - Interface to Velodyne HDL-64E.
  * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@
 #include "automotivedata/GeneratedHeaders_AutomotiveData.h"
 #include "opendavinci/odcore/base/Lock.h"
 
-#include "ProxyVelodyne.h"
+#include "ProxyVelodyne64.h"
 
 namespace opendlv {
 namespace core {
@@ -43,7 +43,7 @@ using namespace odcore::wrapper;
 using namespace odcore::base::module;
 using namespace odcore::io::udp;
 
-ProxyVelodyne::ProxyVelodyne(const int &argc, char **argv)
+ProxyVelodyne64::ProxyVelodyne64(const int &argc, char **argv)
     : TimeTriggeredConferenceClientModule(argc, argv, "proxy-velodyne"),
         m_pcap(),
         VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
@@ -52,23 +52,23 @@ ProxyVelodyne::ProxyVelodyne(const int &argc, char **argv)
         handler(m_pcap),
         rfb(){}
 
-ProxyVelodyne::~ProxyVelodyne() {}
+ProxyVelodyne64::~ProxyVelodyne64() {}
 
-void ProxyVelodyne::setUp() {
+void ProxyVelodyne64::setUp() {
     m_pcap.setContainerListener(&m_vListener);
     udpreceiver->setStringListener(&handler);
     // Start receiving bytes.
     udpreceiver->start();
 }
 
-void ProxyVelodyne::tearDown() {
+void ProxyVelodyne64::tearDown() {
     udpreceiver->stop();
     udpreceiver->setStringListener(NULL);
 }
 
 // This method will do the main data processing job.
 //While running this module, adjust the frequency to get desired frame rate of the replay. For instance, for an input date rate 3*10⁶Bps, 30Hz gives a good frame rate. Note that too low frame rate may lead to buffer overflow!
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne::body() {
+odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne64::body() {
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
         while(handler.getBuffer().size()>CONSUME){
             odcore::base::Lock l(rfb);

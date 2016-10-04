@@ -1,5 +1,5 @@
 /**
- * proxy-velodyne - Interface to Velodyne 64
+ * proxy-velodyne64 - Interface to Velodyne HDL-64E.
  * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
@@ -17,15 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_PROXYVELODYNE_H
-#define PROXY_PROXYVELODYNE_H
+#ifndef PROXY_PROXYVELODYNE64_H
+#define PROXY_PROXYVELODYNE64_H
 
 #include <memory>
 
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
 #include "opendavinci/odcore/io/protocol/PCAPProtocol.h"
 #include "opendavinci/odcore/base/Mutex.h"
-#include "velodyneListener.h"
+#include "velodyneListener64.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include <opendavinci/odcore/io/udp/UDPReceiver.h>
 #include <opendavinci/odcore/io/udp/UDPFactory.h>
@@ -43,10 +43,10 @@ using namespace odcore::base::module;
 /**
  * Interface to cameras.
  */
-class ProxyVelodyne : public odcore::base::module::TimeTriggeredConferenceClientModule {
+class ProxyVelodyne64 : public odcore::base::module::TimeTriggeredConferenceClientModule {
    private:
-    ProxyVelodyne(const ProxyVelodyne & /*obj*/) = delete;
-    ProxyVelodyne &operator=(const ProxyVelodyne & /*obj*/) = delete;
+    ProxyVelodyne64(const ProxyVelodyne64 & /*obj*/) = delete;
+    ProxyVelodyne64 &operator=(const ProxyVelodyne64 & /*obj*/) = delete;
 
    public:
     /**
@@ -55,9 +55,9 @@ class ProxyVelodyne : public odcore::base::module::TimeTriggeredConferenceClient
      * @param argc Number of command line arguments.
      * @param argv Command line arguments.
      */
-    ProxyVelodyne(const int &argc, char **argv);
+    ProxyVelodyne64(const int &argc, char **argv);
 
-    virtual ~ProxyVelodyne();
+    virtual ~ProxyVelodyne64();
 
    private:
     void setUp();
@@ -75,7 +75,7 @@ class ProxyVelodyne : public odcore::base::module::TimeTriggeredConferenceClient
     
     odcore::io::protocol::PCAPProtocol m_pcap;
     std::shared_ptr<SharedMemory> VelodyneSharedMemory;
-    VelodyneListener m_vListener;
+    VelodyneListener64 m_vListener;
     std::shared_ptr<odcore::io::udp::UDPReceiver> udpreceiver;
     opendlv::core::system::proxy::UDPReceiveBytes handler; 
     odcore::base::Mutex rfb;
@@ -85,4 +85,4 @@ class ProxyVelodyne : public odcore::base::module::TimeTriggeredConferenceClient
 }
 } // opendlv::core::system::proxy
 
-#endif /*PROXY_PROXYVELODYNE_H*/
+#endif /*PROXY_PROXYVELODYNE64_H*/

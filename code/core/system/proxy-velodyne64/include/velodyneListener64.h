@@ -1,5 +1,5 @@
 /**
- * velodyneListener is used to decode Velodyne data realized with OpenDaVINCI
+ * velodyneListener64 is used to decode Velodyne HDL-64E data realized with OpenDaVINCI
  * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef VELODYNELISTENER_H_
-#define VELODYNELISTENER_H_
+#ifndef VELODYNELISTENER64_H_
+#define VELODYNELISTENER64_H_
 
 #include <memory>
 
@@ -37,27 +37,27 @@ namespace proxy {
         /**
          * This class is a skeleton to send driving commands to Hesperia-light's vehicle driving dynamics simulation.
          */
-        class VelodyneListener : public odcore::io::conference::ContainerListener {
+        class VelodyneListener64 : public odcore::io::conference::ContainerListener {
             private:
                 /**
                  * "Forbidden" copy constructor. Goal: The compiler should warn
                  * already at compile time for unwanted bugs caused by any misuse
                  * of the copy constructor.
                  */
-                VelodyneListener(const VelodyneListener&);
+                VelodyneListener64(const VelodyneListener64&);
                 
                 /**
                  * "Forbidden" assignment operator. Goal: The compiler should warn
                  * already at compile time for unwanted bugs caused by any misuse
                  * of the assignment operator.
                  */
-                VelodyneListener& operator=(const VelodyneListener&);
+                VelodyneListener64& operator=(const VelodyneListener64&);
                 
         
             public:
-                VelodyneListener(std::shared_ptr<SharedMemory>,odcore::io::conference::ContainerConference&);
+                VelodyneListener64(std::shared_ptr<SharedMemory>,odcore::io::conference::ContainerConference&);
                 
-                virtual ~VelodyneListener();
+                virtual ~VelodyneListener64();
 
                 // This method is called by ControlledContainerConferenceFactory to send c to the registered ContainerListener from an app.
                 virtual void nextContainer(odcore::data::Container &c);
@@ -92,4 +92,4 @@ namespace proxy {
 }
 } // opendlv::core::system::proxy
 
-#endif /*VELODYNELISTENER_H_*/
+#endif /*VELODYNELISTENER64_H_*/

@@ -17,7 +17,7 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (opendlv-core-system-proxy-velodyne)
+PROJECT (opendlv-core-system-proxy-velodyne64)
 
 ###########################################################################
 # Set the search path for .cmake files.

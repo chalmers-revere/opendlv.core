@@ -1,5 +1,5 @@
 /**
- * velodyneListener is used to decode Velodyne data realized with OpenDaVINCI
+ * velodyneListener64 is used to decode Velodyne HDL-64E data realized with OpenDaVINCI
  * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
@@ -36,7 +36,7 @@
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
 #include "automotivedata/generated/cartesian/Constants.h"
 
-#include "velodyneListener.h"
+#include "velodyneListener64.h"
 
 
 #define toRadian(x) ((x)*PI/180.0f)
@@ -51,7 +51,7 @@ namespace proxy {
         using namespace odcore::data;
         using namespace odcore::wrapper;
 
-        VelodyneListener::VelodyneListener(std::shared_ptr<SharedMemory> m,
+        VelodyneListener64::VelodyneListener64(std::shared_ptr<SharedMemory> m,
         odcore::io::conference::ContainerConference& c):
             //packetNr(0),
             pointIndex(0),
@@ -162,9 +162,9 @@ namespace proxy {
             }
             
 
-        VelodyneListener::~VelodyneListener() {}
+        VelodyneListener64::~VelodyneListener64() {}
         
-        void VelodyneListener::nextContainer(Container &c) {
+        void VelodyneListener64::nextContainer(Container &c) {
             if (c.getDataType() == odcore::data::pcap::GlobalHeader::ID()) {
                     cout<<"Get the global header"<<endl;
             }
