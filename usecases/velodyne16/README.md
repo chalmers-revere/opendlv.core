@@ -1,4 +1,4 @@
-This folder provides the instructions for testing proxy-velodyne16, a program which decodes a live stream from a VLP-16 lidar. A docker-compose file is provided to start all micro-services to decode VLP-16 packets and visualize them as 3D point cloud. It includes three services: odsupercomponent, odcockpit, and opendlv-core-system-proxy-velodyne16 (or proxy-velodyne16 for short). odsupercomponent is used for software component lifecycle management in OpenDaVINCI. odcockpit is a visualization tool of OpenDaVINCI. proxy-velodyne16 listens to VLP-16 packets and decodes them in real time. This tutorial assumes that git, Docker, and Docker Compose are installed. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/
+This folder provides the instructions for using proxy-velodyne16, a program which decodes a live stream from a VLP-16 lidar. A docker-compose file is provided to start all micro-services to decode VLP-16 packets and visualize them as 3D point cloud. It includes three services: odsupercomponent, odcockpit, and opendlv-core-system-proxy-velodyne16 (or proxy-velodyne16 for short). odsupercomponent is used for software component lifecycle management in OpenDaVINCI. odcockpit is a visualization tool of OpenDaVINCI. proxy-velodyne16 listens to VLP-16 packets and decodes them in real time. This tutorial assumes that git, Docker, and Docker Compose are installed. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/
 
 ### Pull the OpenDaVINCI Docker base image
 
@@ -25,11 +25,11 @@ The proxy-velodyne16 binary opendlv-core-system-proxy-velodyne16 will be found a
 
 ### Network setup
 
-In order to receive packets from VLP-16, the IP address has to be manually set and the firewall must be disabled. In Linux, the firewall can be disabled by:
+In order to receive packets from VLP-16, the IP address has to be manually set and the firewall must be disabled. In Ubuntu where proxy-velodyne16 has been tested, the firewall can be disabled by:
 
     $ sudo ufw disable
 
-The IP address should be set as 192.168.1.xx, where xx is any number between 0 and 255, except 0, 255, and 201 (201 is reserved for VLP-16). The mask should be set as 255.255.255.0. Note that if proxy-velodyne16 runs in a virtual machine, the network adapter of the virtual machine has to be bridged. For instance, if proxy-velodyne16 runs on Ubuntu via VirtualBox while the VLP-16 is connected to the port en5: Thunderbolt Ethernet of the host machine, then both "Bridged Adapter" and "en5: Thunderbolt Ethernet" should be selected for the network configuration of VirtualBox.
+The IP address should be set as 192.168.1.xx, where xx is any integer from 1 to 254, except 201 which is reserved for VLP-16. The mask should be set as 255.255.255.0. Note that if proxy-velodyne16 runs in a virtual machine, the network adapter of the virtual machine has to be bridged. For instance, if proxy-velodyne16 runs on Ubuntu via VirtualBox while the VLP-16 is connected to the port "en5: Thunderbolt Ethernet" of the host machine, then both "Bridged Adapter" and "en5: Thunderbolt Ethernet" should be selected for the network configuration of VirtualBox.
 
 Note that this network setup will disable the access to the Internet. Since proxy-velodyne16 is based on OpenDaVINCI which requires UDP multicast to execute different software modules, the local loopback device **lo** needs to be configured to allow UDP multicast sessions:
 
