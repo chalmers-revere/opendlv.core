@@ -226,26 +226,29 @@ namespace proxy {
                             secondByte=(uint8_t)(payload.at(position+1));
                             dataValue=ntohs(firstByte*256+secondByte);
                             distance=static_cast<float>(dataValue*0.2f/100.0f)+distCorrection[sensorID]/100.0f;
-                            static float xyDistance,xData,yData,zData,intensity;
-                            xyDistance=distance*cos(toRadian(vertCorrection[sensorID]));
-                            xData=xyDistance*sin(toRadian(azimuth-rotCorrection[sensorID]))
-                                -horizOffsetCorrection[sensorID]/100.0f*cos(toRadian(azimuth-rotCorrection[sensorID]));
-                            yData=xyDistance*cos(toRadian(azimuth-rotCorrection[sensorID]))
-                                +horizOffsetCorrection[sensorID]/100.0f*sin(toRadian(azimuth-rotCorrection[sensorID]));
-                            zData=distance*sin(toRadian(vertCorrection[sensorID]))+vertOffsetCorrection[sensorID]/100.0f;
-                            //Decode intensity: 1 byte
-                            uint8_t intensityInt=(uint8_t)(payload.at(position+2));
-                            intensity=(float)intensityInt;
-                          
-                            //Store coordinate information of each point to the malloc memory
-                            segment[startID]=xData;
-                            segment[startID+1]=yData;
-                            segment[startID+2]=zData;
-                            segment[startID+3]=intensity;
-                            
-                            startID+=NUMBER_OF_COMPONENTS_PER_POINT;
+                            if(distance>1.0f){
+                                static float xyDistance,xData,yData,zData,intensity;
+                                xyDistance=distance*cos(toRadian(vertCorrection[sensorID]));
+                                xData=xyDistance*sin(toRadian(azimuth-rotCorrection[sensorID]))
+                                    -horizOffsetCorrection[sensorID]/100.0f*cos(toRadian(azimuth-rotCorrection[sensorID]));
+                                yData=xyDistance*cos(toRadian(azimuth-rotCorrection[sensorID]))
+                                    +horizOffsetCorrection[sensorID]/100.0f*sin(toRadian(azimuth-rotCorrection[sensorID]));
+                                zData=distance*sin(toRadian(vertCorrection[sensorID]))+vertOffsetCorrection[sensorID]/100.0f;
+                                //Decode intensity: 1 byte
+                                uint8_t intensityInt=(uint8_t)(payload.at(position+2));
+                                intensity=(float)intensityInt;
+                              
+                                //Store coordinate information of each point to the malloc memory
+                                segment[startID]=xData;
+                                segment[startID+1]=yData;
+                                segment[startID+2]=zData;
+                                segment[startID+3]=intensity;
+                                
+                                pointIndex++;
+                                startID+=NUMBER_OF_COMPONENTS_PER_POINT;
+                            }
                             position+=3;
-                            pointIndex++;
+                            
                             if(pointIndex>=MAX_POINT_SIZE){
                                 position+=3*(31-counter);//Discard the points of the current frame when the preallocated shared memory is full; move the position to be read in the 1206 bytes
                                 break;
