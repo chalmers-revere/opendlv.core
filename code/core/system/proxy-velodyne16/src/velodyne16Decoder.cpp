@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
  
- #include <cmath>
+#include <cmath>
 #include <cstring>
 #include <string>
 #include <iostream>
@@ -30,9 +30,6 @@
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/base/Lock.h"
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
-#include "opendavinci/generated/odcore/data/pcap/GlobalHeader.h"
-#include "opendavinci/generated/odcore/data/pcap/PacketHeader.h"
-#include "opendavinci/generated/odcore/data/pcap/Packet.h"
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
@@ -47,7 +44,6 @@ namespace system {
 namespace proxy {
     using namespace std;
     using namespace odcore::base;
-    using namespace odcore::io::conference;
     using namespace odcore::data;
     using namespace odcore::wrapper;
         
@@ -224,8 +220,8 @@ namespace proxy {
                             segment[startID+2]=zData;
                             segment[startID+3]=intensity;                             
                         
-                        pointIndex++;
-                        startID+=NUMBER_OF_COMPONENTS_PER_POINT;
+                            pointIndex++;
+                            startID+=NUMBER_OF_COMPONENTS_PER_POINT;
                         }
                         position+=3;
                         

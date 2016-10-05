@@ -22,11 +22,8 @@
 
 #include <memory>
 
-#include "opendavinci/odcore/base/Mutex.h"
 #include <opendavinci/odcore/io/PacketListener.h>
 #include "opendavinci/odcore/data/Container.h"
-#include "opendavinci/odcore/io/conference/ContainerListener.h"
-#include "opendavinci/odcore/io/conference/ContainerObserver.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
 

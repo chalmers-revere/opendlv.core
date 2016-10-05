@@ -17,7 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <string>
 #include <iostream>
 #include <fstream>
 #include <memory>
@@ -25,8 +24,6 @@
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
-#include "automotivedata/GeneratedHeaders_AutomotiveData.h"
-#include "opendavinci/odcore/base/Lock.h"
 #include "ProxyVelodyne16.h"
 
 
@@ -35,39 +32,34 @@ namespace core {
 namespace system {
 namespace proxy {
 
-        using namespace std;
-        using namespace odcore::base;
-        using namespace odcore::data;
-        using namespace odcore::wrapper;
-        using namespace odcore::base::module;
-        using namespace odcore::io::udp;
+    using namespace odcore::wrapper;
+    using namespace odcore::io::udp;
 
-        ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv) :
-            TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16"),
-            VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
-            udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
-            v16d(VelodyneSharedMemory,getConference()),
-            rfb(){}
+    ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv) :
+        TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16"),
+        VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
+        udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
+        v16d(VelodyneSharedMemory,getConference()){}
 
-        ProxyVelodyne16::~ProxyVelodyne16() {}
+    ProxyVelodyne16::~ProxyVelodyne16() {}
 
-        void ProxyVelodyne16::setUp() {
-            udpreceiver->setPacketListener(&v16d);
-            // Start receiving bytes.
-            udpreceiver->start();
+    void ProxyVelodyne16::setUp() {
+        udpreceiver->setPacketListener(&v16d);
+        // Start receiving bytes.
+        udpreceiver->start();
+    }
+
+    void ProxyVelodyne16::tearDown() {
+        udpreceiver->stop();
+        udpreceiver->setPacketListener(NULL);
+    }
+
+    // This method will do the main data processing job.
+    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
+        while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING){
         }
-
-        void ProxyVelodyne16::tearDown() {
-            udpreceiver->stop();
-            udpreceiver->setPacketListener(NULL);
-        }
-
-        // This method will do the main data processing job.
-        odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
-            while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING){
-            }
-            return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-        }
+        return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+    }
 }
 }
 }
