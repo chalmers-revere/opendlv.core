@@ -17,8 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <stdint.h>
-
 #include <iostream>
 #include <fstream>
 #include <memory>
@@ -26,8 +24,6 @@
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
-#include "automotivedata/GeneratedHeaders_AutomotiveData.h"
-#include "opendavinci/odcore/base/Lock.h"
 
 #include "ProxyVelodyne64.h"
 
@@ -36,48 +32,34 @@ namespace core {
 namespace system {
 namespace proxy {
 
-using namespace std;
-using namespace odcore::base;
-using namespace odcore::data;
-using namespace odcore::wrapper;
-using namespace odcore::base::module;
-using namespace odcore::io::udp;
+    using namespace odcore::wrapper;
+    using namespace odcore::io::udp;
 
-ProxyVelodyne64::ProxyVelodyne64(const int &argc, char **argv)
-    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-velodyne"),
-        m_pcap(),
-        VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
-        m_vListener(VelodyneSharedMemory,getConference()),
-        udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
-        handler(m_pcap),
-        rfb(){}
+    ProxyVelodyne64::ProxyVelodyne64(const int &argc, char **argv)
+        : TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne64"),
+            VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
+            udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
+            v64d(VelodyneSharedMemory,getConference()){}
 
-ProxyVelodyne64::~ProxyVelodyne64() {}
+    ProxyVelodyne64::~ProxyVelodyne64() {}
 
-void ProxyVelodyne64::setUp() {
-    m_pcap.setContainerListener(&m_vListener);
-    udpreceiver->setStringListener(&handler);
-    // Start receiving bytes.
-    udpreceiver->start();
-}
-
-void ProxyVelodyne64::tearDown() {
-    udpreceiver->stop();
-    udpreceiver->setStringListener(NULL);
-}
-
-// This method will do the main data processing job.
-//While running this module, adjust the frequency to get desired frame rate of the replay. For instance, for an input date rate 3*10⁶Bps, 30Hz gives a good frame rate. Note that too low frame rate may lead to buffer overflow!
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne64::body() {
-    while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-        while(handler.getBuffer().size()>CONSUME){
-            odcore::base::Lock l(rfb);
-            m_pcap.nextString(handler.getBuffer().substr(0,CONSUME));
-            handler.consume(CONSUME);
-        } 
+    void ProxyVelodyne64::setUp() {
+        udpreceiver->setPacketListener(&v64d);
+        // Start receiving bytes.
+        udpreceiver->start();
     }
-    return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-}
+
+    void ProxyVelodyne64::tearDown() {
+        udpreceiver->stop();
+        udpreceiver->setStringListener(NULL);
+    }
+
+    // This method will do the main data processing job.
+    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne64::body() {
+        while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+        }
+        return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+    }
 }
 }
 }

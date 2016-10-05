@@ -1,5 +1,5 @@
 /**
- * velodyneListener64 is used to decode Velodyne HDL-64E data realized with OpenDaVINCI
+ * velodyne64Decoder is used to decode Velodyne HDL-64E data realized with OpenDaVINCI
  * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
@@ -17,13 +17,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef VELODYNELISTENER64_H_
-#define VELODYNELISTENER64_H_
+#ifndef VELODYNE64DECODER_H_
+#define VELODYNE64DECODER_H_
 
 #include <memory>
 
-#include "opendavinci/odcore/io/conference/ContainerListener.h"
-#include "opendavinci/odcore/io/conference/ContainerObserver.h"
+#include <opendavinci/odcore/io/PacketListener.h>
+#include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
 
@@ -37,42 +37,41 @@ namespace proxy {
         /**
          * This class is a skeleton to send driving commands to Hesperia-light's vehicle driving dynamics simulation.
          */
-        class VelodyneListener64 : public odcore::io::conference::ContainerListener {
+        class velodyne64Decoder : public odcore::io::PacketListener {
             private:
                 /**
                  * "Forbidden" copy constructor. Goal: The compiler should warn
                  * already at compile time for unwanted bugs caused by any misuse
                  * of the copy constructor.
                  */
-                VelodyneListener64(const VelodyneListener64&);
+                velodyne64Decoder(const velodyne64Decoder&);
                 
                 /**
                  * "Forbidden" assignment operator. Goal: The compiler should warn
                  * already at compile time for unwanted bugs caused by any misuse
                  * of the assignment operator.
                  */
-                VelodyneListener64& operator=(const VelodyneListener64&);
+                velodyne64Decoder& operator=(const velodyne64Decoder&);
                 
         
             public:
-                VelodyneListener64(std::shared_ptr<SharedMemory>,odcore::io::conference::ContainerConference&);
+                velodyne64Decoder(std::shared_ptr<SharedMemory>,odcore::io::conference::ContainerConference&);
                 
-                virtual ~VelodyneListener64();
+                virtual ~velodyne64Decoder();
 
-                // This method is called by ControlledContainerConferenceFactory to send c to the registered ContainerListener from an app.
-                virtual void nextContainer(odcore::data::Container &c);
+                void sendSPC(const float &oldAzimuth, const float &newAzimuth);
+
+                virtual void nextPacket(const odcore::io::Packet &p);
                 
             private:
-                const uint32_t MAX_POINT_SIZE=101000;  //The maximum number of points per frame is set based on the observation of the first 100 frames of the pcap file imeangowest.pcap. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
+                const uint32_t MAX_POINT_SIZE=101000;  //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed. speed.
                 const uint32_t SIZE_PER_COMPONENT = sizeof(float);
                 const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4; // How many components do we have per vector?
                 const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT; // What is the total size of the shared memory?    
                 const float PI=3.14159;
                 
-                //long packetNr;
                 long pointIndex;
                 int startID;
-                long frameIndex;
                 float previousAzimuth;
                 bool upperBlock;
                 float distance;
@@ -92,4 +91,4 @@ namespace proxy {
 }
 } // opendlv::core::system::proxy
 
-#endif /*VELODYNELISTENER64_H_*/
+#endif /*VELODYNE64DECODER_H_*/
