@@ -1,96 +1,67 @@
-This folder provides the instructions for testing proxy-velodyne, a program which decodes a live stream from a 64-layer Velodyne lidar (HDL-64E). This tutorial assumes that git, Docker, and Docker Compose are installed. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/
+This folder provides the instructions for using proxy-velodyne64, a program which decodes a live stream from a HDL-64E lidar. A docker-compose file is provided to start all micro-services to decode HDL-64E packets and visualize them as 3D point cloud. It includes three services: odsupercomponent, odcockpit, and opendlv-core-system-proxy-velodyne64 (or proxy-velodyne64 for short). odsupercomponent is used for software component lifecycle management in OpenDaVINCI. odcockpit is a visualization tool of OpenDaVINCI. proxy-velodyne64 listens to HDL-64E packets and decodes them in real time. This tutorial assumes that git, Docker, and Docker Compose are installed. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/
 
-### Prepare the OpenDaVINCI test environment
+### Pull the OpenDaVINCI Docker base image
 
-The test of proxy-velodyne requires a tool that simulates live Velodyne data and a tool for visualization. Both tools are provided in veloviz branch of OpenDaVINCI(http://www.opendavinci.org), an open source development architecture for virtual, networked, and cyber-physical system infrastructures.
+Run the following to obtain the latest OpenDaVINCI Docker base image:
 
-Clone the OpenDaVINCI source tree and get the latest update:
+    $ docker pull seresearch/opendavinci-ubuntu-64.04:latest
 
-    $ git clone https://github.com/se-research/OpenDaVINCI
-    
-    $ git pull
+### Prepare proxy-velodyne64
 
-Switch to the veloviz branch and get the latest update:
-
-    $ git checkout veloviz
-    
-    $ git pull
-    
-Merge the master branch into veloviz:
-
-    $ git merge master
-    
-Manually resolve the conflicts after the merge. Then build OpenDaVINCI by following the tutorial at: http://opendavinci.readthedocs.io/en/latest/installation.html. Here we assume that OpenDaVINCI is installed at /opt/od3.
-
-After OpenDaVINCI is successfully built and installed, copy Car.objx and Track.scnx in this folder and paste them into /opt/od3/bin. These two files are used by the visualizatioan tool odcockpit at /opt/od3/bin.
-
-Put the configuration file in this folder at ~/Downloads/proxyVelodyneTest. This configuration file will be used by odsupercomponent of OpenDaVINCI for software component lifecycle management.
-
-The veloviz branch of OpenDaVINCI provides a tool PcapReplay which reads a .pcap Velodyne recording file and sends out the decoded Velodyne data to simulate live Velodyne stream. By default, PcapReplay is not automatically installed at /opt/od3/bin. Therefore, we need to manually build PcapReplay. Go to the OpenDaVINCI source folder and change the current directory to automotive/velodyne/PcapReplay. Open and edit PcapReplay.cpp in the src folder by replacing "../../velodyneReadFile/build/atwall.pcap" with "xxx.pcap", where xxx is the name of the .pcap file to be used. Build PcapReplay as follows:
-
-    $ mkdir build && cd build
-    
-    $ cmake -D CMAKE_INSTALL_PREFIX=/opt/od3 ..
-    
-    $ make
-    
-Put a xxx.pcap recording file in the same folder as the PcapReplay binary.
-
-### Prepare proxy-velodyne
-
-proxy-velodyne is included in the feature.velodyne branch of the opendlv.core repository (https://github.com/chalmers-revere/opendlv.core). Clone the opendlv.core source and switch to the feature.velodyne branch:
+proxy-velodyne64 is included in the opendlv.core repository (https://github.com/chalmers-revere/opendlv.core). Clone the opendlv.core source:
 
     $ git clone https://github.com/chalmers-revere/opendlv.core
     
-    $ git checkout feature.velodyne
-    
     $ git pull
     
-Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest:
+Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-core-on-opendavinci-ubuntu-64.04-complete:latest:
 
     $ make buildComplete
     
     $ make createDockerImage
     
-The proxy-velodyne binary opendlv-core-system-proxy-velodyne will be found at opendlv.core/docker/builds/opendlv-core-on-opendavinci-ubuntu-16.04-complete-feature.velodyne/opt/opendlv.core/bin. The Velodyne decoder integrated in proxy-velodyne requires an external calibration file. Put the calibration file db.xml in this folder to the same folder as the proxy-velodyne binary.
+The proxy-velodyne64 binary opendlv-core-system-proxy-velodyne64 will be found at opendlv.core/docker/builds/opendlv-core-on-opendavinci-ubuntu-64.04-complete-feature.velodyne/opt/opendlv.core/bin.
 
-### Test proxy-velodyne
 
-In Terminal 1, go to /opt/od3/bin, and run odsupercomponent:
+### Network setup
 
-    $ LD_LIBRARY_PATH=/opt/od3/lib ./odsupercomponent --cid=111 --configuration=~/Downloads/proxyVelodyneTest/configuration
+In order to receive packets from HDL-64E, the IP address has to be manually set and the firewall must be disabled. In Ubuntu where proxy-velodyne64 has been tested, the firewall can be disabled by:
+
+    $ sudo ufw disable
+
+The IP address should be set as 192.168.1.xx, where xx is any integer from 1 to 254, except 43 which is reserved for HDL-64E. The subnet mask should be set as 192.168.3.255. Note that if proxy-velodyne64 runs in a virtual machine, the network adapter of the virtual machine has to be bridged. For instance, if proxy-velodyne64 runs on Ubuntu via VirtualBox while the HDL-64E is connected to the port "en5: Thunderbolt Ethernet" of the host machine, then both "Bridged Adapter" and "en5: Thunderbolt Ethernet" should be selected for the network configuration of VirtualBox.
+
+Note that this network setup will disable the access to the Internet. Since proxy-velodyne64 is based on OpenDaVINCI which requires UDP multicast to execute different software modules, the local loopback device **lo** needs to be configured to allow UDP multicast sessions:
+
+    $ sudo ifconfig lo multicast
     
-In Terminal 2, go to /opt/od3/bin, and run odcockpit:
+    $ sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev lo
+ 
+ 
+### Use proxy-velodyne64 with Docker Compose
 
-    $ LD_LIBRARY_PATH=/opt/od3/lib ./odcockpit --cid=111
+In addition to the docker-compose file docker-compose.yml and the README file, this folder also contains:
+
+- a configuration file used by odsupercomponent
+- a Dockerfile specifying the Docker images to be used
+- an environment file .env which defines an environment variable CID that is referred to by the docker-compose file
+- a HDL-64E calibration file db.xml required by the HDL-64E decoder
+- a car model file Car.objx and a simulation scenario file Track.scnx. They are not directly useful to this use case, however, these two files are required by the EnvironmentViewer plugin of odcockpit
+
+Here CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111.  In this folder, run Docker Compose (the first command grants access to your Xserver):
+
+    $ xhost +
     
-Open the EnvironmentViewer plugin in odcockpit. Find the configuration window SceneGraph. In the drop-down menu below, unselect the objects that you do not want to see during the visualization.
+    $ docker-compose up --build
 
-In Terminal 3, go to the directory of proxy-velodyne and run proxy-velodyne:
+This will activate odsupercomponent, the visualization tool odcockpit, and proxy-velodyne64. The HDL-64E packets will be visualized as 3D point cloud in the EnvironmentViewer plugin in odcockpit. In EnvironmentViewer, unselect the stationary elements XYZAxes, Grid, Surroundings, AerialImage and the dynamic element EgoCar to have a clean background for the point cloud. By default, EnvironmentViewer uses free camera view which allows a user to do the following operations:
 
-    $ LD_LIBRARY_PATH=/opt/od3/lib ./opendlv-core-system-proxy-velodyne --cid=111 --freq=30
-    
-In Terminal 4, go to the directory of PcapReplay (OpenDaVINCI/automotive/velodyne/PcapReplay/build) and run PcapReplay:
+- Use **W**/**S** on the keyboard to zoom in and zoom out
+- Use **A**/**D** on the keyboard to move the display window left and right
+- Drag the vertical bar on the left to adjust the perspective (the same operation can also be performed in the display window with the same effect)
+- Drag the horizontal bar at the bottom to rotate clockwise and counter-clockwise (the same operation can also be performed in the display window with the same effect)
 
-    $ ./PcapReplay --cid=111 --freq=30
-    
-Then the Velodyne data will be visualized as 3D point cloud frames in EnvironmentViewer of odcockpit. Adjust the frequency of proxy-velodyne and PcapReplay carefully to obtain the best frame rate. Note that too low frequency of proxy-velodyne may lead to buffer overflow.
-
-### Test proxy-velodyne with Docker
-
-Follow the same instruction for Terminal 1, 2, and 4 above. In Terminal 3, run proxy-velodyne in a Docker container instead:
-
-    $ docker run -ti --rm --net=host --ipc=host --user=1000 seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest /opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne --cid=111 --freq=30
-
-### Test proxy-velodyne with Docker Compose
-
-Put docker-compose.yml, Dockerfile and the environment file .env in this folder to ~/Downloads/proxyVelodyneTest. Switch to that folder and run:
-
-    $ docker-compose up
-    
-This will start odsupercomponent and proxy-velodyne. The environment file .env defines an environment variable CID which is referred to by the docker-compose file. CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111. Then run odcockpit and PcapReplay by following the same instruction above. Note that sudo should be used while running odcockpit, as root user is specified for proxy-velodyne in the docker-compose file.
-
-To stop the test, run
+To stop proxy-velodyne64, run
 
     $ docker-compose stop
     
@@ -98,8 +69,9 @@ Remove the stopped containers:
 
     $ docker-compose rm
     
-Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes odsupercomponent and proxy-velodyne run with cid 123 instead of 111:
+Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes all micro-services run with cid 123 instead of 111:
 
-    $ CID=123 docker-compose up
+    $ CID=123 docker-compose up --build
 
-This means that odcockpit and PcapReplay should also run with cid=123. Then CID=123 should also be used for docker-compose stop and docker-compose rm accordingly.
+Then CID=123 should also be used for docker-compose stop and docker-compose rm accordingly.
+

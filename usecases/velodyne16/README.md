@@ -29,7 +29,7 @@ In order to receive packets from VLP-16, the IP address has to be manually set a
 
     $ sudo ufw disable
 
-The IP address should be set as 192.168.1.xx, where xx is any integer from 1 to 254, except 201 which is reserved for VLP-16. The mask should be set as 255.255.255.0. Note that if proxy-velodyne16 runs in a virtual machine, the network adapter of the virtual machine has to be bridged. For instance, if proxy-velodyne16 runs on Ubuntu via VirtualBox while the VLP-16 is connected to the port "en5: Thunderbolt Ethernet" of the host machine, then both "Bridged Adapter" and "en5: Thunderbolt Ethernet" should be selected for the network configuration of VirtualBox.
+The IP address should be set as 192.168.1.xx, where xx is any integer from 1 to 254, except 201 which is reserved for VLP-16. The subnet mask should be set as 255.255.255.0. Note that if proxy-velodyne16 runs in a virtual machine, the network adapter of the virtual machine has to be bridged. For instance, if proxy-velodyne16 runs on Ubuntu via VirtualBox while the VLP-16 is connected to the port "en5: Thunderbolt Ethernet" of the host machine, then both "Bridged Adapter" and "en5: Thunderbolt Ethernet" should be selected for the network configuration of VirtualBox.
 
 Note that this network setup will disable the access to the Internet. Since proxy-velodyne16 is based on OpenDaVINCI which requires UDP multicast to execute different software modules, the local loopback device **lo** needs to be configured to allow UDP multicast sessions:
 

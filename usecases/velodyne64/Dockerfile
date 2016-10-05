@@ -1,4 +1,4 @@
-# Dockerfile - Dockerfile to build OpenDaVINCI base image.
+# Dockerfile - Dockerfile to build opendlv.core Docker image.
 # Copyright (C) 2016 Hang Yin
 #
 # This program is free software; you can redistribute it and/or
@@ -17,6 +17,6 @@
 
 # Date: 2016-09-01
 
-FROM seresearch/opendavinci-ubuntu-16.04-complete:latest
+FROM seresearch/opendavinci-ubuntu-16.04-complete:v4.2.0
 FROM seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
 
