@@ -1,5 +1,5 @@
 /**
- * proxy-velodyne - Interface to VLP-16.
+ * proxy-velodyne16 - Interface to VLP-16.
  * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
@@ -27,7 +27,6 @@
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
 #include "automotivedata/GeneratedHeaders_AutomotiveData.h"
 #include "opendavinci/odcore/base/Lock.h"
-//#include "opendavinci/odcore/base/KeyValueConfiguration.h"
 #include "ProxyVelodyne16.h"
 
 
@@ -45,20 +44,15 @@ namespace proxy {
 
         ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv) :
             TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16"),
-            //readBytes(0),
-            //m_pcap(),
             VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
-            m_vListener(VelodyneSharedMemory,getConference()),
             udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
-            handler(),
+            v16d(VelodyneSharedMemory,getConference()),
             rfb(){}
 
         ProxyVelodyne16::~ProxyVelodyne16() {}
 
         void ProxyVelodyne16::setUp() {
-            //readBytes=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne16.readBytes");
-            handler.setContainerListener(&m_vListener);
-            udpreceiver->setPacketListener(&handler);
+            udpreceiver->setPacketListener(&v16d);
             // Start receiving bytes.
             udpreceiver->start();
         }
@@ -69,7 +63,6 @@ namespace proxy {
         }
 
         // This method will do the main data processing job.
-        //While running this module, adjust the frequency to get desired frame rate of the replay. Note that too low frame rate may lead to buffer overflow!
         odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
             while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING){
             }
