@@ -33,7 +33,7 @@ namespace system {
 namespace proxy {
     using namespace odcore::wrapper;
 
-    // This class will handle packets received via a UDP socket.
+    // This class will handle bytes received via a UDP socket.
     class velodyne16Decoder : public odcore::io::StringListener {
     private:
         /**
@@ -60,7 +60,6 @@ namespace proxy {
         
         void sendSPC(const float &oldAzimuth, const float &newAzimuth);
         
-        //virtual void nextPacket(const odcore::io::Packet &p);
         virtual void nextString(const std::string &s);
     
     private:

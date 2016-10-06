@@ -140,10 +140,9 @@ namespace proxy {
     void velodyne16Decoder::nextString(const string &payload) {
         if(payload.length()==1206){
             //Decode VLP-16 data
-            //const string payload = p.getData();
             uint32_t position=0;//position specifies the starting position to read from the 1206 bytes
         
-            //A packet consists of 12 blocks with 100 bytes each. Decode each block separately.
+            //The payload of a VLP-16 packet consists of 12 blocks with 100 bytes each. Decode each block separately.
             static uint8_t firstByte,secondByte;
             static uint32_t dataValue;
             for(uint8_t blockID=0;blockID<12;blockID++)

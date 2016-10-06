@@ -22,7 +22,7 @@
 
 #include <memory>
 
-#include <opendavinci/odcore/io/PacketListener.h>
+#include <opendavinci/odcore/io/StringListener.h>
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
@@ -34,10 +34,9 @@ namespace proxy {
 
         using namespace std;
         using namespace odcore::wrapper;
-        /**
-         * This class is a skeleton to send driving commands to Hesperia-light's vehicle driving dynamics simulation.
-         */
-        class velodyne64Decoder : public odcore::io::PacketListener {
+        
+        // This class will handle bytes received via a UDP socket.
+        class velodyne64Decoder : public odcore::io::StringListener {
             private:
                 /**
                  * "Forbidden" copy constructor. Goal: The compiler should warn
@@ -61,7 +60,7 @@ namespace proxy {
 
                 void sendSPC(const float &oldAzimuth, const float &newAzimuth);
 
-                virtual void nextPacket(const odcore::io::Packet &p);
+                virtual void nextString(const std::string &s);
                 
             private:
                 const uint32_t MAX_POINT_SIZE=101000;  //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed. speed.
@@ -75,8 +74,8 @@ namespace proxy {
                 float previousAzimuth;
                 bool upperBlock;
                 float distance;
-                std::shared_ptr<SharedMemory> VelodyneSharedMemory;
-                float* segment;
+                std::shared_ptr<SharedMemory> VelodyneSharedMemory;//shared memory for the shared point cloud
+                float* segment;//temporary memory for transferring data of each frame to the shared memory
                 odcore::io::conference::ContainerConference& velodyneFrame;
                 odcore::data::SharedPointCloud spc;
                 float rotCorrection[64];

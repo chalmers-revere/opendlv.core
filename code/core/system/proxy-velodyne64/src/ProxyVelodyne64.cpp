@@ -44,7 +44,7 @@ namespace proxy {
     ProxyVelodyne64::~ProxyVelodyne64() {}
 
     void ProxyVelodyne64::setUp() {
-        udpreceiver->setPacketListener(&v64d);
+        udpreceiver->setStringListener(&v64d);
         // Start receiving bytes.
         udpreceiver->start();
     }

@@ -24,8 +24,6 @@
 #include <memory>
 #include <fstream>
 
-#include <opendavinci/odcore/io/PacketListener.h>
-#include <opendavinci/odcore/io/Packet.h>
 #include "opendavinci/GeneratedHeaders_OpenDaVINCI.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/base/Lock.h"
@@ -181,13 +179,12 @@ namespace proxy {
             }
         }
         
-        void velodyne64Decoder::nextPacket(const odcore::io::Packet &p) {
-            if (p.getData().length()==1206) {
+        void velodyne64Decoder::nextString(const string &payload) {
+            if (payload.length()==1206) {
                 //Decode HDL-64E data
-                const string payload = p.getData();
                 uint32_t position=0;//position specifies the starting position to read from the 1206 bytes
                 
-                //A packet consists of 12 blocks with 100 bytes each. Decode each block separately.
+                //The payload of a HDL-64E packet consists of 12 blocks with 100 bytes each. Decode each block separately.
                 static uint8_t firstByte,secondByte;
                 static uint32_t dataValue;
                 for(int index=0;index<12;index++)
