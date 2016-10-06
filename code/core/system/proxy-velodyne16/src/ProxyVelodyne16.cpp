@@ -44,14 +44,14 @@ namespace proxy {
     ProxyVelodyne16::~ProxyVelodyne16() {}
 
     void ProxyVelodyne16::setUp() {
-        udpreceiver->setPacketListener(&v16d);
+        udpreceiver->setStringListener(&v16d);
         // Start receiving bytes.
         udpreceiver->start();
     }
 
     void ProxyVelodyne16::tearDown() {
         udpreceiver->stop();
-        udpreceiver->setPacketListener(NULL);
+        udpreceiver->setStringListener(NULL);
     }
 
     // This method will do the main data processing job.

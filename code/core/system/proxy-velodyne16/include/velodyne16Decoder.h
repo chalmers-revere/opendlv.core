@@ -22,7 +22,7 @@
 
 #include <memory>
 
-#include <opendavinci/odcore/io/PacketListener.h>
+#include <opendavinci/odcore/io/StringListener.h>
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
@@ -34,7 +34,7 @@ namespace proxy {
     using namespace odcore::wrapper;
 
     // This class will handle packets received via a UDP socket.
-    class velodyne16Decoder : public odcore::io::PacketListener {
+    class velodyne16Decoder : public odcore::io::StringListener {
     private:
         /**
          * "Forbidden" copy constructor. Goal: The compiler should warn
@@ -60,7 +60,8 @@ namespace proxy {
         
         void sendSPC(const float &oldAzimuth, const float &newAzimuth);
         
-        virtual void nextPacket(const odcore::io::Packet &p);
+        //virtual void nextPacket(const odcore::io::Packet &p);
+        virtual void nextString(const std::string &s);
     
     private:
         const uint32_t MAX_POINT_SIZE=30000;  //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.

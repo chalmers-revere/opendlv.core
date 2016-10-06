@@ -24,8 +24,6 @@
 #include <memory>
 #include <fstream>
 
-#include <opendavinci/odcore/io/PacketListener.h>
-#include <opendavinci/odcore/io/Packet.h>
 #include "opendavinci/GeneratedHeaders_OpenDaVINCI.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/base/Lock.h"
@@ -139,10 +137,10 @@ namespace proxy {
         }
     }
     
-    void velodyne16Decoder::nextPacket(const odcore::io::Packet &p) {
-        if(p.getData().length()==1206){
+    void velodyne16Decoder::nextString(const string &payload) {
+        if(payload.length()==1206){
             //Decode VLP-16 data
-            const string payload = p.getData();
+            //const string payload = p.getData();
             uint32_t position=0;//position specifies the starting position to read from the 1206 bytes
         
             //A packet consists of 12 blocks with 100 bytes each. Decode each block separately.
