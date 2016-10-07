@@ -23,3 +23,7 @@ message opendlv.proxy.ActuationRequest [id = 160] {
   bool isValid [id = 3];
 }
 
+// This message broadcasts the system's health as key/values.
+message opendlv.system.HealthStatus [id = 200] {
+    map<string,string> status [id = 1];
+}
