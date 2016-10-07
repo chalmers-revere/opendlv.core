@@ -222,7 +222,6 @@ void ProxyFH16::disableCANRequests() {
     m_device->write(genericCanMessage);
 }
 
-
 void ProxyFH16::setUpRecordingGenericCANMessage(const string &timeStampForFileName) {
     // URL for storing containers containing GenericCANMessages.
     stringstream recordingUrl;
@@ -271,60 +270,31 @@ void ProxyFH16::nextGenericCANMessage(const automotive::GenericCANMessage &gcm) 
 
     for (auto c : result) {
         // Add CAN device driver time stamp to message.
-        Container cTimeStamped = addCANTimeStamp(c, gcm.getDriverTimeStamp());
+        c.setSampleTimeStamp(gcm.getDriverTimeStamp());
+        c.setSentTimeStamp(gcm.getDriverTimeStamp());
+        c.setReceivedTimeStamp(gcm.getDriverTimeStamp());
 
         // Enqueue mapped container for direct recording.
         if (m_recorderMappedCanMessages.get()) {
-            cTimeStamped.setReceivedTimeStamp(gcm.getDriverTimeStamp());
-            m_fifoMappedCanMessages.add(cTimeStamped);
+            m_fifoMappedCanMessages.add(c);
         }
 
         // Send container to conference only every tenth message.
         {
             if (counter == CAN_MESSAGE_COUNTER_WHEN_TO_SEND) {
-                getConference().send(cTimeStamped);
+                getConference().send(c);
             }
         }
     }
 
-    // Enqueue CAN message wrapped as Container to be recorded if we have a valid
-    // recorder.
+    // Enqueue CAN message wrapped as Container to be recorded if we have a valid recorder.
     if (m_recorderGenericCanMessages.get()) {
         Container c(gcm);
+        c.setSampleTimeStamp(gcm.getDriverTimeStamp());
+        c.setSentTimeStamp(gcm.getDriverTimeStamp());
+        c.setReceivedTimeStamp(gcm.getDriverTimeStamp());
         m_fifoGenericCanMessages.add(c);
     }
-}
-
-Container ProxyFH16::addCANTimeStamp(Container &c, const TimeStamp &ts) {
-    Container retVal = c;
-
-    if (c.getDataType() == opendlv::proxy::reverefh16::ManualControl::ID()) {
-        opendlv::proxy::reverefh16::ManualControl temp = c.getData< opendlv::proxy::reverefh16::ManualControl >();
-        temp.setFromSensor(ts);
-        retVal = Container(temp);
-    } else if (c.getDataType() == opendlv::proxy::reverefh16::VehicleState::ID()) {
-        opendlv::proxy::reverefh16::VehicleState temp = c.getData< opendlv::proxy::reverefh16::VehicleState >();
-        temp.setFromSensor(ts);
-        retVal = Container(temp);
-    } else if (c.getDataType() == opendlv::proxy::reverefh16::Wheels::ID()) {
-        opendlv::proxy::reverefh16::Wheels temp = c.getData< opendlv::proxy::reverefh16::Wheels >();
-        temp.setFromSensor(ts);
-        retVal = Container(temp);
-    } else if (c.getDataType() == opendlv::proxy::reverefh16::Axles::ID()) {
-        opendlv::proxy::reverefh16::Axles temp = c.getData< opendlv::proxy::reverefh16::Axles >();
-        temp.setFromSensor(ts);
-        retVal = Container(temp);
-    } else if (c.getDataType() == opendlv::proxy::reverefh16::Steering::ID()) {
-        opendlv::proxy::reverefh16::Steering temp = c.getData< opendlv::proxy::reverefh16::Steering >();
-        temp.setFromSensor(ts);
-        retVal = Container(temp);
-    } else if (c.getDataType() == opendlv::proxy::reverefh16::Propulsion::ID()) {
-        opendlv::proxy::reverefh16::Propulsion temp = c.getData< opendlv::proxy::reverefh16::Propulsion >();
-        temp.setFromSensor(ts);
-        retVal = Container(temp);
-    }
-
-    return retVal;
 }
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyFH16::body() {
