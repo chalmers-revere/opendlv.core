@@ -1,6 +1,6 @@
 /**
- * proxy-velodyne - Interface to Velodyne.
- * Copyright (C) 2016 Christian Berger
+ * proxy-velodyne64 - Interface to Velodyne HDL-64E.
+ * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,9 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "ProxyVelodyne.h"
+#include "ProxyVelodyne64.h"
 
 int32_t main(int32_t argc, char **argv) {
-    opendlv::core::system::proxy::ProxyVelodyne velodyne(argc, argv);
-    return velodyne.runModule();
+    opendlv::core::system::proxy::ProxyVelodyne64 velodyne64(argc, argv);
+    return velodyne64.runModule();
 }
