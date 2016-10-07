@@ -1,6 +1,6 @@
 /**
- * proxy-velodyne - Interface to Velodyne.
- * Copyright (C) 2016 Christian Berger
+ * proxy-velodyne64 - Interface to Velodyne HDL-64E.
+ * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,18 +17,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_PROXYVELODYNE_TESTSUITE_H
-#define PROXY_PROXYVELODYNE_TESTSUITE_H
+#ifndef PROXY_PROXYVELODYNE64_TESTSUITE_H
+#define PROXY_PROXYVELODYNE64_TESTSUITE_H
 
 #include "cxxtest/TestSuite.h"
 
 // Include local header files.
-#include "../include/ProxyVelodyne.h"
+#include "../include/ProxyVelodyne64.h"
 
 using namespace std;
 using namespace opendlv::core::system::proxy;
 
-class ProxyVelodyneTest : public CxxTest::TestSuite {
+class ProxyVelodyne64Test : public CxxTest::TestSuite {
    public:
     void setUp() {}
 
@@ -39,4 +39,4 @@ class ProxyVelodyneTest : public CxxTest::TestSuite {
     }
 };
 
-#endif /*PROXY_PROXYVELODYNE_TESTSUITE_H*/
+#endif /*PROXY_PROXYVELODYNE64_TESTSUITE_H*/
