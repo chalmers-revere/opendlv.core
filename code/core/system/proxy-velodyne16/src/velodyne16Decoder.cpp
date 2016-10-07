@@ -113,7 +113,9 @@ namespace proxy {
             }
         }
 
-    velodyne16Decoder::~velodyne16Decoder() {}
+    velodyne16Decoder::~velodyne16Decoder() {
+        free(segment);
+    }
     
     //Update the shared point cloud when a complete scan is completed.
     void velodyne16Decoder::sendSPC(const float &oldAzimuth, const float &newAzimuth){
