@@ -24,6 +24,7 @@
 
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
+#include <opendlv/data/environment/WGS84Coordinate.h>
 
 #include "odvdapplanix/GeneratedHeaders_ODVDApplanix.h"
 
@@ -130,6 +131,12 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
 
             Container c(g1Data);
             m_conference.send(c);
+
+            opendlv::data::environment::WGS84Coordinate wgs84(lat, opendlv::data::environment::WGS84Coordinate::NORTH, lon, opendlv::data::environment::WGS84Coordinate::EAST);
+// TODO: After upgrading OpenDaVINCI's master with the updated WGS84Coordinate, remove the previous line and activate the following.
+//            opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
+            Container c2(wgs84);
+            m_conference.send(c2);
 
             // Reset internal buffer.
             const uint32_t length = s.size();
