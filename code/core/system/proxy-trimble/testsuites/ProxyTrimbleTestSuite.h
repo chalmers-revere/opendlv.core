@@ -39,16 +39,16 @@ using namespace opendlv::core::system::proxy;
 
 class MyContainerConference : public ContainerConference {
    public:
-    MyContainerConference() : ContainerConference(), m_callCounter(0), m_g1data() {}
+    MyContainerConference() : ContainerConference(), m_callCounter(0), m_gps() {}
     virtual void send(odcore::data::Container &container) const {
         m_callCounter++;
-        if (container.getDataType() == opendlv::core::sensors::trimble::Grp1Data::ID()) {
-            m_g1data = container.getData<opendlv::core::sensors::trimble::Grp1Data>();
-            cout << m_g1data.toString() << endl;
+        if (container.getDataType() == opendlv::core::sensors::trimble::GpsReading::ID()) {
+            m_gps = container.getData<opendlv::core::sensors::trimble::GpsReading>();
+            cout << m_gps.toString() << endl;
         }
     }
     mutable uint32_t m_callCounter;
-    mutable opendlv::core::sensors::trimble::Grp1Data m_g1data;
+    mutable opendlv::core::sensors::trimble::GpsReading m_gps;
 };
 
 class ProxyTrimbleTest : public CxxTest::TestSuite {
@@ -78,16 +78,16 @@ class ProxyTrimbleTest : public CxxTest::TestSuite {
             if (s.size() > 0) {
                 tsd.nextString(s);
                 if (mcc.m_callCounter == 1) {
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X1, 1e-8);
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y1, 1e-8);
+//                    TS_ASSERT_DELTA(mcc.m_gps.getLatitude(), X1, 1e-8);
+//                    TS_ASSERT_DELTA(mcc.m_gps.getLongitude(), Y1, 1e-8);
                 }
                 if (mcc.m_callCounter == 2) {
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X2, 1e-8);
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y2, 1e-8);
+//                    TS_ASSERT_DELTA(mcc.m_gps.getLatitude(), X2, 1e-8);
+//                    TS_ASSERT_DELTA(mcc.m_gps.getLongitude(), Y2, 1e-8);
                 }
                 if (mcc.m_callCounter == 3) {
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X3, 1e-8);
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y3, 1e-8);
+//                    TS_ASSERT_DELTA(mcc.m_gps.getLatitude(), X3, 1e-8);
+//                    TS_ASSERT_DELTA(mcc.m_gps.getLongitude(), Y3, 1e-8);
                 }
             }
             overallCounter++;

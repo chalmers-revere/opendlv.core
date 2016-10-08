@@ -1,6 +1,6 @@
 /**
  * proxy-trimble - Interface to GPS/IMU unit Trimble.
- * Copyright (C) 2016 Christian Berger
+ * Copyright (C) 2016 Chalmers REVERE
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,6 +18,9 @@
  * USA.
  */
 
+#include <cmath>
+
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -44,156 +47,149 @@ TrimbleStringDecoder::TrimbleStringDecoder(odcore::io::conference::ContainerConf
 
 TrimbleStringDecoder::~TrimbleStringDecoder() {}
 
-void TrimbleStringDecoder::nextString(std::string const &data) {
-    static bool foundHeader = false;
-    static bool buffering = false;
-    static uint32_t PAYLOAD_SIZE = 0;
-    static uint32_t toRemove = 0;
+void TrimbleStringDecoder::nextString(string const &s) {
+    double timestamp;
+    double latitude;
+    double longitude;
+    float altitude;
+    float northHeading;
+    float speed;
+    uint8_t latitudeDirection;
+    uint8_t longitudeDirection;
+    uint8_t satelliteCount;
+    bool hasHeading;
+    bool hasRtk;
 
-    const string old = m_buffer.str();
-    const string newString = old + data;
-    m_buffer.str(newString);
-    string s = m_buffer.str();
+    bool gotGpgga = false;
+    bool gotGpvtg = false;
 
-    while ((s.size() > 8) && ((toRemove + 8) < s.size())) {
-        s = m_buffer.str();
+    vector< string > messages;
 
-        // Wait for more data.
-        if (buffering && (s.size() < PAYLOAD_SIZE)) {
-            break;
+    istringstream ss1(s);
+    string msg;
+    while (getline(ss1, msg, '$')) {
+        messages.push_back(msg);
+    }
+
+    if (messages.empty()) {
+        return;
+    }
+
+    for (auto message : messages) {
+        if (message.empty()) {
+            continue;
         }
 
-        // Enough data available to decode GRP1.
-        if (buffering && (s.size() >= PAYLOAD_SIZE)) {
-            m_buffer.seekg(0);
-            opendlv::core::sensors::trimble::Grp1Data g1Data;
+        vector< string > fields;
 
-            char timedist[26];
-            m_buffer.read(timedist, sizeof(timedist));
-
-            double lat = 0;
-            double lon = 0;
-            double alt = 0;
-            float vel_north = 0;
-            float vel_east = 0;
-            float vel_down = 0;
-            double roll = 0;
-            double pitch = 0;
-            double heading = 0;
-            double wander = 0;
-            float track = 0;
-            float speed = 0;
-            float arate_lon = 0;
-            float arate_trans = 0;
-            float arate_down = 0;
-            float accel_lon = 0;
-            float accel_trans = 0;
-            float accel_down = 0;
-
-            m_buffer.read((char *)(&(lat)), sizeof(lat));
-            m_buffer.read((char *)(&(lon)), sizeof(lon));
-            m_buffer.read((char *)(&(alt)), sizeof(alt));
-            m_buffer.read((char *)(&(vel_north)), sizeof(vel_north));
-            m_buffer.read((char *)(&(vel_east)), sizeof(vel_east));
-            m_buffer.read((char *)(&(vel_down)), sizeof(vel_down));
-            m_buffer.read((char *)(&(roll)), sizeof(roll));
-            m_buffer.read((char *)(&(pitch)), sizeof(pitch));
-            m_buffer.read((char *)(&(heading)), sizeof(heading));
-            m_buffer.read((char *)(&(wander)), sizeof(wander));
-            m_buffer.read((char *)(&(track)), sizeof(track));
-            m_buffer.read((char *)(&(speed)), sizeof(speed));
-            m_buffer.read((char *)(&(arate_lon)), sizeof(arate_lon));
-            m_buffer.read((char *)(&(arate_trans)), sizeof(arate_trans));
-            m_buffer.read((char *)(&(arate_down)), sizeof(arate_down));
-            m_buffer.read((char *)(&(accel_lon)), sizeof(accel_lon));
-            m_buffer.read((char *)(&(accel_trans)), sizeof(accel_trans));
-            m_buffer.read((char *)(&(accel_down)), sizeof(accel_down));
-
-            g1Data.setTimedist(string(timedist, 26));
-            g1Data.setLat(lat);
-            g1Data.setLon(lon);
-            g1Data.setAlt(alt);
-            g1Data.setVel_north(vel_north);
-            g1Data.setVel_east(vel_east);
-            g1Data.setVel_down(vel_down);
-            g1Data.setRoll(roll);
-            g1Data.setPitch(pitch);
-            g1Data.setHeading(heading);
-            g1Data.setWander(wander);
-            g1Data.setTrack(track);
-            g1Data.setSpeed(speed);
-            g1Data.setArate_lon(arate_lon);
-            g1Data.setArate_trans(arate_trans);
-            g1Data.setArate_down(arate_down);
-            g1Data.setAccel_lon(accel_lon);
-            g1Data.setAccel_trans(accel_trans);
-            g1Data.setAccel_down(accel_down);
-
-            Container c(g1Data);
-            m_conference.send(c);
-
-            opendlv::data::environment::WGS84Coordinate wgs84(lat, opendlv::data::environment::WGS84Coordinate::NORTH, lon, opendlv::data::environment::WGS84Coordinate::EAST);
-// TODO: After upgrading OpenDaVINCI's master with the updated WGS84Coordinate, remove the previous line and activate the following.
-//            opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
-            Container c2(wgs84);
-            m_conference.send(c2);
-
-            // Reset internal buffer.
-            const uint32_t length = s.size();
-            const string s2 = s.substr(PAYLOAD_SIZE, length);
-
-            m_buffer.seekp(0);
-            m_buffer.seekg(0);
-            m_buffer.str(s2);
-
-            buffering = false;
-            foundHeader = false;
-            PAYLOAD_SIZE = 0;
-            toRemove = 0;
-            s = m_buffer.str();
+        istringstream ss2(message);
+        string field;
+        while (getline(ss2, field, ',')) {
+            fields.push_back(field);
         }
 
-        // Try decoding GRP1 header.
-        if (!foundHeader && (s.size() >= 8)) {
-            // Decode GRP header.
-            opendlv::core::sensors::trimble::internal::GrpHdrMsg hdr;
+        if (fields.empty()) {
+            continue;
+        }
 
-            m_buffer.seekg(toRemove);
+        string type = fields.at(0);
+        // for(auto qq : fields){
+        //   cout << qq << ", ";
+        // }
 
-            char grpstart[4];
-            m_buffer.read(grpstart, sizeof(grpstart));
-            hdr.setGrpstart(string(grpstart, 4));
+        if (type == "GPGGA") {
+            // TODO: FIX AND REMOVE try.
+            try {
+                gotGpgga = true;
 
-            uint16_t buffer = 0;
-            m_buffer.read((char *)(&(buffer)), sizeof(buffer));
-            buffer = le32toh(buffer);
-            hdr.setGroupnum(buffer);
+                timestamp = stod(fields.at(1));
 
-            if (hdr.getGrpstart() == "$GRP") {
-                if (hdr.getGroupnum() == 1) {
-                    buffer = 0;
-                    m_buffer.read((char *)(&(buffer)), sizeof(buffer));
-                    buffer = le32toh(buffer);
-                    hdr.setBytecount(buffer);
-                    PAYLOAD_SIZE = hdr.getBytecount();
+                latitude = stod(fields.at(2));
+                latitudeDirection = fields.at(3)[0];
 
-                    foundHeader = true;
-                    buffering = true;
+                longitude = stod(fields.at(4));
+                longitudeDirection = fields.at(5)[0];
 
-                    // Remove GRP header.
-                    const string s2 = s.substr(toRemove + 8);
-                    m_buffer.seekp(0);
-                    m_buffer.seekg(0);
-                    m_buffer.str(s2);
-                    s = m_buffer.str();
-                } else {
-                    toRemove++;
-                }
-            } else {
-                // Nothing known found; discard one byte.
-                toRemove++;
+                // Convert from format dd mm,mmmm
+                latitude = latitude / 100.0;
+                longitude = longitude / 100.0;
+                latitude = static_cast< int >(latitude) + (latitude - static_cast< int >(latitude)) * 100.0 / 60.0;
+                longitude = static_cast< int >(longitude) + (longitude - static_cast< int >(longitude)) * 100.0 / 60.0;
+
+                // 0: Non valid, 1: GPS fix, 2: DGPS fix, 4: RTK fix int, 5: RTK float int
+                const int gpsQuality = stoi(fields.at(6));
+                hasRtk = (gpsQuality == 4 || gpsQuality == 5);
+
+                satelliteCount = stoi(fields.at(7));
+
+                //   float hdop = stof(fields.at(8));
+
+                altitude = stof(fields.at(9));
+
+                //string altitudeUnit = fields.at(10);
+
+                //    float geoidSeparation = stof(fields.at(11));
+                //    string geodSeparationUnit = fields.at(12);
+            }
+            catch (...) {
+                cout << "WARNING: Read error for GPGGA." << endl;
             }
         }
+        else if (type == "GPVTG") {
+            try {
+                gotGpvtg = true;
+
+                string headingStr = fields.at(1);
+
+                // cout << "HeadingStr: " << headingStr << endl;
+
+                if (headingStr.empty()) {
+                    northHeading = 0.0f;
+                    hasHeading = false;
+                }
+                else {
+                    northHeading = stod(headingStr) * M_PI / 180.0;
+                    hasHeading = true;
+                }
+
+                // Convert to m/s.
+                speed = stof(fields.at(7)) / 3.6f;
+            }
+            catch (...) {
+                cout << "WARNING: Read error for GPVTG." << endl;
+            }
+        } else if (type == "GPHDT") {
+        } else if (type == "GPRMC") {
+        } else {
+            cout << "[proxy-trimble] WARNING: Unknown packet type. " << type << endl;
+        }
+    }
+
+    cout << "[proxy-trimble] GPS sending signals : Latitude : " << latitude << setprecision(19)
+              << " Longitude : " << setprecision(19) << longitude << " Heading: " << northHeading << " hasRtk: " << hasRtk << endl;
+
+
+    if (gotGpgga && gotGpvtg) {
+        opendlv::core::sensors::trimble::GpsReading gps(timestamp,
+                                                        latitude,
+                                                        longitude,
+                                                        altitude,
+                                                        northHeading,
+                                                        speed,
+                                                        latitudeDirection,
+                                                        longitudeDirection,
+                                                        satelliteCount,
+                                                        hasHeading,
+                                                        hasRtk);
+        Container c(gps);
+        m_conference.send(c);
+
+
+        opendlv::data::environment::WGS84Coordinate wgs84(latitude, opendlv::data::environment::WGS84Coordinate::NORTH, longitude, opendlv::data::environment::WGS84Coordinate::EAST);
+// TODO: After upgrading OpenDaVINCI's master with the updated WGS84Coordinate, remove the previous line and activate the following.
+//            opendlv::data::environment::WGS84Coordinate wgs84(latitude, longitude);
+        Container c2(wgs84);
+        m_conference.send(c2);
     }
 }
 }

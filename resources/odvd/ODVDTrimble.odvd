@@ -16,38 +16,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-message opendlv.core.sensors.trimble.internal.GrpHdrMsg [id = 531] {
-    string grpstart     [id = 1];
-    uint16 groupnum     [id = 2];
-    uint16 bytecount    [id = 3];
-}
-
-message opendlv.core.sensors.trimble.internal.GrpFtrMsg [id = 532] {
-    uint16 crc          [id = 1];
-    string grpend       [id = 2];
-}
-
-message opendlv.core.sensors.trimble.Grp1Data [id = 533] {
-    string timedist     [id = 1];
-    double lat          [id = 2];
-    double lon          [id = 3];
-    double alt          [id = 4];
-    float vel_north     [id = 5];
-    float vel_east      [id = 6];
-    float vel_down      [id = 7];
-    double roll         [id = 8];
-    double pitch        [id = 9];
-    double heading      [id = 10];
-    double wander       [id = 11];
-    float track         [id = 12];
-    float speed         [id = 13];
-    float arate_lon     [id = 14];
-    float arate_trans   [id = 15];
-    float arate_down    [id = 16];
-    float accel_lon     [id = 17];
-    float accel_trans   [id = 18];
-    float accel_down    [id = 19];
-    char alignment      [id = 20];
-    char padding        [id = 21];
+message opendlv.core.sensors.trimble.GpsReading [id = 167] {
+  double timestamp [id = 1];
+  double latitude [id = 2];
+  double longitude [id = 3];
+  double altitude [id = 4];
+  double northHeading [id = 5];
+  double speed [id = 6];
+  uint8 latitudeDirection [id = 7];
+  uint8 longitudeDirection [id = 8];
+  uint8 satelliteCount [id = 9];
+  bool hasHeading [id = 10];
+  bool hasRtk [id = 11];
 }
 
