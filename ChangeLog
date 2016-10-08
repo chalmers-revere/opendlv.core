@@ -1,3 +1,4 @@
+0.2.1 - Added proxy-trimble and WGS84 coordinate broadcasting
 0.2.0 - proxy-velodyne and CAN timestamping
 0.1.0 - * proxy-fh16, ps3controller, documentationcamera based on proxy-camera (OpenCV)
 0.0.9 - Using OpenDaVINCI 4.1.0 with container sample time.
