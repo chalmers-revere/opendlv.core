@@ -69,8 +69,8 @@ namespace proxy {
                 const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT; // What is the total size of the shared memory?    
                 const float PI=3.14159;
                 
-                long pointIndex;
-                int startID;
+                uint32_t pointIndex;
+                uint32_t startID;
                 float previousAzimuth;
                 bool upperBlock;
                 float distance;
