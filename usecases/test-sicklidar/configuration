@@ -75,7 +75,7 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 
 proxy-sick.type = sick
-proxy-sick.port = /dev/ttyS0
+proxy-sick.port = /dev/ttyS1
 proxy-sick.baudrate = 9600
 proxy-sick.mount.x = 1.25
 proxy-sick.mount.y = 0.0
