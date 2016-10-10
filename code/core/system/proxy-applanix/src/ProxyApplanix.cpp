@@ -65,8 +65,10 @@ void ProxyApplanix::setUp() {
 }
 
 void ProxyApplanix::tearDown() {
-    m_applanix->stop();
-    m_applanix->setStringListener(NULL);
+    if (m_applanix.get() != NULL) {
+        m_applanix->stop();
+        m_applanix->setStringListener(NULL);
+    }
 }
 
 void ProxyApplanix::nextContainer(odcore::data::Container & /*c*/) {}

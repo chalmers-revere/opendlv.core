@@ -1,5 +1,5 @@
 /**
- * proxy-fh16truck - Interface to FH16 truck.
+ * proxy-camera - Interface to OpenCV-based cameras.
  * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or

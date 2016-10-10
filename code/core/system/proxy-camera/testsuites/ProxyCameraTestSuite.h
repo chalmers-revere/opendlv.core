@@ -1,5 +1,5 @@
 /**
- * proxy-fh16truck - Interface to cameras.
+ * proxy-camera - Interface to OpenCV-based cameras.
  * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -26,17 +26,87 @@
 #include "../include/ProxyCamera.h"
 
 using namespace std;
+using namespace odcore::data;
 using namespace opendlv::core::system::proxy;
 
-class ProxyCameraTest : public CxxTest::TestSuite {
-   public:
-    void setUp() {}
+/**
+ * This class derives from SensorBoard to allow access to protected methods.
+ */
+class ProxyTestling : public ProxyCamera {
+    private:
+        ProxyTestling();
+    
+    public:
+        ProxyTestling(const int32_t &argc, char **argv) :
+            ProxyCamera(argc, argv) {}
 
-    void tearDown() {}
+        // Here, you need to add all methods which are protected in ProxyCamera and which are needed for the test cases.
+};
+
+/**
+ * The actual testsuite starts here.
+ */
+class ProxyCameraTest : public CxxTest::TestSuite {
+   private:
+        ProxyTestling *dt;
+
+   public:
+    void setUp() {
+            // Prepare the data that would be available from commandline.
+            string argv0("proxy-camera");
+            string argv1("--cid=100");
+            int32_t argc = 2;
+            char **argv;
+            argv = new char*[2];
+            argv[0] = const_cast<char*>(argv0.c_str());
+            argv[1] = const_cast<char*>(argv1.c_str());
+
+            // Create an instance of sensorboard through SensorBoardTestling which will be deleted in tearDown().
+            dt = new ProxyTestling(argc, argv);
+        }
+
+    void tearDown() {
+            delete dt;
+            dt = NULL;
+        }
 
     void testApplication() {
-        TS_ASSERT(true);
+        //TS_ASSERT(true);
+        TS_ASSERT(dt != NULL);
     }
+   
+   ////////////////////////////////////////////////////////////////////////////////////
+        // Below this line the necessary constructor for initializing the pointer variables,
+        // and the forbidden copy constructor and assignment operator are declared.
+        //
+        // These functions are normally not changed.
+        ////////////////////////////////////////////////////////////////////////////////////
+
+    public:
+        /**
+         * This constructor is only necessary to initialize the pointer variable.
+         */
+        ProxyCameraTest() : dt(NULL) {}
+
+    private:
+        /**
+         * "Forbidden" copy constructor. Goal: The compiler should warn
+         * already at compile time for unwanted bugs caused by any misuse
+         * of the copy constructor.
+         *
+         * @param obj Reference to an object of this class.
+         */
+        ProxyCameraTest(const ProxyCameraTest &/*obj*/);
+
+        /**
+         * "Forbidden" assignment operator. Goal: The compiler should warn
+         * already at compile time for unwanted bugs caused by any misuse
+         * of the assignment operator.
+         *
+         * @param obj Reference to an object of this class.
+         * @return Reference to this instance.
+         */
+        ProxyCameraTest& operator=(const ProxyCameraTest &/*obj*/);
 };
 
 #endif /*PROXY_PROXYCAMERA_TESTSUITE_H*/

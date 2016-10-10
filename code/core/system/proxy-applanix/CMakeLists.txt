@@ -45,6 +45,11 @@ INCLUDE (CheckCxxTestEnvironment)
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
+# Find OpenDLV.
+SET(OPENDLV_DIR "${OPENDAVINCI_DIR}")
+FIND_PACKAGE (OpenDLV REQUIRED)
+
+###########################################################################
 # Find ODVDApplanix.
 FIND_PACKAGE (ODVDApplanix REQUIRED)
 
@@ -53,11 +58,14 @@ FIND_PACKAGE (ODVDApplanix REQUIRED)
 INCLUDE_DIRECTORIES (SYSTEM ${ODVDAPPLANIX_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
+# Set header files from OpenDLV.
+INCLUDE_DIRECTORIES (SYSTEM ${OPENDLV_INCLUDE_DIRS})
 # Set include directory.
 INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
+              ${OPENDLV_LIBRARIES}
               ${ODVDAPPLANIX_LIBRARIES})
 
 ###############################################################################

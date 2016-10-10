@@ -24,6 +24,7 @@
 
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
+#include <opendlv/data/environment/WGS84Coordinate.h>
 
 #include "odvdapplanix/GeneratedHeaders_ODVDApplanix.h"
 
@@ -36,32 +37,6 @@ namespace proxy {
 
 using namespace std;
 using namespace odcore::data;
-
-// see http://docs.ros.org/diamondback/api/applanix/html/applanix_8h_source.html
-typedef struct GRP1DATA_MSG_ {
-    char timedist[26];
-    double lat;
-    double lon;
-    double alt;
-    float vel_north;
-    float vel_east;
-    float vel_down;
-    double roll;
-    double pitch;
-    double heading;
-    double wander;
-    float track;
-    float speed;
-    float arate_lon;
-    float arate_trans;
-    float arate_down;
-    float accel_lon;
-    float accel_trans;
-    float accel_down;
-    char alignment;
-    char padding;
-} GRP1DATA_MSG;
-
 
 ApplanixStringDecoder::ApplanixStringDecoder(odcore::io::conference::ContainerConference &conference)
     : m_conference(conference)
@@ -80,7 +55,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
     m_buffer.str(newString);
     string s = m_buffer.str();
 
-    while ( (s.size() > 8) && ((toRemove + 8) < s.size())) {
+    while ((s.size() > 8) && ((toRemove + 8) < s.size())) {
         s = m_buffer.str();
 
         // Wait for more data.
@@ -115,24 +90,24 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             float accel_trans = 0;
             float accel_down = 0;
 
-            m_buffer.read((char*)(&(lat)), sizeof(lat));
-            m_buffer.read((char*)(&(lon)), sizeof(lon));
-            m_buffer.read((char*)(&(alt)), sizeof(alt));
-            m_buffer.read((char*)(&(vel_north)), sizeof(vel_north));
-            m_buffer.read((char*)(&(vel_east)), sizeof(vel_east));
-            m_buffer.read((char*)(&(vel_down)), sizeof(vel_down));
-            m_buffer.read((char*)(&(roll)), sizeof(roll));
-            m_buffer.read((char*)(&(pitch)), sizeof(pitch));
-            m_buffer.read((char*)(&(heading)), sizeof(heading));
-            m_buffer.read((char*)(&(wander)), sizeof(wander));
-            m_buffer.read((char*)(&(track)), sizeof(track));
-            m_buffer.read((char*)(&(speed)), sizeof(speed));
-            m_buffer.read((char*)(&(arate_lon)), sizeof(arate_lon));
-            m_buffer.read((char*)(&(arate_trans)), sizeof(arate_trans));
-            m_buffer.read((char*)(&(arate_down)), sizeof(arate_down));
-            m_buffer.read((char*)(&(accel_lon)), sizeof(accel_lon));
-            m_buffer.read((char*)(&(accel_trans)), sizeof(accel_trans));
-            m_buffer.read((char*)(&(accel_down)), sizeof(accel_down));
+            m_buffer.read((char *)(&(lat)), sizeof(lat));
+            m_buffer.read((char *)(&(lon)), sizeof(lon));
+            m_buffer.read((char *)(&(alt)), sizeof(alt));
+            m_buffer.read((char *)(&(vel_north)), sizeof(vel_north));
+            m_buffer.read((char *)(&(vel_east)), sizeof(vel_east));
+            m_buffer.read((char *)(&(vel_down)), sizeof(vel_down));
+            m_buffer.read((char *)(&(roll)), sizeof(roll));
+            m_buffer.read((char *)(&(pitch)), sizeof(pitch));
+            m_buffer.read((char *)(&(heading)), sizeof(heading));
+            m_buffer.read((char *)(&(wander)), sizeof(wander));
+            m_buffer.read((char *)(&(track)), sizeof(track));
+            m_buffer.read((char *)(&(speed)), sizeof(speed));
+            m_buffer.read((char *)(&(arate_lon)), sizeof(arate_lon));
+            m_buffer.read((char *)(&(arate_trans)), sizeof(arate_trans));
+            m_buffer.read((char *)(&(arate_down)), sizeof(arate_down));
+            m_buffer.read((char *)(&(accel_lon)), sizeof(accel_lon));
+            m_buffer.read((char *)(&(accel_trans)), sizeof(accel_trans));
+            m_buffer.read((char *)(&(accel_down)), sizeof(accel_down));
 
             g1Data.setTimedist(string(timedist, 26));
             g1Data.setLat(lat);
@@ -157,6 +132,10 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             Container c(g1Data);
             m_conference.send(c);
 
+            opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
+            Container c2(wgs84);
+            m_conference.send(c2);
+
             // Reset internal buffer.
             const uint32_t length = s.size();
             const string s2 = s.substr(PAYLOAD_SIZE, length);
@@ -173,10 +152,10 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
         }
 
         // Try decoding GRP1 header.
-        if ( !foundHeader && (s.size() >= 8) ) {
+        if (!foundHeader && (s.size() >= 8)) {
             // Decode GRP header.
             opendlv::core::sensors::applanix::internal::GrpHdrMsg hdr;
-            
+
             m_buffer.seekg(toRemove);
 
             char grpstart[4];
@@ -184,14 +163,14 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             hdr.setGrpstart(string(grpstart, 4));
 
             uint16_t buffer = 0;
-            m_buffer.read((char*)(&(buffer)), sizeof(buffer));
+            m_buffer.read((char *)(&(buffer)), sizeof(buffer));
             buffer = le32toh(buffer);
             hdr.setGroupnum(buffer);
 
             if (hdr.getGrpstart() == "$GRP") {
                 if (hdr.getGroupnum() == 1) {
                     buffer = 0;
-                    m_buffer.read((char*)(&(buffer)), sizeof(buffer));
+                    m_buffer.read((char *)(&(buffer)), sizeof(buffer));
                     buffer = le32toh(buffer);
                     hdr.setBytecount(buffer);
                     PAYLOAD_SIZE = hdr.getBytecount();
