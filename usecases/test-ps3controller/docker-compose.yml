@@ -32,7 +32,7 @@ services:
         build: .
         network_mode: "host"
         devices:
-        - "/dev/pcanpci32:/dev/pcan32"
+        - "/dev/pcanpci2:/dev/pcan2"
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
