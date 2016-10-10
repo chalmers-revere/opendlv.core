@@ -51,7 +51,7 @@ FIND_PACKAGE (OpenDLV REQUIRED)
 
 ###########################################################################
 # Find ODVDApplanix.
-find_package(ODVDApplanix REQUIRED)
+FIND_PACKAGE (ODVDApplanix REQUIRED)
 
 ###############################################################################
 # Set header files from ODVDApplanix.

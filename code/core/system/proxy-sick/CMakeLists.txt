@@ -1,4 +1,4 @@
-# proxy-sick - Interface to Velodyne.
+# proxy-sick - Interface to Sick.
 # Copyright (C) 2016 Christian Berger
 #
 # This program is free software; you can redistribute it and/or
@@ -44,14 +44,21 @@ INCLUDE (CheckCxxTestEnvironment)
 # Find OpenDaVINCI.
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
+###########################################################################
+# Find ODVDOpenDLVDataModel.
+FIND_PACKAGE (ODVDOpenDLVDataModel REQUIRED)
+
 ###############################################################################
+# Set header files from ODVDOpenDLVDataModel.
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDOPENDLVDATAMODEL_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set include directory.
 INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
-set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
+set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
+              ${ODVDOPENDLVDATAMODEL_LIBRARIES})
 
 ###############################################################################
 # Build this project.
