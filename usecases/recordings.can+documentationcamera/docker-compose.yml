@@ -47,6 +47,9 @@ services:
     proxy-fh16:
         build: .
         network_mode: "host"
+        volumes:
+            - ~/recordings:/opt/recordings
+        working_dir: "/opt/recordings"
         devices:
         - "/dev/pcanpci2:/dev/pcan2"
         depends_on:
