@@ -184,10 +184,8 @@ void TrimbleStringDecoder::nextString(string const &s) {
         Container c(gps);
         m_conference.send(c);
 
-
-        opendlv::data::environment::WGS84Coordinate wgs84(latitude, opendlv::data::environment::WGS84Coordinate::NORTH, longitude, opendlv::data::environment::WGS84Coordinate::EAST);
-// TODO: After upgrading OpenDaVINCI's master with the updated WGS84Coordinate, remove the previous line and activate the following.
-//            opendlv::data::environment::WGS84Coordinate wgs84(latitude, longitude);
+        // Distribute WGS84 coordinate.
+        opendlv::data::environment::WGS84Coordinate wgs84(latitude, longitude);
         Container c2(wgs84);
         m_conference.send(c2);
     }
