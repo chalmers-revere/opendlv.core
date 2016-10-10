@@ -95,23 +95,23 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body()
   uint32_t counter = 0;
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     counter++;
-    if (counter == 30) {
+    if (counter == 3000) {
       cout << "Sending stop scan" << endl;
       stopScan();
     }
-    if (counter == 32) {
+    if (counter == 3200) {
       cout << "Sending status request" << endl;
       status();
     }
-    if (counter == 34) {
+    if (counter == 3400) {
       cout << "Sending settings mode" << endl;
       settingsMode();
     }
-    if (counter == 38) {
+    if (counter == 3800) {
       cout << "Sending centimeter mode" << endl;
       setCentimeterMode();
     }
-    if (counter == 40) {
+    if (counter == 4000) {
       cout << "Start scanning" << endl;
       startScan();
       break;
