@@ -1,4 +1,4 @@
-# proxy-applanix - Interface to GPS/IMU unit Applanix.
+# proxy-trimble - Interface to GPS/IMU unit Trimble.
 # Copyright (C) 2016 Christian Berger
 #
 # This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (opendlv-core-system-proxy-applanix)
+PROJECT (opendlv-core-system-proxy-trimble)
 
 ###########################################################################
 # Set the search path for .cmake files.
@@ -50,12 +50,12 @@ SET(OPENDLV_DIR "${OPENDAVINCI_DIR}")
 FIND_PACKAGE (OpenDLV REQUIRED)
 
 ###########################################################################
-# Find ODVDApplanix.
-find_package(ODVDApplanix REQUIRED)
+# Find ODVDTrimble.
+find_package(ODVDTrimble REQUIRED)
 
 ###############################################################################
-# Set header files from ODVDApplanix.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDAPPLANIX_INCLUDE_DIRS})
+# Set header files from ODVDTrimble.
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDTRIMBLE_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set header files from OpenDLV.
@@ -66,7 +66,7 @@ INCLUDE_DIRECTORIES(include)
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
               ${OPENDLV_LIBRARIES}
-              ${ODVDAPPLANIX_LIBRARIES})
+              ${ODVDTRIMBLE_LIBRARIES})
 
 ###############################################################################
 # Build this project.
@@ -75,14 +75,14 @@ ADD_LIBRARY (${PROJECT_NAME}-static STATIC ${thisproject-sources})
 ADD_EXECUTABLE (${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/apps/${PROJECT_NAME}.cpp")
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} ${PROJECT_NAME}-static ${LIBRARIES}) 
 
-# This custom command copies the "2016-08-28-Applanix.dump" file to where
+# This custom command copies the "2016-08-28-Trimble.dump" file to where
 # the test suites are generated (more correctly to the parent folder) so
-# that the test suite "ProxyApplanixTestSuite.h" can open it during
+# that the test suite "ProxyTrimbleTestSuite.h" can open it during
 # exection.
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/2016-08-28-Applanix.dump
-                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-08-28-Applanix.dump ${CMAKE_BINARY_DIR}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-08-28-Applanix.dump)
-ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyDumpForTest DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/2016-08-28-Applanix.dump)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/2016-08-28-Trimble.dump
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-08-28-Trimble.dump ${CMAKE_BINARY_DIR}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-08-28-Trimble.dump)
+ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyDumpForTest DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/2016-08-28-Trimble.dump)
 
 ###############################################################################
 # Enable CxxTest for all available testsuites.
