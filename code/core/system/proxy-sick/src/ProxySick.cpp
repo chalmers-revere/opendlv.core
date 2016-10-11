@@ -64,7 +64,8 @@ void ProxySick::setUp()
 
   // Connection configuration.
   m_serialPort = kv.getValue<string>("proxy-sick.port");
-  m_baudRate = 38400;
+  // m_baudRate = 38400;
+  m_baudRate = 500000; //500kbaudrate
   const uint32_t INIT_BAUD_RATE = 9600; // Fixed baud rate.
   openSerialPort(m_serialPort, INIT_BAUD_RATE);
 }
@@ -92,8 +93,9 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body()
       status();
     }
     if (counter == 34) {
-      cout << "Changing baudrate to 38400" << endl;
-      setBaudrate38400();
+      cout << "Changing baudrate to " << m_baudRate << endl;
+      // setBaudrate38400();
+      setBaudrate500k();
     }
     if (counter == 38) {
       cout << "Reconnecting with new baudrate" << endl;
@@ -165,6 +167,13 @@ void ProxySick::setBaudrate38400()
   const unsigned char baudrate38400[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x40, 0x50, 0x08};
   const string baudrate38400String(reinterpret_cast<char const *>(baudrate38400), 8);
   m_sick->send(baudrate38400String); 
+}
+
+void ProxySick::setBaudrate500k()
+{ 
+  const unsigned char baudrate500k[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x48, 0x58, 0x08};
+  const string baudrate500kString(reinterpret_cast<char const *>(baudrate500k), 8);
+  m_sick->send(baudrate500kString);   
 }
 
 void ProxySick::openSerialPort(std::string a_serialPort, uint32_t a_baudRate)
