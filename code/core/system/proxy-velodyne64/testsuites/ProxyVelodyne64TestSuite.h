@@ -73,7 +73,7 @@ class velodyneTestContainerListener : public odcore::io::conference::ContainerLi
             
             //Load calibration data from the calibration file
             string line;
-            ifstream in("db.xml");
+            ifstream in("../db.xml");
             int counter[5]={0,0,0,0,0};//corresponds to the index of the five calibration values
             bool found[5]={false, false, false, false, false};
 
@@ -246,10 +246,12 @@ class velodyneTestContainerListener : public odcore::io::conference::ContainerLi
                                     intensity=(float)intensityInt;
                                   
                                     //Store coordinate information of each point to the malloc memory
-                                    segment[startID]=xData;
-                                    segment[startID+1]=yData;
-                                    segment[startID+2]=zData;
-                                    segment[startID+3]=intensity;
+                                    if(!stopDecoding){
+                                        segment[startID]=xData;
+                                        segment[startID+1]=yData;
+                                        segment[startID+2]=zData;
+                                        segment[startID+3]=intensity;
+                                    }
                                     
                                     pointIndex++;
                                     startID+=NUMBER_OF_COMPONENTS_PER_POINT;
@@ -335,7 +337,7 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite {
             
             cout<<"File read complete."<<endl;
             delete [] buffer;
-            
+            int compare2=0;
             cout<<"Before comparing:"<<compare<<","<<mIndex<<endl;
             for(unsigned long vCounter=0;vCounter<xDataV.size();vCounter++){
                 for(long mCounter=mIndex;mCounter<mSize*4;mCounter+=4){
@@ -346,9 +348,11 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite {
                         break;
                     }      
                 }
+                compare2++;
             }
             cout<<"Number of points from VeloView: "<<xDataV.size()<<endl;
             cout<<"Number of points matched from our Velodyne decoder: "<<compare<<endl;
+            cout<<"Number of points matched from our Velodyne decoder: "<<compare2<<endl;
             
             TS_ASSERT(compare==xDataV.size());//All points from VeloView must be included by the data from our Velodyne decoder
         }
