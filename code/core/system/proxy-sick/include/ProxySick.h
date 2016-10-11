@@ -20,7 +20,10 @@
 #ifndef PROXY_PROXYSICK_H
 #define PROXY_PROXYSICK_H
 
+#include <stdint.h>
+
 #include <memory>
+#include <string>
 
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/data/Container.h>
@@ -65,10 +68,13 @@ class ProxySick : public odcore::base::module::TimeTriggeredConferenceClientModu
     void stopScan();
     void settingsMode();
     void setCentimeterMode();
-
+    void setBaudrate38400();
+    void openSerialPort(std::string, uint32_t);
    private:
     std::shared_ptr<odcore::wrapper::SerialPort> m_sick;
     std::unique_ptr<SickStringDecoder> m_sickStringDecoder;
+    std::string m_serialPort;
+    uint32_t m_baudRate;
 };
 }
 }
