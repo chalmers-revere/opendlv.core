@@ -170,7 +170,7 @@ void ProxySick::setBaudrate38400()
 void ProxySick::openSerialPort(std::string a_serialPort, uint32_t a_baudRate)
 {
   try {
-    m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
+    m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(a_serialPort, a_baudRate));
     m_sick->setStringListener(m_sickStringDecoder.get());
     m_sick->start();
 
