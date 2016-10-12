@@ -39,21 +39,23 @@
 #include "opendavinci/odcore/io/conference/ContainerListener.h"
 #include "opendavinci/odcore/wrapper/CompressionFactory.h"
 #include "opendavinci/odcore/wrapper/DecompressedData.h"
-#include <opendavinci/odcore/io/udp/UDPSender.h>
-#include <opendavinci/odcore/io/udp/UDPReceiver.h>
-#include <opendavinci/odcore/io/udp/UDPFactory.h>
 #include "opendavinci/odcore/wrapper/Eigen.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
 #include "opendavinci/odcore/base/Lock.h"
-#include <opendavinci/odcore/base/Thread.h>
-#include "opendavinci/odcore/wrapper/Eigen.h"
+//#include <opendavinci/odcore/base/Thread.h>
+//#include "opendavinci/odcore/wrapper/Eigen.h"
 
-#include "../include/ProxyVelodyne64.h"
+//#include "../include/ProxyVelodyne64.h"
 #include "../include/velodyne64Decoder.h"
 
-float* segment; 
+const std::string NAME = "hangyinSPC";
+const uint32_t MAX_POINT_SIZE=125000;//The assumed max number of points per frame
+const uint32_t SIZE_PER_COMPONENT = sizeof(float);
+const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4;
+const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT;
+float* segment=NULL; 
 std::shared_ptr<odcore::wrapper::SharedMemory> velodyneSharedMemory;
 
 using namespace std;
@@ -67,34 +69,37 @@ using namespace odcore::wrapper;
 
 class MyContainerConference : public odcore::io::conference::ContainerConference {
    public:
-    MyContainerConference() : ContainerConference(){}
+    MyContainerConference() : ContainerConference(),m_counter(0){}
    
     virtual void send(odcore::data::Container &c) const {
         if(c.getDataType()==odcore::data::SharedPointCloud::ID()){}
         m_counter++;
-        cout<<"Receive a frame"<<endl;
+        //cout<<"Receive a frame"<<endl;
         if(m_counter==2){
-            cout<<"Receive the 2nd frame"<<endl;
+            //cout<<"Receive the 2nd frame"<<endl;
             if(c.getDataType()==odcore::data::SharedPointCloud::ID()){
                 cout<<"Receive Frame 1"<<endl;
                 odcore::data::SharedPointCloud velodyneFrame=c.getData<SharedPointCloud>();//Get shared point cloud
                 //std::shared_ptr<odcore::wrapper::SharedMemory> vsm=SharedMemoryFactory::attachToSharedMemory(velodyneFrame.getName());//Attach the shared point cloud to the shared memory  
-                //std::shared_ptr<odcore::wrapper::SharedMemory> vsm=SharedMemoryFactory::attachToSharedMemory(velodyneFrame.getName());
+                velodyneSharedMemory=SharedMemoryFactory::attachToSharedMemory(velodyneFrame.getName());
 
                 if(velodyneSharedMemory.get()!=NULL){
                     //cout<<"One step before copying memory"<<endl;
                     if(velodyneSharedMemory->isValid()){
                         cout<<"One step before copying memory"<<endl;
-                        odcore::base::Lock l(velodyneSharedMemory);
+                        //{odcore::base::Lock l(velodyneSharedMemory);
                         if (velodyneFrame.getComponentDataType() == SharedPointCloud::FLOAT_T
                                     && (velodyneFrame.getNumberOfComponentsPerPoint() == 4)
                                     && (velodyneFrame.getUserInfo() == SharedPointCloud::XYZ_INTENSITY)) {
-                            cout<<"Will copy memory"<<endl;
-                            //memcpy(segment,vsm->getSharedMemory(),velodyneFrame.getWidth()); 
+                            //cout<<"Will copy memory"<<endl;
+                            memcpy(segment,velodyneSharedMemory->getSharedMemory(),velodyneFrame.getWidth());
                             float *velodyneRawData = static_cast<float*>(velodyneSharedMemory->getSharedMemory());
+                            //segment = static_cast<float*>(velodyneSharedMemory->getSharedMemory());
+                            //}
+                            cout<<segment[0]<<","<<segment[1]<<","<<segment[2]<<","<<segment[3]<<endl;
                             cout<<velodyneRawData[0]<<","<<velodyneRawData[1]<<","<<velodyneRawData[2]<<","<<velodyneRawData[3]<<endl;
                             cout<<"Copy memory"<<endl;
-                        }
+                            }
                     } 
                 }
             }
@@ -107,7 +112,8 @@ class MyContainerConference : public odcore::io::conference::ContainerConference
 class packetToByte : public odcore::io::conference::ContainerListener {
     public:
          packetToByte():
-         udpsender(odcore::io::udp::UDPFactory::createUDPSender(RECEIVER, PORT)){}
+         v64decoder(velodyneSharedMemory,mcc)
+         {}
         
         ~packetToByte(){}
        
@@ -130,15 +136,14 @@ class packetToByte : public odcore::io::conference::ContainerListener {
                     //cout<<"Send out 1206 bytes"<<endl;
                     string payload = packet.getPayload();
                     payload = payload.substr(42,1206); //Remove the 42-byte Ethernet header
-                    udpsender->send(payload);
+                    v64decoder.nextString(payload);
                 }  
             }
 
         }
     private:
-        const string RECEIVER = "127.0.0.1";
-        const uint32_t PORT = 2368;
-        std::shared_ptr<odcore::io::udp::UDPSender> udpsender;
+        MyContainerConference mcc;
+        opendlv::core::system::proxy::velodyne64Decoder v64decoder;
 };
 
 class ProxyVelodyne64Test : public CxxTest::TestSuite{
@@ -154,7 +159,7 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite{
         mSize(0)
         //m_counter(0)
         {
-            //segment=(float*)malloc(SIZE);
+            segment=(float*)malloc(SIZE);
         }
          
         void readCsvFile(){
@@ -191,15 +196,12 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite{
             readCsvFile();
             mIndex=0;
             compare=0;
+            velodyneSharedMemory=SharedMemoryFactory::createSharedMemory(NAME, SIZE);
             PCAPProtocol pcap;
             packetToByte p2b;
-            MyContainerConference mcc;
-            velodyneSharedMemory=SharedMemoryFactory::createSharedMemory(NAME, SIZE);
-            opendlv::core::system::proxy::velodyne64Decoder v64decoder(velodyneSharedMemory,mcc);
+            //MyContainerConference mcc;
+            //opendlv::core::system::proxy::velodyne64Decoder v64decoder(velodyneSharedMemory,mcc);
             pcap.setContainerListener(&p2b);
-            std::shared_ptr<odcore::io::udp::UDPReceiver> udpreceiver(odcore::io::udp::UDPFactory::createUDPReceiver("0.0.0.0", 2368));
-            udpreceiver->setStringListener(&v64decoder);
-            udpreceiver->start();
 
             fstream lidarStream("../atwallshort.pcap", ios::binary|ios::in);
             char *buffer = new char[BUFFER_SIZE+1];
@@ -207,12 +209,9 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite{
                 lidarStream.read(buffer, BUFFER_SIZE * sizeof(char));
                 string s(buffer,BUFFER_SIZE);
                 pcap.nextString(s);
-                odcore::base::Thread::usleepFor(TEN_MSECOND);
             }
             lidarStream.close();
             pcap.setContainerListener(NULL);
-            udpreceiver->stop();
-            udpreceiver->setStringListener(NULL);
             
             cout<<"File read complete."<<endl;
             delete [] buffer;
@@ -236,13 +235,7 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite{
         }
 
 private:
-    const std::string NAME = "yin5SPC";
-    const uint32_t MAX_POINT_SIZE=125000;//The assumed max number of points per frame
-    const uint32_t SIZE_PER_COMPONENT = sizeof(float);
-    const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4;
-    const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT;
     const uint32_t BUFFER_SIZE=4000;
-    const uint32_t TEN_MSECOND = 10 * 1000;
     
     vector<float> xDataV;
     vector<float> yDataV;
