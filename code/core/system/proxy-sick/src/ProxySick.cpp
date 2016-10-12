@@ -64,8 +64,8 @@ void ProxySick::setUp()
 
   // Connection configuration.
   m_serialPort = kv.getValue<string>("proxy-sick.port");
-  // m_baudRate = 38400;
-  m_baudRate = 500000; //500kbaudrate
+  m_baudRate = 38400;
+  // m_baudRate = 500000; //500kbaudrate
   const uint32_t INIT_BAUD_RATE = 9600; // Fixed baud rate.
   openSerialPort(m_serialPort, INIT_BAUD_RATE);
 }
@@ -84,35 +84,35 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body()
   uint32_t counter = 0;
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     counter++;
-    if (counter == 30) {
+    if (counter == 10) {
       cout << "Sending stop scan" << endl;
       stopScan();
     }
-    if (counter == 32) {
+    if (counter == 12) {
       cout << "Sending status request" << endl;
       status();
     }
-    if (counter == 34) {
+    if (counter == 14) {
       cout << "Changing baudrate to " << m_baudRate << endl;
-      // setBaudrate38400();
-      setBaudrate500k();
+      setBaudrate38400();
+      // setBaudrate500k();
     }
-    if (counter == 38) {
+    if (counter == 18) {
       cout << "Reconnecting with new baudrate" << endl;
 
       m_sick->stop();
       m_sick->setStringListener(NULL);
       openSerialPort(m_serialPort, m_baudRate);
     }
-    if (counter == 40) {
+    if (counter == 20) {
       cout << "Sending settings mode" << endl;
       settingsMode();
     }
-    if (counter == 42) {
+    if (counter == 22) {
       cout << "Sending centimeter mode" << endl;
       setCentimeterMode();
     }
-    if (counter == 44) {
+    if (counter == 24) {
       cout << "Start scanning" << endl;
       startScan();
       break;
