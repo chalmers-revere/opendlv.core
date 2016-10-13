@@ -26,15 +26,12 @@ useradd $BUILD_AS -g $BUILD_AS
 
 cat <<EOF > /opt/opendlv.core.build/build.sh
 #!/bin/bash
-export PATH=/usr/lib/ccache:$PATH
-export CCACHE_DIR=/opt/ccache
-
 cd /opt/opendlv.core.build
 
 echo "[opendlv.core Docker builder] Complete build."
 cmake -E remove_directory .
-PATH=/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core /opt/opendlv.core.sources
-make -j4
+CCACHE_DIR=/opt/ccache PATH=/usr/lib/ccache:/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core /opt/opendlv.core.sources
+CCACHE_DIR=/opt/ccache PATH=/usr/lib/ccache:/opt/od4/bin:$PATH make -j4
 EOF
 
 chmod 755 /opt/opendlv.core.build/build.sh
