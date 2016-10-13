@@ -54,7 +54,7 @@ namespace proxy {
                 
         
             public:
-                velodyne64Decoder(std::shared_ptr<SharedMemory>,odcore::io::conference::ContainerConference&);
+                velodyne64Decoder(const std::shared_ptr<SharedMemory>, odcore::io::conference::ContainerConference&,const string&);
                 
                 virtual ~velodyne64Decoder();
 
@@ -82,7 +82,8 @@ namespace proxy {
                 float vertCorrection[64];
                 float distCorrection[64];
                 float vertOffsetCorrection[64];
-                float horizOffsetCorrection[64];                
+                float horizOffsetCorrection[64];  
+                string calibration;            
         };
 
 }

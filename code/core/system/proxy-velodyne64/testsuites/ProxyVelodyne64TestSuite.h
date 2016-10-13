@@ -99,7 +99,7 @@ class MyContainerConference : public odcore::io::conference::ContainerConference
 class packetToByte : public odcore::io::conference::ContainerListener {
     public:
          packetToByte():
-         v64decoder(velodyneSM,mcc)
+         v64decoder(velodyneSM,mcc,"db.xml")
          {}
         
         ~packetToByte(){}

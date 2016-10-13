@@ -71,3 +71,24 @@ odsupercomponent.pulsetimeack.yield = 5000 # (in microseconds)
 # List of modules (without blanks) that will not get a pulse message from odsupercomponent.
 odsupercomponent.pulsetimeack.exclude = odcockpit
 
+###############################################################################
+###############################################################################
+#
+# CONFIGURATION FOR VELODYNE64
+#
+
+ProxyVelodyne64.sharedMemory.name = velodyne64SM
+ProxyVelodyne64.sharedMemory.size = 1616000
+ProxyVelodyne64.udpReceiverIP = 0.0.0.0
+ProxyVelodyne64.udpPort = 2368
+ProxyVelodyne64.calibration = db.xml
+
+###############################################################################
+###############################################################################
+#
+# CONFIGURATION FOR PCAPREPLAY (only needed in conjunction with PcapReplay for replaying pcap recordings)
+#
+
+PcapReplay.readpcap = imeangowest.pcap
+PcapReplay.bufferSize = 4000
+

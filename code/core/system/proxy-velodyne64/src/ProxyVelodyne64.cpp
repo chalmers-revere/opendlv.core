@@ -24,6 +24,7 @@
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
+#include "opendavinci/odcore/base/KeyValueConfiguration.h"
 
 #include "ProxyVelodyne64.h"
 
@@ -31,20 +32,33 @@ namespace opendlv {
 namespace core {
 namespace system {
 namespace proxy {
-
     using namespace odcore::wrapper;
     using namespace odcore::io::udp;
 
     ProxyVelodyne64::ProxyVelodyne64(const int &argc, char **argv)
         : TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne64"),
-            VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
-            udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
-            v64d(VelodyneSharedMemory,getConference()){}
+            memoryName(),
+            memorySize(0),
+            udpReceiverIP(),
+            udpPort(0),
+            VelodyneSharedMemory(NULL),
+            udpreceiver(NULL),
+            v64dSp(NULL){}
 
     ProxyVelodyne64::~ProxyVelodyne64() {}
 
     void ProxyVelodyne64::setUp() {
-        udpreceiver->setStringListener(&v64d);
+        memoryName=getKeyValueConfiguration().getValue<string>("ProxyVelodyne64.sharedMemory.name");
+        memorySize=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne64.sharedMemory.size");
+        VelodyneSharedMemory=SharedMemoryFactory::createSharedMemory(memoryName, memorySize);
+        
+        udpReceiverIP=getKeyValueConfiguration().getValue<string>("ProxyVelodyne64.udpReceiverIP");
+        udpPort=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne64.udpPort");
+        udpreceiver=UDPFactory::createUDPReceiver(udpReceiverIP, udpPort);
+        
+        v64dSp=shared_ptr<velodyne64Decoder>(new velodyne64Decoder(VelodyneSharedMemory,getConference(),getKeyValueConfiguration().getValue<string>("ProxyVelodyne64.calibration")));
+    
+        udpreceiver->setStringListener(v64dSp.get());
         // Start receiving bytes.
         udpreceiver->start();
     }

@@ -47,8 +47,8 @@ namespace proxy {
         using namespace odcore::data;
         using namespace odcore::wrapper;
 
-        velodyne64Decoder::velodyne64Decoder(std::shared_ptr<SharedMemory> m,
-        odcore::io::conference::ContainerConference& c):
+        velodyne64Decoder::velodyne64Decoder(const std::shared_ptr<SharedMemory> m,
+        odcore::io::conference::ContainerConference& c, const string &s):
             pointIndex(0),
             startID(0),
             previousAzimuth(0.0),
@@ -57,7 +57,8 @@ namespace proxy {
             VelodyneSharedMemory(m),
             segment(NULL),
             velodyneFrame(c),
-            spc(){
+            spc(),
+            calibration(s){
             //Initial setup of the shared point cloud
             spc.setName(VelodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
             //spc.setSize(pointIndex* NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT); // Size in raw bytes.
@@ -72,7 +73,11 @@ namespace proxy {
             
             //Load calibration data from the calibration file
             string line;
-            ifstream in("db.xml");
+            ifstream in;
+            in.open(calibration);
+            if(!in.is_open()){
+                in.open("../"+calibration);
+            }
             int counter[5]={0,0,0,0,0};//corresponds to the index of the five calibration values
             bool found[5]={false, false, false, false, false};
 
@@ -153,6 +158,7 @@ namespace proxy {
                     }
                 }
             }
+            in.close();
         }         
 
         velodyne64Decoder::~velodyne64Decoder() {
