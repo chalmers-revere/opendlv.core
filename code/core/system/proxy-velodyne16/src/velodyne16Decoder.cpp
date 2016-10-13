@@ -45,8 +45,8 @@ namespace proxy {
     using namespace odcore::data;
     using namespace odcore::wrapper;
         
-    velodyne16Decoder::velodyne16Decoder(std::shared_ptr<SharedMemory> m,
-    odcore::io::conference::ContainerConference& c):
+    velodyne16Decoder::velodyne16Decoder(const std::shared_ptr<SharedMemory> m,
+        odcore::io::conference::ContainerConference& c, const string &s):
             pointIndex(0),
             startID(0),
             previousAzimuth(0.0),
@@ -55,7 +55,8 @@ namespace proxy {
             VelodyneSharedMemory(m),
             segment(NULL),
             velodyneFrame(c),
-            spc(){
+            spc(),
+            calibration(s){
             //Initial setup of the shared point cloud
             spc.setName(VelodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
             //spc.setSize(pointIndex* NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT); // Size in raw bytes.
@@ -72,7 +73,11 @@ namespace proxy {
             //VLP-16 has 16 channels/sensors. Each sensor has a specific vertical angle, which can be read from
             //vertCorrection[sensor ID] is specified in the calibration file.
             string line;
-            ifstream in("VLP-16.xml");
+            ifstream in;
+            in.open(calibration);
+            if(!in.is_open()){
+                in.open("../"+calibration);
+            }
             uint8_t counter=0;//corresponds to the index of the vertical angle of each beam
             bool found=false;
 
@@ -111,6 +116,7 @@ namespace proxy {
                     }
                 }
             }
+            in.close();
         }
 
     velodyne16Decoder::~velodyne16Decoder() {

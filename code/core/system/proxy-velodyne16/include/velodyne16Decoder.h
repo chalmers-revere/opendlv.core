@@ -54,7 +54,7 @@ namespace proxy {
         /**
          * Constructor.
          */
-        velodyne16Decoder(std::shared_ptr<SharedMemory>,odcore::io::conference::ContainerConference&);
+        velodyne16Decoder(const std::shared_ptr<SharedMemory>, odcore::io::conference::ContainerConference&,const string&);
 
         virtual ~velodyne16Decoder();
         
@@ -79,6 +79,7 @@ namespace proxy {
         odcore::io::conference::ContainerConference& velodyneFrame;
         odcore::data::SharedPointCloud spc;//shared point cloud
         float vertCorrection[16];  //Vertal angle of each sensor beam  
+        string calibration;
     };
 }
 }

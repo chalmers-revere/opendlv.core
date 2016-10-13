@@ -74,17 +74,15 @@ namespace proxy {
             virtual void setUp();
             virtual void tearDown();
             
-            const std::string NAME = "pointCloud";
-            const uint32_t MAX_POINT_SIZE=30000;  //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
-            const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4; // How many components do we have per vector?
-            const uint32_t SIZE_PER_COMPONENT = sizeof(float);
-            const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT; // What is the total size of the shared memory? 
-            const string RECEIVER = "0.0.0.0";
-            const uint32_t PORT = 2368;
+            string memoryName;//Name of the shared memory
+            uint32_t memorySize; //The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000->ProxyVelodyne64.sharedMemory.size = 480000 in the configuration file. 
+            
+            string udpReceiverIP; //"0.0.0.0" to listen to all network interfaces
+        uint32_t udpPort; //2368 for velodyne
             
             std::shared_ptr<SharedMemory> VelodyneSharedMemory;
             std::shared_ptr<odcore::io::udp::UDPReceiver> udpreceiver;
-            opendlv::core::system::proxy::velodyne16Decoder v16d; 
+            std::shared_ptr<opendlv::core::system::proxy::velodyne16Decoder> v16dSp;
     };
 }
 }

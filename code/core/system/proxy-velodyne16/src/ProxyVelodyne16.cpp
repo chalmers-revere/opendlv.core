@@ -24,6 +24,7 @@
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
+#include "opendavinci/odcore/base/KeyValueConfiguration.h"
 #include "ProxyVelodyne16.h"
 
 
@@ -37,14 +38,28 @@ namespace proxy {
 
     ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv) :
         TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16"),
-        VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
-        udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
-        v16d(VelodyneSharedMemory,getConference()){}
+            memoryName(),
+            memorySize(0),
+            udpReceiverIP(),
+            udpPort(0),
+            VelodyneSharedMemory(NULL),
+            udpreceiver(NULL),
+            v16dSp(NULL){}
 
     ProxyVelodyne16::~ProxyVelodyne16() {}
 
     void ProxyVelodyne16::setUp() {
-        udpreceiver->setStringListener(&v16d);
+        memoryName=getKeyValueConfiguration().getValue<string>("ProxyVelodyne16.sharedMemory.name");
+        memorySize=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne16.sharedMemory.size");
+        VelodyneSharedMemory=SharedMemoryFactory::createSharedMemory(memoryName, memorySize);
+        
+        udpReceiverIP=getKeyValueConfiguration().getValue<string>("ProxyVelodyne16.udpReceiverIP");
+        udpPort=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne16.udpPort");
+        udpreceiver=UDPFactory::createUDPReceiver(udpReceiverIP, udpPort);
+        
+        v16dSp=shared_ptr<velodyne16Decoder>(new velodyne16Decoder(VelodyneSharedMemory,getConference(),getKeyValueConfiguration().getValue<string>("ProxyVelodyne16.calibration")));
+    
+        udpreceiver->setStringListener(v16dSp.get());
         // Start receiving bytes.
         udpreceiver->start();
     }
