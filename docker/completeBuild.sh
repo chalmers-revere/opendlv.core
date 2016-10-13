@@ -26,6 +26,9 @@ useradd $BUILD_AS -g $BUILD_AS
 
 cat <<EOF > /opt/opendlv.core.build/build.sh
 #!/bin/bash
+export PATH=/usr/lib/ccache:$PATH
+export CCACHE_DIR=/opt/ccache
+
 cd /opt/opendlv.core.build
 
 echo "[opendlv.core Docker builder] Complete build."
