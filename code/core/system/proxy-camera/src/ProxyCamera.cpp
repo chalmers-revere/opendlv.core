@@ -17,22 +17,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <cstring>
 #include <stdint.h>
 
+#include <cstring>
 #include <iostream>
+
+#include <opencv2/highgui/highgui.hpp>
 
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
 #include <opendavinci/odcore/strings/StringToolbox.h>
 
-#include <opencv2/highgui/highgui.hpp>
-
 #include "OpenCVCamera.h"
-
-#ifdef HAVE_UEYE
-    #include "uEyeCamera.h"
-#endif
 
 #include "ProxyCamera.h"
 
@@ -52,10 +48,7 @@ ProxyCamera::ProxyCamera(const int &argc, char **argv)
 ProxyCamera::~ProxyCamera() {}
 
 void ProxyCamera::setUp() {
-    // Create the camera grabber.
     const string NAME = getKeyValueConfiguration().getValue< string >("proxy-camera.camera.name");
-    string TYPE = getKeyValueConfiguration().getValue< string >("proxy-camera.camera.type");
-    std::transform(TYPE.begin(), TYPE.end(), TYPE.begin(), ::tolower);
     const uint32_t ID = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera.camera.id");
     const uint32_t WIDTH = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera.camera.width");
     const uint32_t HEIGHT = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera.camera.height");
@@ -63,15 +56,7 @@ void ProxyCamera::setUp() {
     const bool DEBUG = getKeyValueConfiguration().getValue< bool >("proxy-camera.camera.debug") == 1;
     const bool FLIPPED = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera.camera.flipped") == 1;
 
-    if (TYPE.compare("opencv") == 0) {
-        m_camera = unique_ptr< Camera >(new OpenCVCamera(NAME, ID, WIDTH, HEIGHT, BPP, DEBUG, FLIPPED));
-    }
-    if (TYPE.compare("ueye") == 0) {
-#ifdef HAVE_UEYE
-        m_camera = unique_ptr< Camera >(new uEyeCamera(NAME, ID, WIDTH, HEIGHT, BPP, DEBUG, FLIPPED));
-#endif
-    }
-
+    m_camera = unique_ptr< Camera >(new OpenCVCamera(NAME, ID, WIDTH, HEIGHT, BPP, DEBUG, FLIPPED));
     if (m_camera.get() == NULL) {
         cerr << "[" << getName() << "] No valid camera type defined." << endl;
     }
@@ -80,7 +65,6 @@ void ProxyCamera::setUp() {
 void ProxyCamera::tearDown() {}
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyCamera::body() {
-    // Test whether OpenCV is found and linked correctly.
     uint32_t captureCounter = 0;
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
         if (m_camera.get() != NULL) {

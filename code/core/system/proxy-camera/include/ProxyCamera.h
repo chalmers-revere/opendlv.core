@@ -36,7 +36,7 @@ namespace proxy {
 using namespace std;
 
 /**
- * Interface to cameras.
+ * Interface to OpenCV-supported /dev/node based cameras.
  */
 class ProxyCamera : public odcore::base::module::TimeTriggeredConferenceClientModule {
    private:

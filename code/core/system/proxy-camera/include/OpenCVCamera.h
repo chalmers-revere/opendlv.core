@@ -61,19 +61,18 @@ class OpenCVCamera : public Camera {
      *
      * @param name Name of the shared memory segment.
      * @param id OpenCVCamera identifier.
-     * @param width
-     * @param height
-     * @param bpp
-     * @param debug
+     * @param width Expected image width.
+     * @param height Expected image height.
+     * @param bpp Bytes per pixel.
+     * @param debug Show live image feed.
+     * @param flipped Is the camera mounted upside down?
      */
     OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped);
     virtual ~OpenCVCamera();
 
    private:
     virtual bool copyImageTo(char *dest, const uint32_t &size);
-
     virtual bool isValid() const;
-
     virtual bool captureFrame();
 
    private:
