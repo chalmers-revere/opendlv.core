@@ -42,21 +42,20 @@ using namespace odcore::base;
 using namespace odcore::data;
 
 ProxyCamera::ProxyCamera(const int &argc, char **argv)
-    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-camera")
+    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-camera-axis")
     , m_camera() {}
 
 ProxyCamera::~ProxyCamera() {}
 
 void ProxyCamera::setUp() {
-    const string NAME = getKeyValueConfiguration().getValue< string >("proxy-camera.camera.name");
-    const uint32_t ID = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera.camera.id");
-    const uint32_t WIDTH = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera.camera.width");
-    const uint32_t HEIGHT = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera.camera.height");
-    const uint32_t BPP = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera.camera.bpp");
-    const bool DEBUG = getKeyValueConfiguration().getValue< bool >("proxy-camera.camera.debug") == 1;
-    const bool FLIPPED = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera.camera.flipped") == 1;
+    const string NAME = getKeyValueConfiguration().getValue< string >("proxy-camera-axis.camera.name");
+    const uint32_t ID = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.camera.id");
+    const uint32_t WIDTH = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.camera.width");
+    const uint32_t HEIGHT = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.camera.height");
+    const uint32_t BPP = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.camera.bpp");
+    const bool DEBUG = getKeyValueConfiguration().getValue< bool >("proxy-camera-axis.camera.debug") == 1;
 
-    m_camera = unique_ptr< Camera >(new OpenCVCamera(NAME, ID, WIDTH, HEIGHT, BPP, DEBUG, FLIPPED));
+    m_camera = unique_ptr< Camera >(new AxisCamera(NAME, ID, WIDTH, HEIGHT, BPP, DEBUG));
     if (m_camera.get() == NULL) {
         cerr << "[" << getName() << "] No valid camera type defined." << endl;
     }

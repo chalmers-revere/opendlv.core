@@ -29,34 +29,33 @@ namespace core {
 namespace system {
 namespace proxy {
 
-OpenCVCamera::OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped)
+AxisCamera::AxisCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug)
     : Camera(name, id, width, height, bpp)
     , m_capture(NULL)
     , m_image(NULL)
-    , m_debug(debug)
-    , m_flipped(flipped) {
+    , m_debug(debug) {
 
     m_capture = cvCaptureFromCAM(id);
     if (m_capture) {
         cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_WIDTH, width);
         cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_HEIGHT, height);
     } else {
-        cerr << "[proxy-camera] Could not open camera '" << name << "' with ID: " << id << endl;
+        cerr << "[proxy-camera-axis] Could not open camera '" << name << "' with ID: " << id << endl;
     }
 }
 
-OpenCVCamera::~OpenCVCamera() {
+AxisCamera::~AxisCamera() {
     if (m_capture) {
         cvReleaseCapture(&m_capture);
         m_capture = NULL;
     }
 }
 
-bool OpenCVCamera::isValid() const {
+bool AxisCamera::isValid() const {
     return (m_capture != NULL);
 }
 
-bool OpenCVCamera::captureFrame() {
+bool AxisCamera::captureFrame() {
     bool retVal = false;
     if (m_capture != NULL) {
         if (cvGrabFrame(m_capture)) {
@@ -79,17 +78,14 @@ bool OpenCVCamera::captureFrame() {
     return retVal;
 }
 
-bool OpenCVCamera::copyImageTo(char *dest, const uint32_t &size) {
+bool AxisCamera::copyImageTo(char *dest, const uint32_t &size) {
     bool retVal = false;
 
     if ((dest != NULL) && (size > 0) && (m_image != NULL)) {
-        if (m_flipped) {
-            cvFlip(m_image, m_image, -1);
-        }
         ::memcpy(dest, m_image->imageData, size);
 
         if (m_debug) {
-            cvShowImage("[proxy-camera]", m_image);
+            cvShowImage("[proxy-camera-axis]", m_image);
             cvWaitKey(10);
         }
 

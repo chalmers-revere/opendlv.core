@@ -32,9 +32,9 @@ namespace proxy {
 using namespace std;
 
 /**
- * This class wraps an OpenCV camera and captures its data into a shared memory segment.
+ * This class wraps an Axis camera and captures its data into a shared memory segment.
  */
-class OpenCVCamera : public Camera {
+class AxisCamera : public Camera {
    private:
     /**
      * "Forbidden" copy constructor. Goal: The compiler should warn
@@ -43,7 +43,7 @@ class OpenCVCamera : public Camera {
      *
      * @param obj Reference to an object of this class.
      */
-    OpenCVCamera(const OpenCVCamera & /*obj*/);
+    AxisCamera(const AxisCamera & /*obj*/);
 
     /**
      * "Forbidden" assignment operator. Goal: The compiler should warn
@@ -53,22 +53,21 @@ class OpenCVCamera : public Camera {
      * @param obj Reference to an object of this class.
      * @return Reference to this instance.
      */
-    OpenCVCamera &operator=(const OpenCVCamera & /*obj*/);
+    AxisCamera &operator=(const AxisCamera & /*obj*/);
 
    public:
     /**
      * Constructor.
      *
      * @param name Name of the shared memory segment.
-     * @param id OpenCVCamera identifier.
+     * @param id AxisCamera identifier.
      * @param width Expected image width.
      * @param height Expected image height.
      * @param bpp Bytes per pixel.
      * @param debug Show live image feed.
-     * @param flipped Is the camera mounted upside down?
      */
-    OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped);
-    virtual ~OpenCVCamera();
+    AxisCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug);
+    virtual ~AxisCamera();
 
    private:
     virtual bool copyImageTo(char *dest, const uint32_t &size);
@@ -79,7 +78,6 @@ class OpenCVCamera : public Camera {
     CvCapture *m_capture;
     IplImage *m_image;
     bool m_debug;
-    bool m_flipped;
 };
 }
 }
