@@ -20,6 +20,9 @@
 #ifndef AXISCAMERA_H_
 #define AXISCAMERA_H_
 
+#include <memory>
+
+#include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 #include "Camera.h"
@@ -60,13 +63,15 @@ class AxisCamera : public Camera {
      * Constructor.
      *
      * @param name Name of the shared memory segment.
-     * @param id AxisCamera identifier.
+     * @param address IP/Port to AxisCamera.
+     * @param username.
+     * @param password.
      * @param width Expected image width.
      * @param height Expected image height.
      * @param bpp Bytes per pixel.
      * @param debug Show live image feed.
      */
-    AxisCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug);
+    AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug);
     virtual ~AxisCamera();
 
    private:
@@ -75,8 +80,8 @@ class AxisCamera : public Camera {
     virtual bool captureFrame();
 
    private:
-    CvCapture *m_capture;
-    IplImage *m_image;
+    std::unique_ptr<cv::VideoCapture> m_capture;
+    cv::Mat m_image;
     bool m_debug;
 };
 }

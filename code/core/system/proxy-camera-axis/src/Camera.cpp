@@ -31,11 +31,10 @@ namespace proxy {
 
 using namespace odcore::base;
 
-Camera::Camera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp)
+Camera::Camera(const string &name, const uint32_t &width, const uint32_t &height, const uint32_t &bpp)
     : m_sharedImage()
     , m_sharedMemory()
     , m_name(name)
-    , m_id(id)
     , m_width(width)
     , m_height(height)
     , m_bpp(bpp)
@@ -55,10 +54,6 @@ Camera::~Camera() {}
 
 const string Camera::getName() const {
     return m_name;
-}
-
-uint32_t Camera::getID() const {
-    return m_id;
 }
 
 uint32_t Camera::getWidth() const {

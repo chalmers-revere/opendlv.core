@@ -49,13 +49,15 @@ ProxyCamera::~ProxyCamera() {}
 
 void ProxyCamera::setUp() {
     const string NAME = getKeyValueConfiguration().getValue< string >("proxy-camera-axis.camera.name");
-    const uint32_t ID = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.camera.id");
+    const string ADDRESS = getKeyValueConfiguration().getValue< string >("proxy-camera-axis.camera.address");
+    const string USERNAME = getKeyValueConfiguration().getValue< string >("proxy-camera-axis.camera.username");
+    const string PASSWORD = getKeyValueConfiguration().getValue< string >("proxy-camera-axis.camera.password");
     const uint32_t WIDTH = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.camera.width");
     const uint32_t HEIGHT = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.camera.height");
     const uint32_t BPP = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.camera.bpp");
     const bool DEBUG = getKeyValueConfiguration().getValue< bool >("proxy-camera-axis.camera.debug") == 1;
 
-    m_camera = unique_ptr< Camera >(new AxisCamera(NAME, ID, WIDTH, HEIGHT, BPP, DEBUG));
+    m_camera = unique_ptr< Camera >(new AxisCamera(NAME, ADDRESS, USERNAME, PASSWORD, WIDTH, HEIGHT, BPP, DEBUG));
     if (m_camera.get() == NULL) {
         cerr << "[" << getName() << "] No valid camera type defined." << endl;
     }

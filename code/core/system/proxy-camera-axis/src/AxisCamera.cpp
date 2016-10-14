@@ -18,9 +18,12 @@
  */
 
 #include <iostream>
+#include <string>
 
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/imgproc/imgproc_c.h>
+//#include "opencv2/imgproc/imgproc_c.h"
+//#include "opencv2/imgproc/imgproc.hpp"
+
+//#include <opencv2/core/core.hpp>
 
 #include "AxisCamera.h"
 
@@ -29,49 +32,44 @@ namespace core {
 namespace system {
 namespace proxy {
 
-AxisCamera::AxisCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug)
-    : Camera(name, id, width, height, bpp)
-    , m_capture(NULL)
-    , m_image(NULL)
+AxisCamera::AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug)
+    : Camera(name, width, height, bpp)
+    , m_capture(nullptr)
+    , m_image()
     , m_debug(debug) {
 
-    m_capture = cvCaptureFromCAM(id);
-    if (m_capture) {
-        cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_WIDTH, width);
-        cvSetCaptureProperty(m_capture, CV_CAP_PROP_FRAME_HEIGHT, height);
+    const string VIDEO_STREAM_ADDRESS =
+        string("http://") + username + ":"
+                          + password + "@"
+                          + address
+                          + "/axis-cgi/mjpg/video.cgi?user=" 
+                          + username + "&password="
+                          + password + "&channel=0&.mjpg";
+
+    m_capture.reset(new cv::VideoCapture(VIDEO_STREAM_ADDRESS));
+    if (m_capture->isOpened()) {
+        m_capture->set(CV_CAP_PROP_FRAME_WIDTH, width);
+        m_capture->set(CV_CAP_PROP_FRAME_HEIGHT, height);
     } else {
-        cerr << "[proxy-camera-axis] Could not open camera '" << name << "' with ID: " << id << endl;
+        cerr << "[proxy-camera-axis] Could not open camera '" << VIDEO_STREAM_ADDRESS << "'" << endl;
     }
 }
 
 AxisCamera::~AxisCamera() {
-    if (m_capture) {
-        cvReleaseCapture(&m_capture);
-        m_capture = NULL;
+    if (m_capture != nullptr) {
+        m_capture->release();
+        m_capture = nullptr;
     }
 }
 
 bool AxisCamera::isValid() const {
-    return (m_capture != NULL);
+    return ((m_capture != nullptr) && m_capture->isOpened());
 }
 
 bool AxisCamera::captureFrame() {
     bool retVal = false;
-    if (m_capture != NULL) {
-        if (cvGrabFrame(m_capture)) {
-            if (getBPP() == 1) {
-                IplImage *tmpFrame = cvRetrieveFrame(m_capture);
-
-                if (m_image == NULL) {
-                    m_image = cvCreateImage(cvGetSize(tmpFrame), IPL_DEPTH_8U, 1);
-                }
-
-                cvCvtColor(tmpFrame, m_image, CV_BGR2GRAY);
-            }
-            else {
-                m_image = cvRetrieveFrame(m_capture);
-            }
-
+    if (m_capture != nullptr) {
+        if (m_capture->read(m_image)) {
             retVal = true;
         }
     }
@@ -81,12 +79,12 @@ bool AxisCamera::captureFrame() {
 bool AxisCamera::copyImageTo(char *dest, const uint32_t &size) {
     bool retVal = false;
 
-    if ((dest != NULL) && (size > 0) && (m_image != NULL)) {
-        ::memcpy(dest, m_image->imageData, size);
+    if ((dest != NULL) && (size > 0)) {
+        ::memcpy(dest, m_image.data, size);
 
         if (m_debug) {
-            cvShowImage("[proxy-camera-axis]", m_image);
-            cvWaitKey(10);
+            cv::imshow("[proxy-camera-axis]", m_image);
+            cv::waitKey(10);
         }
 
         retVal = true;
