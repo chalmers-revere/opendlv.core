@@ -73,11 +73,7 @@ namespace proxy {
             //VLP-16 has 16 channels/sensors. Each sensor has a specific vertical angle, which can be read from
             //vertCorrection[sensor ID] is specified in the calibration file.
             string line;
-            ifstream in;
-            in.open(calibration);
-            if(!in.is_open()){
-                in.open("../"+calibration);
-            }
+            ifstream in(calibration);
             uint8_t counter=0;//corresponds to the index of the vertical angle of each beam
             bool found=false;
 
@@ -116,7 +112,6 @@ namespace proxy {
                     }
                 }
             }
-            in.close();
         }
 
     velodyne16Decoder::~velodyne16Decoder() {

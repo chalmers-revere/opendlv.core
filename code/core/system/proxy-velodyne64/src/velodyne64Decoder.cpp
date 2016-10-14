@@ -73,11 +73,7 @@ namespace proxy {
             
             //Load calibration data from the calibration file
             string line;
-            ifstream in;
-            in.open(calibration);
-            if(!in.is_open()){
-                in.open("../"+calibration);
-            }
+            ifstream in(calibration);
             int counter[5]={0,0,0,0,0};//corresponds to the index of the five calibration values
             bool found[5]={false, false, false, false, false};
 
@@ -158,7 +154,6 @@ namespace proxy {
                     }
                 }
             }
-            in.close();
         }         
 
         velodyne64Decoder::~velodyne64Decoder() {
