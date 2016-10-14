@@ -65,26 +65,13 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 ###############################################################################
 ###############################################################################
 #
-# NEXT, THE CONFIGURATION FOR OPENDLV SOFTWARE FOLLOWS. 
+# NEXT, THE CONFIGURATION FOR COPPLAR SOFTWARE FOLLOWS. 
 #
 
 ###############################################################################
 #
-# CONFIGURATION FOR proxy-fh16
+# CONFIGURATION FOR proxy-trimble
 #
-proxy-fh16.devicenode = /dev/pcan2  # PEAK CAN device.
-proxy-fh16.record_gcm = 0           # 1 = dump generic CAN messages.
-proxy-fh16.record_mapped_data = 0   # 1 = record mapped containers.
+proxy-trimble.ip = 10.42.42.112    # Change to Trimble IP.
+proxy-trimble.port = 9999          # Change to Trimble TCP port.
 
-###############################################################################
-#
-# CONFIGURATION FOR ps3 controller
-#
-system-ps3controller.ps3controllerdevicenode = /dev/input/js0   # Gamepad.
-
-system-ps3controller.acceleration.min = 0
-system-ps3controller.acceleration.max = 50
-system-ps3controller.deceleration.min = 0
-system-ps3controller.deceleration.max = -10
-system-ps3controller.steering.min = -10
-system-ps3controller.steering.max = 10

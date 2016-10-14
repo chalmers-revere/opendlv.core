@@ -1,4 +1,4 @@
-# proxy-sick - Interface to Sick.
+# proxy-trimble - Interface to GPS/IMU unit Trimble.
 # Copyright (C) 2016 Christian Berger
 #
 # This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (opendlv-core-system-proxy-sick)
+PROJECT (opendlv-core-system-proxy-trimble)
 
 ###########################################################################
 # Set the search path for .cmake files.
@@ -45,20 +45,28 @@ INCLUDE (CheckCxxTestEnvironment)
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
-# Find ODVDOpenDLVDataModel.
-FIND_PACKAGE (ODVDOpenDLVDataModel REQUIRED)
+# Find OpenDLV.
+SET(OPENDLV_DIR "${OPENDAVINCI_DIR}")
+FIND_PACKAGE (OpenDLV REQUIRED)
+
+###########################################################################
+# Find ODVDTrimble.
+find_package(ODVDTrimble REQUIRED)
 
 ###############################################################################
-# Set header files from ODVDOpenDLVDataModel.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDOPENDLVDATAMODEL_INCLUDE_DIRS})
+# Set header files from ODVDTrimble.
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDTRIMBLE_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
+# Set header files from OpenDLV.
+INCLUDE_DIRECTORIES (SYSTEM ${OPENDLV_INCLUDE_DIRS})
 # Set include directory.
 INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
-              ${ODVDOPENDLVDATAMODEL_LIBRARIES})
+              ${OPENDLV_LIBRARIES}
+              ${ODVDTRIMBLE_LIBRARIES})
 
 ###############################################################################
 # Build this project.
@@ -66,6 +74,15 @@ FILE(GLOB_RECURSE thisproject-sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 ADD_LIBRARY (${PROJECT_NAME}-static STATIC ${thisproject-sources})
 ADD_EXECUTABLE (${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/apps/${PROJECT_NAME}.cpp")
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} ${PROJECT_NAME}-static ${LIBRARIES}) 
+
+# This custom command copies the "2016-08-28-Trimble.dump" file to where
+# the test suites are generated (more correctly to the parent folder) so
+# that the test suite "ProxyTrimbleTestSuite.h" can open it during
+# exection.
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/2016-08-28-Trimble.dump
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-08-28-Trimble.dump ${CMAKE_BINARY_DIR}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-08-28-Trimble.dump)
+ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyDumpForTest DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/2016-08-28-Trimble.dump)
 
 ###############################################################################
 # Enable CxxTest for all available testsuites.
@@ -96,6 +113,10 @@ IF(CXXTEST_FOUND)
         ENDIF()
         SET_TESTS_PROPERTIES(${testsuite-short}-TestSuite PROPERTIES TIMEOUT 3000)
         TARGET_LINK_LIBRARIES(${testsuite-short}-TestSuite ${PROJECT_NAME}-static ${LIBRARIES})
+
+        # For the test suites that use an SCNX scenario, we are additionally copying
+        # the required scenarios to where the simulation runners are going to be executed.
+        ADD_DEPENDENCIES(${testsuite-short}-TestSuite ${PROJECT_NAME}-CopyDumpForTest)
     ENDFOREACH()
 ENDIF(CXXTEST_FOUND)
 

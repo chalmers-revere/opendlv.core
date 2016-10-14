@@ -1,6 +1,6 @@
 /**
- * proxy-sick - Interface to Sick.
- * Copyright (C) 2016 Chalmers REVERE
+ * proxy-applanix - Interface to GPS/IMU unit Trimble.
+ * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,16 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_PROXYSICK_H
-#define PROXY_PROXYSICK_H
+#ifndef PROXY_PROXYTRIMBLE_H
+#define PROXY_PROXYTRIMBLE_H
 
-#include <memory>
-
-#include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/data/Container.h>
-#include <opendavinci/odcore/wrapper/SerialPort.h>
+#include <opendavinci/odcore/io/tcp/TCPConnection.h>
 
-#include "SickStringDecoder.h"
+#include "TrimbleStringDecoder.h"
 
 namespace opendlv {
 namespace core {
@@ -36,12 +34,12 @@ namespace proxy {
 using namespace std;
 
 /**
- * Interface to Sick.
+ * Interface to GPS/IMU unit Trimble.
  */
-class ProxySick : public odcore::base::module::TimeTriggeredConferenceClientModule {
+class ProxyTrimble : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
-    ProxySick(const ProxySick & /*obj*/) = delete;
-    ProxySick &operator=(const ProxySick & /*obj*/) = delete;
+    ProxyTrimble(const ProxyTrimble & /*obj*/) = delete;
+    ProxyTrimble &operator=(const ProxyTrimble & /*obj*/) = delete;
 
    public:
     /**
@@ -50,29 +48,22 @@ class ProxySick : public odcore::base::module::TimeTriggeredConferenceClientModu
      * @param argc Number of command line arguments.
      * @param argv Command line arguments.
      */
-    ProxySick(const int &argc, char **argv);
+    ProxyTrimble(const int &argc, char **argv);
 
-    virtual ~ProxySick();
+    virtual ~ProxyTrimble();
+    virtual void nextContainer(odcore::data::Container &c);
 
    private:
     void setUp();
     void tearDown();
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
    private:
-    void status();
-    void startScan();
-    void stopScan();
-    void settingsMode();
-    void setCentimeterMode();
-
-   private:
-    std::shared_ptr<odcore::wrapper::SerialPort> m_sick;
-    std::unique_ptr<SickStringDecoder> m_sickStringDecoder;
+    std::shared_ptr< odcore::io::tcp::TCPConnection > m_trimble;
+    std::unique_ptr< TrimbleStringDecoder > m_trimbleStringDecoder;
 };
 }
 }
 }
 } // opendlv::core::system::proxy
 
-#endif /*PROXY_PROXYSICK_H*/
+#endif /*PROXY_PROXYTRIMBLE_H*/

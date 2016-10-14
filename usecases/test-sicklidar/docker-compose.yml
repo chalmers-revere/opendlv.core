@@ -27,25 +27,13 @@ services:
         - .:/opt/opendlv.data
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
 
-    # micro service for proxy-fh16.
-    proxy-fh16:
+    # micro service for proxy-lidar
+    proxy-lidar:
         build: .
         network_mode: "host"
+        user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
         devices:
-        - "/dev/pcanpci2:/dev/pcan2"
+        - "/dev/ttyS1:/dev/ttyS1"
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
-
-
-    # micro service for PS3 controller.
-    system-ps3controller:
-        build: .
-        network_mode: "host"
-        devices:
-        - "/dev/input/js0:/dev/input/js0"
-        depends_on:
-            - odsupercomponent
-            - proxy-fh16
-        command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=${CID} --freq=100"
-
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-sick --cid=${CID} --freq=1"
