@@ -27,8 +27,8 @@ namespace core {
 namespace system {
 namespace proxy {
 
-AxisCamera::AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug)
-    : Camera(name, width, height, bpp)
+AxisCamera::AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const bool &debug)
+    : Camera(name, width, height)
     , m_capture(nullptr)
     , m_image()
     , m_debug(debug) {

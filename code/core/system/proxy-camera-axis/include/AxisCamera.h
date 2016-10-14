@@ -68,10 +68,9 @@ class AxisCamera : public Camera {
      * @param password.
      * @param width Expected image width.
      * @param height Expected image height.
-     * @param bpp Bytes per pixel.
      * @param debug Show live image feed.
      */
-    AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug);
+    AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const bool &debug);
     virtual ~AxisCamera();
 
    private:

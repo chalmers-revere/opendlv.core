@@ -31,15 +31,15 @@ namespace proxy {
 
 using namespace odcore::base;
 
-Camera::Camera(const string &name, const uint32_t &width, const uint32_t &height, const uint32_t &bpp)
+Camera::Camera(const string &name, const uint32_t &width, const uint32_t &height)
     : m_sharedImage()
     , m_sharedMemory()
     , m_name(name)
     , m_width(width)
     , m_height(height)
-    , m_bpp(bpp)
     , m_size(0) {
-    m_size = width * height * bpp;
+    const uint32_t BPP = 3;
+    m_size = width * height * BPP;
 
     m_sharedMemory = odcore::wrapper::SharedMemoryFactory::createSharedMemory(name, m_size);
 
@@ -47,7 +47,7 @@ Camera::Camera(const string &name, const uint32_t &width, const uint32_t &height
     m_sharedImage.setSize(m_size);
     m_sharedImage.setWidth(width);
     m_sharedImage.setHeight(height);
-    m_sharedImage.setBytesPerPixel(bpp);
+    m_sharedImage.setBytesPerPixel(BPP);
 }
 
 Camera::~Camera() {}
@@ -62,10 +62,6 @@ uint32_t Camera::getWidth() const {
 
 uint32_t Camera::getHeight() const {
     return m_height;
-}
-
-uint32_t Camera::getBPP() const {
-    return m_bpp;
 }
 
 uint32_t Camera::getSize() const {
