@@ -26,6 +26,7 @@
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include <opendavinci/odcore/io/StringListener.h>
+#include "opendavinci/odcore/io/conference/ContainerConference.h"
 
 namespace opendlv {
 namespace core {
