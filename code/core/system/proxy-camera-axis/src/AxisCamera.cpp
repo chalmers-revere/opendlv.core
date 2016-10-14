@@ -20,11 +20,6 @@
 #include <iostream>
 #include <string>
 
-//#include "opencv2/imgproc/imgproc_c.h"
-//#include "opencv2/imgproc/imgproc.hpp"
-
-//#include <opencv2/core/core.hpp>
-
 #include "AxisCamera.h"
 
 namespace opendlv {
@@ -86,10 +81,8 @@ bool AxisCamera::copyImageTo(char *dest, const uint32_t &size) {
             cv::imshow("[proxy-camera-axis]", m_image);
             cv::waitKey(10);
         }
-
         retVal = true;
     }
-
     return retVal;
 }
 }
