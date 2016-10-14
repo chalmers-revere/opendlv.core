@@ -46,13 +46,8 @@
 
 #include "../include/velodyne64Decoder.h"
 
-const std::string NAME = "hangSPC";
-const uint32_t MAX_POINT_SIZE=125000;//The assumed max number of points per frame
-const uint32_t SIZE_PER_COMPONENT = sizeof(float);
-const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4;
-const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT;
+
 float* segment=NULL; 
-std::shared_ptr<odcore::wrapper::SharedMemory> velodyneSM=NULL;
 uint32_t mSize=0;
 
 using namespace std;
@@ -84,7 +79,7 @@ class MyContainerConference : public odcore::io::conference::ContainerConference
                                     && (velodyneFrame.getNumberOfComponentsPerPoint() == 4)
                                     && (velodyneFrame.getUserInfo() == SharedPointCloud::XYZ_INTENSITY)) {
                             mSize=velodyneFrame.getWidth();
-                            memcpy(segment,vsm->getSharedMemory(),SIZE);
+                            memcpy(segment,vsm->getSharedMemory(),velodyneFrame.getSize());
                             cout<<"Copy memory"<<endl;
                         }
                     } 
@@ -98,8 +93,9 @@ class MyContainerConference : public odcore::io::conference::ContainerConference
 
 class packetToByte : public odcore::io::conference::ContainerListener {
     public:
-         packetToByte():
-         v64decoder(velodyneSM,mcc,"db.xml")
+         packetToByte(std::shared_ptr<odcore::wrapper::SharedMemory> m):
+         m_velodyneSM(m),
+         v64decoder(m_velodyneSM,mcc,"../db.xml")
          {}
         
         ~packetToByte(){}
@@ -127,6 +123,7 @@ class packetToByte : public odcore::io::conference::ContainerListener {
 
         }
     private:
+        std::shared_ptr<odcore::wrapper::SharedMemory> m_velodyneSM;
         MyContainerConference mcc;
         opendlv::core::system::proxy::velodyne64Decoder v64decoder;
 };
@@ -135,8 +132,8 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite{
     public:  
         ProxyVelodyne64Test():
         mIndex(0),
-        compare(0)
-        //velodyneSM(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
+        compare(0),
+        velodyneSM(SharedMemoryFactory::createSharedMemory(NAME, SIZE))
         //segment(NULL),
         //mSize(0)
         {
@@ -179,12 +176,8 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite{
 
         void testVelodyneDecodingFromFile(){
             readCsvFile();
-            //mIndex=0;
-            compare=0;
-            velodyneSM=SharedMemoryFactory::createSharedMemory(NAME, SIZE);
-            //vsm=SharedMemoryFactory::createSharedMemory(NAME2, SIZE);
             PCAPProtocol pcap;
-            packetToByte p2b;
+            packetToByte p2b(velodyneSM);
             //MyContainerConference mcc;
             //opendlv::core::system::proxy::velodyne64Decoder v64decoder(velodyneSM,mcc);
             pcap.setContainerListener(&p2b);
@@ -222,6 +215,8 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite{
 
 private:
     const uint32_t BUFFER_SIZE=4000;
+    const std::string NAME = "testVelodyne64SM";
+    const uint32_t SIZE = 1616000;
     
     vector<float> xDataV;
     vector<float> yDataV;
@@ -229,7 +224,7 @@ private:
     vector<float> intensityV;
     uint32_t mIndex; 
     uint32_t compare;//Number of points matched between VeloView and our Velodyne decoder
-    //std::shared_ptr<odcore::wrapper::SharedMemory> velodyneSM;
+    std::shared_ptr<odcore::wrapper::SharedMemory> velodyneSM;
     //float* segment; 
     //uint32_t mSize;
 
