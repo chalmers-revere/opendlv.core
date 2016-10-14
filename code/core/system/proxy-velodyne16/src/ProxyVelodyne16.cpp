@@ -17,15 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <memory>
 
+#include "ProxyVelodyne16.h"
+#include "opendavinci/odcore/base/KeyValueConfiguration.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
-#include "opendavinci/odcore/base/KeyValueConfiguration.h"
-#include "ProxyVelodyne16.h"
 
 
 namespace opendlv {
@@ -33,50 +33,49 @@ namespace core {
 namespace system {
 namespace proxy {
 
-    using namespace odcore::wrapper;
-    using namespace odcore::io::udp;
+using namespace odcore::wrapper;
+using namespace odcore::io::udp;
 
-    ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv) :
-        TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16"),
-            memoryName(),
-            memorySize(0),
-            udpReceiverIP(),
-            udpPort(0),
-            VelodyneSharedMemory(NULL),
-            udpreceiver(NULL),
-            v16dSp(NULL){}
+ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv)
+    : TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16")
+    , memoryName()
+    , memorySize(0)
+    , udpReceiverIP()
+    , udpPort(0)
+    , VelodyneSharedMemory(NULL)
+    , udpreceiver(NULL)
+    , v16dSp(NULL) {}
 
-    ProxyVelodyne16::~ProxyVelodyne16() {}
+ProxyVelodyne16::~ProxyVelodyne16() {}
 
-    void ProxyVelodyne16::setUp() {
-        memoryName=getKeyValueConfiguration().getValue<string>("ProxyVelodyne16.sharedMemory.name");
-        memorySize=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne16.sharedMemory.size");
-        VelodyneSharedMemory=SharedMemoryFactory::createSharedMemory(memoryName, memorySize);
-        
-        udpReceiverIP=getKeyValueConfiguration().getValue<string>("ProxyVelodyne16.udpReceiverIP");
-        udpPort=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne16.udpPort");
-        udpreceiver=UDPFactory::createUDPReceiver(udpReceiverIP, udpPort);
-        
-        v16dSp=shared_ptr<velodyne16Decoder>(new velodyne16Decoder(VelodyneSharedMemory,getConference(),getKeyValueConfiguration().getValue<string>("ProxyVelodyne16.calibration")));
-    
-        udpreceiver->setStringListener(v16dSp.get());
-        // Start receiving bytes.
-        udpreceiver->start();
+void ProxyVelodyne16::setUp() {
+    memoryName = getKeyValueConfiguration().getValue< string >("ProxyVelodyne16.sharedMemory.name");
+    memorySize = getKeyValueConfiguration().getValue< uint32_t >("ProxyVelodyne16.sharedMemory.size");
+    VelodyneSharedMemory = SharedMemoryFactory::createSharedMemory(memoryName, memorySize);
+
+    udpReceiverIP = getKeyValueConfiguration().getValue< string >("ProxyVelodyne16.udpReceiverIP");
+    udpPort = getKeyValueConfiguration().getValue< uint32_t >("ProxyVelodyne16.udpPort");
+    udpreceiver = UDPFactory::createUDPReceiver(udpReceiverIP, udpPort);
+
+    v16dSp = shared_ptr< velodyne16Decoder >(new velodyne16Decoder(VelodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("ProxyVelodyne16.calibration")));
+
+    udpreceiver->setStringListener(v16dSp.get());
+    // Start receiving bytes.
+    udpreceiver->start();
+}
+
+void ProxyVelodyne16::tearDown() {
+    udpreceiver->stop();
+    udpreceiver->setStringListener(NULL);
+}
+
+// This method will do the main data processing job.
+odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
+    while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     }
-
-    void ProxyVelodyne16::tearDown() {
-        udpreceiver->stop();
-        udpreceiver->setStringListener(NULL);
-    }
-
-    // This method will do the main data processing job.
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
-        while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING){
-        }
-        return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-    }
+    return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+}
 }
 }
 }
 } // opendlv::core::system::proxy
-

@@ -17,14 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <memory>
 
+#include "opendavinci/odcore/base/KeyValueConfiguration.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
-#include "opendavinci/odcore/base/KeyValueConfiguration.h"
 
 #include "ProxyVelodyne64.h"
 
@@ -32,48 +32,48 @@ namespace opendlv {
 namespace core {
 namespace system {
 namespace proxy {
-    using namespace odcore::wrapper;
-    using namespace odcore::io::udp;
+using namespace odcore::wrapper;
+using namespace odcore::io::udp;
 
-    ProxyVelodyne64::ProxyVelodyne64(const int &argc, char **argv)
-        : TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne64"),
-            memoryName(),
-            memorySize(0),
-            udpReceiverIP(),
-            udpPort(0),
-            VelodyneSharedMemory(NULL),
-            udpreceiver(NULL),
-            v64dSp(NULL){}
+ProxyVelodyne64::ProxyVelodyne64(const int &argc, char **argv)
+    : TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne64")
+    , memoryName()
+    , memorySize(0)
+    , udpReceiverIP()
+    , udpPort(0)
+    , VelodyneSharedMemory(NULL)
+    , udpreceiver(NULL)
+    , v64dSp(NULL) {}
 
-    ProxyVelodyne64::~ProxyVelodyne64() {}
+ProxyVelodyne64::~ProxyVelodyne64() {}
 
-    void ProxyVelodyne64::setUp() {
-        memoryName=getKeyValueConfiguration().getValue<string>("ProxyVelodyne64.sharedMemory.name");
-        memorySize=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne64.sharedMemory.size");
-        VelodyneSharedMemory=SharedMemoryFactory::createSharedMemory(memoryName, memorySize);
-        
-        udpReceiverIP=getKeyValueConfiguration().getValue<string>("ProxyVelodyne64.udpReceiverIP");
-        udpPort=getKeyValueConfiguration().getValue<uint32_t>("ProxyVelodyne64.udpPort");
-        udpreceiver=UDPFactory::createUDPReceiver(udpReceiverIP, udpPort);
-        
-        v64dSp=shared_ptr<velodyne64Decoder>(new velodyne64Decoder(VelodyneSharedMemory,getConference(),getKeyValueConfiguration().getValue<string>("ProxyVelodyne64.calibration")));
-    
-        udpreceiver->setStringListener(v64dSp.get());
-        // Start receiving bytes.
-        udpreceiver->start();
+void ProxyVelodyne64::setUp() {
+    memoryName = getKeyValueConfiguration().getValue< string >("ProxyVelodyne64.sharedMemory.name");
+    memorySize = getKeyValueConfiguration().getValue< uint32_t >("ProxyVelodyne64.sharedMemory.size");
+    VelodyneSharedMemory = SharedMemoryFactory::createSharedMemory(memoryName, memorySize);
+
+    udpReceiverIP = getKeyValueConfiguration().getValue< string >("ProxyVelodyne64.udpReceiverIP");
+    udpPort = getKeyValueConfiguration().getValue< uint32_t >("ProxyVelodyne64.udpPort");
+    udpreceiver = UDPFactory::createUDPReceiver(udpReceiverIP, udpPort);
+
+    v64dSp = shared_ptr< velodyne64Decoder >(new velodyne64Decoder(VelodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("ProxyVelodyne64.calibration")));
+
+    udpreceiver->setStringListener(v64dSp.get());
+    // Start receiving bytes.
+    udpreceiver->start();
+}
+
+void ProxyVelodyne64::tearDown() {
+    udpreceiver->stop();
+    udpreceiver->setStringListener(NULL);
+}
+
+// This method will do the main data processing job.
+odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne64::body() {
+    while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     }
-
-    void ProxyVelodyne64::tearDown() {
-        udpreceiver->stop();
-        udpreceiver->setStringListener(NULL);
-    }
-
-    // This method will do the main data processing job.
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne64::body() {
-        while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-        }
-        return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-    }
+    return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+}
 }
 }
 }
