@@ -74,6 +74,9 @@ odcore::io::conference::ContainerConference &c, const string &s)
     //vertCorrection[sensor ID] is specified in the calibration file.
     string line;
     ifstream in(calibration);
+    if (!in.is_open()){
+        cout << "Calibration file not found." << endl;
+    }
     uint8_t counter = 0; //corresponds to the index of the vertical angle of each beam
     bool found = false;
 

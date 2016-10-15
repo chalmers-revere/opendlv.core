@@ -74,6 +74,9 @@ odcore::io::conference::ContainerConference &c, const string &s)
     //Load calibration data from the calibration file
     string line;
     ifstream in(calibration);
+    if (!in.is_open()){
+        cout << "Calibration file not found." << endl;
+    }
     int counter[5] = {0, 0, 0, 0, 0}; //corresponds to the index of the five calibration values
     bool found[5] = {false, false, false, false, false};
 
