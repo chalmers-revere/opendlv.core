@@ -17,10 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <stdint.h>
 
 #include <iostream>
-#include <string>
 #include <vector>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
@@ -45,6 +43,8 @@ ProxySick::ProxySick(const int &argc, char **argv)
     : TimeTriggeredConferenceClientModule(argc, argv, "proxy-sick")
     , m_sick()
     , m_sickStringDecoder()
+    , m_serialPort()
+    , m_baudRate()
 {
 }
 
@@ -63,22 +63,11 @@ void ProxySick::setUp()
   m_sickStringDecoder = unique_ptr<SickStringDecoder>(new SickStringDecoder(getConference(), x, y, z));
 
   // Connection configuration.
-  const string SERIAL_PORT = kv.getValue<string>("proxy-sick.port");
-  const uint32_t BAUD_RATE = 9600; // Fixed baud rate.
-  try {
-    m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
-    m_sick->setStringListener(m_sickStringDecoder.get());
-    m_sick->start();
-
-    stringstream sstrInfo;
-    sstrInfo << "[" << getName() << "] Connected to SICK, waiting for configuration (takes approx. 30s)..." << endl;
-    toLogger(odcore::data::LogMessage::LogLevel::INFO, sstrInfo.str());
-  }
-  catch (string &exception) {
-    stringstream sstrWarning;
-    sstrWarning << "[" << getName() << "] Could not connect to SICK: " << exception << endl;
-    toLogger(odcore::data::LogMessage::LogLevel::WARN, sstrWarning.str());
-  }
+  m_serialPort = kv.getValue<string>("proxy-sick.port");
+  m_baudRate = 38400;
+  // m_baudRate = 500000; //500kbaudrate
+  const uint32_t INIT_BAUD_RATE = 9600; // Fixed baud rate.
+  openSerialPort(m_serialPort, INIT_BAUD_RATE);
 }
 
 void ProxySick::tearDown()
@@ -95,23 +84,35 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body()
   uint32_t counter = 0;
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     counter++;
-    if (counter == 30) {
+    if (counter == 10) {
       cout << "Sending stop scan" << endl;
       stopScan();
     }
-    if (counter == 32) {
+    if (counter == 12) {
       cout << "Sending status request" << endl;
       status();
     }
-    if (counter == 34) {
+    if (counter == 14) {
+      cout << "Changing baudrate to " << m_baudRate << endl;
+      setBaudrate38400();
+      // setBaudrate500k();
+    }
+    if (counter == 18) {
+      cout << "Reconnecting with new baudrate" << endl;
+
+      m_sick->stop();
+      m_sick->setStringListener(NULL);
+      openSerialPort(m_serialPort, m_baudRate);
+    }
+    if (counter == 20) {
       cout << "Sending settings mode" << endl;
       settingsMode();
     }
-    if (counter == 38) {
+    if (counter == 22) {
       cout << "Sending centimeter mode" << endl;
       setCentimeterMode();
     }
-    if (counter == 40) {
+    if (counter == 24) {
       cout << "Start scanning" << endl;
       startScan();
       break;
@@ -159,6 +160,38 @@ void ProxySick::setCentimeterMode()
   const unsigned char centimeterMode[] = {0x02, 0x00, 0x21, 0x00, 0x77, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x00, 0x02, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0xCB};
   const string centimeterString(reinterpret_cast<char const *>(centimeterMode), 39);
   m_sick->send(centimeterString);
+}
+
+void ProxySick::setBaudrate38400()
+{
+  const unsigned char baudrate38400[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x40, 0x50, 0x08};
+  const string baudrate38400String(reinterpret_cast<char const *>(baudrate38400), 8);
+  m_sick->send(baudrate38400String); 
+}
+
+void ProxySick::setBaudrate500k()
+{ 
+  const unsigned char baudrate500k[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x48, 0x58, 0x08};
+  const string baudrate500kString(reinterpret_cast<char const *>(baudrate500k), 8);
+  m_sick->send(baudrate500kString);   
+}
+
+void ProxySick::openSerialPort(std::string a_serialPort, uint32_t a_baudRate)
+{
+  try {
+    m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(a_serialPort, a_baudRate));
+    m_sick->setStringListener(m_sickStringDecoder.get());
+    m_sick->start();
+
+    stringstream sstrInfo;
+    sstrInfo << "[" << getName() << "] Connected to SICK, waiting for configuration (takes approx. 30s)..." << endl;
+    toLogger(odcore::data::LogMessage::LogLevel::INFO, sstrInfo.str());
+  }
+  catch (string &exception) {
+    stringstream sstrWarning;
+    sstrWarning << "[" << getName() << "] Could not connect to SICK: " << exception << endl;
+    toLogger(odcore::data::LogMessage::LogLevel::WARN, sstrWarning.str());
+  }
 }
 
 }
