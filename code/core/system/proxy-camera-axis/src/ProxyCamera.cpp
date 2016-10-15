@@ -54,9 +54,16 @@ void ProxyCamera::setUp() {
     const string PASSWORD = getKeyValueConfiguration().getValue< string >("proxy-camera-axis.password");
     const uint32_t WIDTH = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.width");
     const uint32_t HEIGHT = getKeyValueConfiguration().getValue< uint32_t >("proxy-camera-axis.height");
+    string CALIBRATION_FILE = "";
+    try {
+        CALIBRATION_FILE = getKeyValueConfiguration().getValue< string >("proxy-camera-axis.calibrationfile");
+    }
+    catch(...) {
+        CALIBRATION_FILE = "";
+    }
     const bool DEBUG = getKeyValueConfiguration().getValue< bool >("proxy-camera-axis.debug") == 1;
 
-    m_camera = unique_ptr< Camera >(new AxisCamera(NAME, ADDRESS, USERNAME, PASSWORD, WIDTH, HEIGHT, DEBUG));
+    m_camera = unique_ptr< Camera >(new AxisCamera(NAME, ADDRESS, USERNAME, PASSWORD, WIDTH, HEIGHT, CALIBRATION_FILE, DEBUG));
     if (m_camera.get() == NULL) {
         cerr << "[" << getName() << "] No valid camera type defined." << endl;
     }

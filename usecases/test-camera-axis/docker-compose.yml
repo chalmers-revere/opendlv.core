@@ -28,14 +28,16 @@ services:
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.core.configuration/configuration"
 
 
-    # Micro-service for proxy-camera-axis.
-    proxy-camera-axis:
+    # Micro-service for proxy-camera-axis0.
+    proxy-camera-axis0:
         build: .
 #        group_add:
 #            - video
         depends_on:
             - odsupercomponent
         user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
+        volumes:
+            - .:/opt/opendlv.core.configuration
         network_mode: host
         ipc: host
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera-axis --cid=${CID} --freq=20 --id=0"

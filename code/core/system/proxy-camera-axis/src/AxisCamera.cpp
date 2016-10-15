@@ -20,6 +20,8 @@
 #include <iostream>
 #include <string>
 
+#include <opencv2/imgproc/imgproc.hpp>
+
 #include "AxisCamera.h"
 
 namespace opendlv {
@@ -27,9 +29,11 @@ namespace core {
 namespace system {
 namespace proxy {
 
-AxisCamera::AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const bool &debug)
+AxisCamera::AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const string &calibrationFile, const bool &debug)
     : Camera(name, width, height)
     , m_capture(nullptr)
+    , m_intrinsicCalibration()
+    , m_extrinsicCalibration()
     , m_image()
     , m_debug(debug) {
 
@@ -48,6 +52,20 @@ AxisCamera::AxisCamera(const string &name, const string &address, const string &
     } else {
         cerr << "[proxy-camera-axis] Could not open camera '" << VIDEO_STREAM_ADDRESS << "'" << endl;
     }
+
+    // Try to read calibration file if camera is present.
+    if (m_capture->isOpened()) {
+        try {
+            cv::FileStorage fileStorage(calibrationFile, cv::FileStorage::READ);
+            fileStorage["camera_matrix"] >> m_extrinsicCalibration;
+            fileStorage["distortion_coefficients"] >> m_intrinsicCalibration;
+            fileStorage.release();
+        }
+        catch (cv::Exception &ex){
+            const char *errorMessage = ex.what();
+            cerr << "[proxy-camera-axis] Failed to read calibration file " << calibrationFile <<  ": " << errorMessage << endl;
+        }
+    }
 }
 
 AxisCamera::~AxisCamera() {
@@ -65,6 +83,11 @@ bool AxisCamera::captureFrame() {
     bool retVal = false;
     if (m_capture != nullptr) {
         if (m_capture->read(m_image)) {
+            if (!m_intrinsicCalibration.empty() && !m_extrinsicCalibration.empty()){
+                cv::Mat tmpClone = m_image.clone();
+                cv::undistort(tmpClone, m_image, m_extrinsicCalibration, m_intrinsicCalibration);
+                tmpClone.release();
+            }
             retVal = true;
         }
     }
