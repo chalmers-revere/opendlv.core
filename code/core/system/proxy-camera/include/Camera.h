@@ -65,9 +65,9 @@ class Camera {
      *
      * @param name Name of the shared memory segment.
      * @param id Camera identifier.
-     * @param width
-     * @param height
-     * @param bpp
+     * @param width Expected image width.
+     * @param height Expected image height.
+     * @param bpp Bytes per pixel.
      */
     Camera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp);
 
@@ -94,15 +94,10 @@ class Camera {
     virtual bool isValid() const = 0;
 
     const string getName() const;
-
     uint32_t getID() const;
-
     uint32_t getWidth() const;
-
     uint32_t getHeight() const;
-
     uint32_t getBPP() const;
-
     uint32_t getSize() const;
 
    private:

@@ -1,5 +1,5 @@
 /**
- * proxy-camera - Interface to OpenCV-based cameras.
+ * proxy-camera-axis - Interface to network cameras from Axis.
  * Copyright (C) 2012 - 2015 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -17,16 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UEYECAMERA_H_
-#define UEYECAMERA_H_
+#ifndef CAMERA_H_
+#define CAMERA_H_
 
-#ifdef HAVE_UEYE
+#include <stdint.h>
 
-#include <opencv2/highgui/highgui.hpp>
+#include <memory>
+#include <string>
 
-#include <ueye.h>
-
-#include "Camera.h"
+#include <opendavinci/GeneratedHeaders_OpenDaVINCI.h>
+#include <opendavinci/odcore/wrapper/SharedMemory.h>
 
 namespace opendlv {
 namespace core {
@@ -36,9 +36,9 @@ namespace proxy {
 using namespace std;
 
 /**
- * This class wraps a uEye camera and captures its data into a shared memory segment.
+ * This class wraps a camera and captures its data into a shared memory segment.
  */
-class uEyeCamera : public Camera {
+class Camera {
    private:
     /**
      * "Forbidden" copy constructor. Goal: The compiler should warn
@@ -47,7 +47,7 @@ class uEyeCamera : public Camera {
      *
      * @param obj Reference to an object of this class.
      */
-    uEyeCamera(const uEyeCamera & /*obj*/);
+    Camera(const Camera & /*obj*/);
 
     /**
      * "Forbidden" assignment operator. Goal: The compiler should warn
@@ -57,45 +57,58 @@ class uEyeCamera : public Camera {
      * @param obj Reference to an object of this class.
      * @return Reference to this instance.
      */
-    uEyeCamera &operator=(const uEyeCamera & /*obj*/);
+    Camera &operator=(const Camera & /*obj*/);
 
    public:
     /**
      * Constructor.
      *
      * @param name Name of the shared memory segment.
-     * @param id uEyeCamera identifier.
-     * @param width
-     * @param height
-     * @param bpp
-     * @param debug
+     * @param width Expected image width.
+     * @param height Expected image height.
      */
-    uEyeCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped);
+    Camera(const string &name, const uint32_t &width, const uint32_t &height);
 
-    virtual ~uEyeCamera();
+    virtual ~Camera();
+
+    /**
+     * @return Meta information about the image.
+     */
+    odcore::data::image::SharedImage capture();
+
+   protected:
+    /**
+     * This method is responsible to copy the image from the
+     * specific camera driver to the shared memory.
+     *
+     * @param dest Pointer where to copy the data.
+     * @param size Number of bytes to copy.
+     * @return true if the data was successfully copied.
+     */
+    virtual bool copyImageTo(char *dest, const uint32_t &size) = 0;
+
+    virtual bool captureFrame() = 0;
+
+    virtual bool isValid() const = 0;
+
+    const string getName() const;
+    uint32_t getWidth() const;
+    uint32_t getHeight() const;
+    uint32_t getSize() const;
 
    private:
-    virtual bool copyImageTo(char *dest, const uint32_t &size);
+    odcore::data::image::SharedImage m_sharedImage;
+    std::shared_ptr< odcore::wrapper::SharedMemory > m_sharedMemory;
 
-    virtual bool isValid() const;
-
-    virtual bool captureFrame();
-
-   private:
-    bool m_debug;
-    HIDS m_capture;
-    char *m_imageMemory;
-    void *m_ueyeImagePtr;
-    int m_pid;
-    IplImage *m_image;
-    bool m_debug;
-    bool m_flipped;
+   protected:
+    string m_name;
+    uint32_t m_width;
+    uint32_t m_height;
+    uint32_t m_size;
 };
 }
 }
 }
 } // opendlv::core::system::proxy
 
-#endif /*HAVE_UEYE*/
-
-#endif /*UEYECAMERA_H_*/
+#endif /*CAMERA_H_*/

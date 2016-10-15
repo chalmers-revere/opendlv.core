@@ -1,5 +1,5 @@
 /**
- * proxy-camera - Interface to OpenCV-based cameras.
+ * proxy-camera-axis - Interface to network cameras from Axis.
  * Copyright (C) 2012 - 2015 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -31,16 +31,15 @@ namespace proxy {
 
 using namespace odcore::base;
 
-Camera::Camera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp)
+Camera::Camera(const string &name, const uint32_t &width, const uint32_t &height)
     : m_sharedImage()
     , m_sharedMemory()
     , m_name(name)
-    , m_id(id)
     , m_width(width)
     , m_height(height)
-    , m_bpp(bpp)
     , m_size(0) {
-    m_size = width * height * bpp;
+    const uint32_t BPP = 3;
+    m_size = width * height * BPP;
 
     m_sharedMemory = odcore::wrapper::SharedMemoryFactory::createSharedMemory(name, m_size);
 
@@ -48,7 +47,7 @@ Camera::Camera(const string &name, const uint32_t &id, const uint32_t &width, co
     m_sharedImage.setSize(m_size);
     m_sharedImage.setWidth(width);
     m_sharedImage.setHeight(height);
-    m_sharedImage.setBytesPerPixel(bpp);
+    m_sharedImage.setBytesPerPixel(BPP);
 }
 
 Camera::~Camera() {}
@@ -57,20 +56,12 @@ const string Camera::getName() const {
     return m_name;
 }
 
-uint32_t Camera::getID() const {
-    return m_id;
-}
-
 uint32_t Camera::getWidth() const {
     return m_width;
 }
 
 uint32_t Camera::getHeight() const {
     return m_height;
-}
-
-uint32_t Camera::getBPP() const {
-    return m_bpp;
 }
 
 uint32_t Camera::getSize() const {

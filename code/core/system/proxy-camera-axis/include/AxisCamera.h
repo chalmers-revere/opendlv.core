@@ -1,6 +1,6 @@
 /**
- * proxy-camera - Interface to OpenCV-based cameras.
- * Copyright (C) 2012 - 2015 Christian Berger
+ * proxy-camera-axis - Interface to network cameras from Axis.
+ * Copyright (C) 2016 Chalmers REVERE
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,9 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef OPENCVCAMERA_H_
-#define OPENCVCAMERA_H_
+#ifndef AXISCAMERA_H_
+#define AXISCAMERA_H_
 
+#include <memory>
+
+#include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 #include "Camera.h"
@@ -32,9 +35,9 @@ namespace proxy {
 using namespace std;
 
 /**
- * This class wraps an OpenCV camera and captures its data into a shared memory segment.
+ * This class wraps an Axis camera and captures its data into a shared memory segment.
  */
-class OpenCVCamera : public Camera {
+class AxisCamera : public Camera {
    private:
     /**
      * "Forbidden" copy constructor. Goal: The compiler should warn
@@ -43,7 +46,7 @@ class OpenCVCamera : public Camera {
      *
      * @param obj Reference to an object of this class.
      */
-    OpenCVCamera(const OpenCVCamera & /*obj*/);
+    AxisCamera(const AxisCamera & /*obj*/);
 
     /**
      * "Forbidden" assignment operator. Goal: The compiler should warn
@@ -53,22 +56,22 @@ class OpenCVCamera : public Camera {
      * @param obj Reference to an object of this class.
      * @return Reference to this instance.
      */
-    OpenCVCamera &operator=(const OpenCVCamera & /*obj*/);
+    AxisCamera &operator=(const AxisCamera & /*obj*/);
 
    public:
     /**
      * Constructor.
      *
      * @param name Name of the shared memory segment.
-     * @param id OpenCVCamera identifier.
+     * @param address IP/Port to AxisCamera.
+     * @param username.
+     * @param password.
      * @param width Expected image width.
      * @param height Expected image height.
-     * @param bpp Bytes per pixel.
      * @param debug Show live image feed.
-     * @param flipped Is the camera mounted upside down?
      */
-    OpenCVCamera(const string &name, const uint32_t &id, const uint32_t &width, const uint32_t &height, const uint32_t &bpp, const bool &debug, const bool &flipped);
-    virtual ~OpenCVCamera();
+    AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const bool &debug);
+    virtual ~AxisCamera();
 
    private:
     virtual bool copyImageTo(char *dest, const uint32_t &size);
@@ -76,14 +79,13 @@ class OpenCVCamera : public Camera {
     virtual bool captureFrame();
 
    private:
-    CvCapture *m_capture;
-    IplImage *m_image;
+    std::unique_ptr<cv::VideoCapture> m_capture;
+    cv::Mat m_image;
     bool m_debug;
-    bool m_flipped;
 };
 }
 }
 }
 } // opendlv::core::system::proxy
 
-#endif /*OPENCVCAMERA_H_*/
+#endif /*AXISCAMERA_H_*/

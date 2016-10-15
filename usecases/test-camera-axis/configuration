@@ -27,7 +27,7 @@ global.buffer.memorySegmentSize = 2800000 # Size of a memory segment in bytes.
 global.buffer.numberOfMemorySegments = 20 # Number of memory segments.
 
 # The following key describes the list of modules expected to participate in this --cid session.
-global.session.expectedModules = odrecorderh264,proxy-camera
+global.session.expectedModules = proxy-camera-axis-axis
 
 
 ###############################################################################
@@ -75,34 +75,41 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 ###############################################################################
 ###############################################################################
 #
-# CONFIGURATION FOR HEALTH
-#
-health.script = ./checkHealth.sh
-health.sleep = 60 # Sleep between health checks in seconds
-
-
-###############################################################################
-###############################################################################
-#
-# CONFIGURATION FOR ODRECORDERH264
-#
-#odrecorderh264.output = file://recorder.rec # If this parameter is not present, odrecorderh264 will autogenerate a filename.
-odrecorderh264.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. start and stop recording)
-odrecorderh264.dumpSharedData = 0 # 0 = do not dump shared images and shared images, 1 = otherwise
-odrecorderh264.lossless = 1 # Set to 1 to enable h264 lossless encoding.
-odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes is connecting to the parent process via TCP using the base port plus its increasing ID.
-
-
-###############################################################################
-###############################################################################
-#
 # CONFIGURATION FOR PROXY
 #
-proxy-camera.camera.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera.camera.name = DocumentationCamera0
-proxy-camera.camera.id = 0          # Select here the proper ID for OpenCV.
-proxy-camera.camera.width = 640
-proxy-camera.camera.height = 480
-proxy-camera.camera.bpp = 3
-proxy-camera.camera.flipped = 1     # 1 = flipped image, 0 = not flipped image.
+proxy-camera-axis.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera-axis.name = AxisCamera0
+
+proxy-camera-axis:0.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera-axis:0.name = front-left
+proxy-camera-axis:0.address = 10.42.42.90
+proxy-camera-axis:0.username = root
+proxy-camera-axis:0.password = gcdc
+proxy-camera-axis:0.width = 1280
+proxy-camera-axis:0.height = 720
+
+proxy-camera-axis:1.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera-axis:1.name = front-right
+proxy-camera-axis:1.address = 10.42.42.91
+proxy-camera-axis:1.username = root
+proxy-camera-axis:1.password = gcdc
+proxy-camera-axis:1.width = 1280
+proxy-camera-axis:1.height = 720
+
+proxy-camera-axis:2.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera-axis:2.name = rear-right
+proxy-camera-axis:2.address = 10.42.42.92
+proxy-camera-axis:2.username = root
+proxy-camera-axis:2.password = gcdc
+proxy-camera-axis:2.width = 1280
+proxy-camera-axis:2.height = 720
+
+proxy-camera-axis:3.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera-axis:3.type = opencv-ip-axis
+proxy-camera-axis:3.name = rear-left
+proxy-camera-axis:3.address = 10.42.42.93
+proxy-camera-axis:3.username = root
+proxy-camera-axis:3.password = gcdc
+proxy-camera-axis:3.width = 1280
+proxy-camera-axis:3.height = 720
 

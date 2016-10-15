@@ -1,6 +1,6 @@
 /**
- * proxy-camera - Interface to OpenCV-based cameras.
- * Copyright (C) 2016 Christian Berger
+ * proxy-camera-axis - Interface to network cameras from Axis.
+ * Copyright (C) 2016 Chalmers REVERE
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
