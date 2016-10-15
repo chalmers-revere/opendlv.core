@@ -68,9 +68,10 @@ class AxisCamera : public Camera {
      * @param password.
      * @param width Expected image width.
      * @param height Expected image height.
+     * @param calibrationFile Name of a .yml file containing the intrinsic and extrinsic calibration parameters.
      * @param debug Show live image feed.
      */
-    AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const bool &debug);
+    AxisCamera(const string &name, const string &address, const string &username, const string &password, const uint32_t &width, const uint32_t &height, const string &calibrationFile, const bool &debug);
     virtual ~AxisCamera();
 
    private:
@@ -80,6 +81,8 @@ class AxisCamera : public Camera {
 
    private:
     std::unique_ptr<cv::VideoCapture> m_capture;
+    cv::Mat m_intrinsicCalibration;
+    cv::Mat m_extrinsicCalibration;
     cv::Mat m_image;
     bool m_debug;
 };
