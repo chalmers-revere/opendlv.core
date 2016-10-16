@@ -33,14 +33,14 @@ using namespace opendlv::core::system::proxy;
  * This class derives from SensorBoard to allow access to protected methods.
  */
 class ProxyTestling : public ProxyV2V {
-    private:
-        ProxyTestling();
-    
-    public:
-        ProxyTestling(const int32_t &argc, char **argv) :
-            ProxyV2V(argc, argv) {}
+   private:
+    ProxyTestling();
 
-        // Here, you need to add all methods which are protected in ProxyV2V and which are needed for the test cases.
+   public:
+    ProxyTestling(const int32_t &argc, char **argv)
+        : ProxyV2V(argc, argv) {}
+
+    // Here, you need to add all methods which are protected in ProxyV2V and which are needed for the test cases.
 };
 
 /**
@@ -48,57 +48,58 @@ class ProxyTestling : public ProxyV2V {
  */
 class ProxyV2VTest : public CxxTest::TestSuite {
    private:
-        ProxyTestling *dt;
+    ProxyTestling *dt;
 
    public:
     void setUp() {
-            // Prepare the data that would be available from commandline.
-            string argv0("proxy-v2v");
-            string argv1("--cid=100");
-            int32_t argc = 2;
-            char **argv;
-            argv = new char*[2];
-            argv[0] = const_cast<char*>(argv0.c_str());
-            argv[1] = const_cast<char*>(argv1.c_str());
+        // Prepare the data that would be available from commandline.
+        string argv0("proxy-v2v");
+        string argv1("--cid=100");
+        int32_t argc = 2;
+        char **argv;
+        argv = new char *[2];
+        argv[0] = const_cast< char * >(argv0.c_str());
+        argv[1] = const_cast< char * >(argv1.c_str());
 
-            // Create an instance of sensorboard through SensorBoardTestling which will be deleted in tearDown().
-            dt = new ProxyTestling(argc, argv);
-        }
+        // Create an instance of sensorboard through SensorBoardTestling which will be deleted in tearDown().
+        dt = new ProxyTestling(argc, argv);
+    }
 
     void tearDown() {
-            delete dt;
-            dt = NULL;
-        }
+        delete dt;
+        dt = NULL;
+    }
 
     void testApplication() {
         //TS_ASSERT(true);
         TS_ASSERT(dt != NULL);
     }
-   
-   ////////////////////////////////////////////////////////////////////////////////////
-        // Below this line the necessary constructor for initializing the pointer variables,
-        // and the forbidden copy constructor and assignment operator are declared.
-        //
-        // These functions are normally not changed.
-        ////////////////////////////////////////////////////////////////////////////////////
 
-    public:
-        /**
+    ////////////////////////////////////////////////////////////////////////////////////
+    // Below this line the necessary constructor for initializing the pointer variables,
+    // and the forbidden copy constructor and assignment operator are declared.
+    //
+    // These functions are normally not changed.
+    ////////////////////////////////////////////////////////////////////////////////////
+
+   public:
+    /**
          * This constructor is only necessary to initialize the pointer variable.
          */
-        ProxyV2VTest() : dt(NULL) {}
+    ProxyV2VTest()
+        : dt(NULL) {}
 
-    private:
-        /**
+   private:
+    /**
          * "Forbidden" copy constructor. Goal: The compiler should warn
          * already at compile time for unwanted bugs caused by any misuse
          * of the copy constructor.
          *
          * @param obj Reference to an object of this class.
          */
-        ProxyV2VTest(const ProxyV2VTest &/*obj*/);
+    ProxyV2VTest(const ProxyV2VTest & /*obj*/);
 
-        /**
+    /**
          * "Forbidden" assignment operator. Goal: The compiler should warn
          * already at compile time for unwanted bugs caused by any misuse
          * of the assignment operator.
@@ -106,7 +107,7 @@ class ProxyV2VTest : public CxxTest::TestSuite {
          * @param obj Reference to an object of this class.
          * @return Reference to this instance.
          */
-        ProxyV2VTest& operator=(const ProxyV2VTest &/*obj*/);
+    ProxyV2VTest &operator=(const ProxyV2VTest & /*obj*/);
 };
 
 #endif /*PROXY_PROXYV2V_TESTSUITE_H*/

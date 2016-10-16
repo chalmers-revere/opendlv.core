@@ -22,8 +22,11 @@
 #include <iostream>
 
 #include <opendavinci/odcore/data/Container.h>
-#include <opendavinci/odcore/data/TimeStamp.h>
-#include <opendavinci/odcore/strings/StringToolbox.h>
+#include <opendavinci/odcore/base/KeyValueConfiguration.h>
+#include <opendavinci/odcore/io/Packet.h>
+#include <opendavinci/odcore/io/udp/UDPFactory.h>
+
+#include "odvdv2v/GeneratedHeaders_ODVDV2V.h"
 
 #include "ProxyV2V.h"
 
@@ -37,22 +40,70 @@ using namespace odcore::base;
 using namespace odcore::data;
 
 ProxyV2V::ProxyV2V(const int &argc, char **argv)
-    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-v2v") {}
+    : DataTriggeredConferenceClientModule(argc, argv, "proxy-v2v")
+    , m_udpsender()
+    , m_udpreceiver() {}
 
 ProxyV2V::~ProxyV2V() {}
 
 void ProxyV2V::setUp() {
-//    const string NAME = getKeyValueConfiguration().getValue< string >("proxy-camera-axis.name");
-//        cerr << "[" << getName() << "] No valid camera type defined." << endl;
+    odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
+
+    const string RECEIVER = "0.0.0.0";
+    const uint32_t RECEIVERPORT = kv.getValue< uint32_t >("proxy-v2v.listenPort");
+    cout << RECEIVERPORT << std::endl;
+    try {
+        m_udpreceiver = shared_ptr< odcore::io::udp::UDPReceiver >(odcore::io::udp::UDPFactory::createUDPReceiver(RECEIVER, RECEIVERPORT));
+        m_udpreceiver->setPacketListener(this);
+        m_udpreceiver->start();
+    }
+    catch (std::string &exception) {
+        cerr << "[" << getName() << "] Error while creating UDP receiver:  " << exception << endl;
+    }
+
+
+    const string TARGET = kv.getValue< std::string >("proxy-v2v.comboxIp");
+    const uint32_t TARGETPORT = kv.getValue< uint32_t >("proxy-v2v.comboxPort");
+    try {
+        m_udpsender = std::shared_ptr< odcore::io::udp::UDPSender >(odcore::io::udp::UDPFactory::createUDPSender(TARGET, TARGETPORT));
+    }
+    catch (std::string &exception) {
+        cerr << "[" << getName() << "] Error while creating UDP sender:  " << exception << endl;
+    }
 }
 
-void ProxyV2V::tearDown() {}
+void ProxyV2V::tearDown() {
+    m_udpreceiver->stop();
+    m_udpreceiver->setPacketListener(NULL);
+}
 
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyV2V::body() {
-    while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+void ProxyV2V::nextPacket(const odcore::io::Packet &p) {
+    cout << "[" << getName() << "] Received a packet from " << p.getSender() << ", "
+         << "with " << p.getData().length()
+         // << " bytes containing '"
+         // << p.getData() << "'"
+         << endl;
+
+    opendlv::proxy::V2vReading nextMessage;
+    nextMessage.setSize(p.getData().length());
+    nextMessage.setData(p.getData());
+
+    odcore::data::Container c(nextMessage);
+    getConference().send(c);
+}
+
+void ProxyV2V::nextContainer(odcore::data::Container &c) {
+    if (c.getDataType() == opendlv::proxy::V2vRequest::ID()) {
+        cout << "[" << getName() << "] Got an outbound message" << std::endl;
+
+        opendlv::proxy::V2vRequest message = c.getData< opendlv::proxy::V2vRequest >();
+        try {
+            m_udpsender->send(message.getData());
+        }
+        catch (string &exception) {
+            cerr << "[" << getName() << "] Data could not be sent: " << exception << endl;
+        }
     }
-//    cout << "[" << getName() << "] Captured " << captureCounter << " frames." << endl;
-    return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 }
 }

@@ -20,7 +20,12 @@
 #ifndef PROXY_PROXYV2V_H
 #define PROXY_PROXYV2V_H
 
-#include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include <memory>
+
+#include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/io/PacketListener.h>
+#include <opendavinci/odcore/io/udp/UDPReceiver.h>
+#include <opendavinci/odcore/io/udp/UDPSender.h>
 
 namespace opendlv {
 namespace core {
@@ -32,7 +37,8 @@ using namespace std;
 /**
  * Interface to a V2V unit.
  */
-class ProxyV2V : public odcore::base::module::TimeTriggeredConferenceClientModule {
+class ProxyV2V : public odcore::base::module::DataTriggeredConferenceClientModule,
+                 public odcore::io::PacketListener {
    private:
     ProxyV2V(const ProxyV2V & /*obj*/) = delete;
     ProxyV2V &operator=(const ProxyV2V & /*obj*/) = delete;
@@ -48,10 +54,17 @@ class ProxyV2V : public odcore::base::module::TimeTriggeredConferenceClientModul
 
     virtual ~ProxyV2V();
 
+   public:
+    virtual void nextPacket(const odcore::io::Packet &p);
+    virtual void nextContainer(odcore::data::Container &c);
+
    private:
     void setUp();
     void tearDown();
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+
+   private:
+    shared_ptr< odcore::io::udp::UDPSender > m_udpsender;
+    shared_ptr< odcore::io::udp::UDPReceiver > m_udpreceiver;
 };
 }
 }

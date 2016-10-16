@@ -45,12 +45,12 @@ INCLUDE (CheckCxxTestEnvironment)
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
-# Find OpenDaVINCI.
-FIND_PACKAGE(OpenCV REQUIRED)
+# Find ODVDV2V.
+find_package(ODVDV2V REQUIRED)
 
 ###############################################################################
-# Set header files from OpenCV.
-INCLUDE_DIRECTORIES (SYSTEM ${OpenCV_INCLUDE_DIR})
+# Set header files from ODVDTrimble.
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDV2V_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set include directory.
@@ -58,7 +58,7 @@ INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
-              ${OpenCV_LIBS})
+              ${ODVDV2V_LIBRARIES})
 
 ###############################################################################
 # Build this project.
