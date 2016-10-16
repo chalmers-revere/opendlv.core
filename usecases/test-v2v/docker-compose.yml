@@ -33,5 +33,5 @@ services:
         network_mode: "host"
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2v"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2v --cid=${CID}"
 

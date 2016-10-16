@@ -51,7 +51,6 @@ void ProxyV2V::setUp() {
 
     const string RECEIVER = "0.0.0.0";
     const uint32_t RECEIVERPORT = kv.getValue< uint32_t >("proxy-v2v.listenPort");
-    cout << RECEIVERPORT << std::endl;
     try {
         m_udpreceiver = shared_ptr< odcore::io::udp::UDPReceiver >(odcore::io::udp::UDPFactory::createUDPReceiver(RECEIVER, RECEIVERPORT));
         m_udpreceiver->setPacketListener(this);
