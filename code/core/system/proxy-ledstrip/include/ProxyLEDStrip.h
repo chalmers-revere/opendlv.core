@@ -23,7 +23,6 @@
 #include <memory>
 
 #include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
-#include <opendavinci/odcore/data/TimeStamp.h>
 
 namespace opendlv {
 namespace core {
@@ -64,7 +63,6 @@ class ProxyLEDStrip : public odcore::base::module::DataTriggeredConferenceClient
     uint8_t m_R;
     uint8_t m_G;
     uint8_t m_B;
-    odcore::data::TimeStamp m_timeStamp;
 };
 }
 }
