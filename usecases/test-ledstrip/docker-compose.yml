@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# Date: 2016-09-09
+# Date: 2016-10-16
 
 version: '2'
 
@@ -24,17 +24,16 @@ services:
         build: .
         network_mode: "host"
         volumes:
-        - .:/opt/opendlv.data
-        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
-
-    # micro service for proxy-lidar
-    proxy-lidar:
+        - .:/opt/copplar.data
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/copplar.data/configuration"
+        
+    # micro service for proxy-ledstrip.
+    proxy-ledstrip:
         build: .
-        network_mode: "host"
-        user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
         devices:
-            - "/dev/ttyUSB0:/dev/ttyUSB0"
+        - "/dev/ttyS1:/dev/ttyS1"
+        network_mode: "host"
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-ledstrip --cid=${CID} --freq=10"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2v --cid=${CID}"
 

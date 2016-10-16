@@ -1,5 +1,6 @@
-/*
- * Copyright (C) 2016 Chalmers REVERE
+/**
+ * proxy-ledstrip - Interface to the LED strip.
+ * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,20 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-message opendlv.model.Direction [id = 152] {
-  float azimuth [id = 1];
-  float zenith [id = 2];
-}
+#include "ProxyLEDStrip.h"
 
-message opendlv.core.sensors.EchoReading [id = 166] {
-  list<opendlv.model.Direction> directions [id = 1];
-  list<double> radii [id = 2];
-  uint32 numberOfPoints [id = 3];
+int32_t main(int32_t argc, char **argv) {
+    opendlv::core::system::proxy::ProxyLEDStrip led(argc, argv);
+    return led.runModule();
 }
-
-message opendlv.perception.StimulusDirectionOfMovement [id = 180] {
-  odcore::data::TimeStamp identified [id = 1];
-  opendlv.model.Direction desiredDirectionOfMovement [id = 2];
-  opendlv.model.Direction directionOfMovement [id = 3];
-}
-
