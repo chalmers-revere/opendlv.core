@@ -18,15 +18,20 @@
  */
 
 #include <stdint.h>
+#include <cmath>
 
 #include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
-#include <opendavinci/odcore/io/Packet.h>
-#include <opendavinci/odcore/io/udp/UDPFactory.h>
+#include <opendavinci/odcore/wrapper/SerialPort.h>
+#include <opendavinci/odcore/wrapper/SerialPortFactory.h>
 
-#include "odvdv2v/GeneratedHeaders_ODVDV2V.h"
+#include "odvdopendlvdatamodel/generated/opendlv/model/Direction.h"
+#include "odvdopendlvdatamodel/generated/opendlv/perception/StimulusDirectionOfMovement.h"
 
 #include "ProxyLEDStrip.h"
 
@@ -38,72 +43,176 @@ namespace proxy {
 using namespace std;
 using namespace odcore::base;
 using namespace odcore::data;
+using namespace odcore::wrapper;
 
 ProxyLEDStrip::ProxyLEDStrip(const int &argc, char **argv)
     : DataTriggeredConferenceClientModule(argc, argv, "proxy-ledstrip")
-    , m_udpsender()
-    , m_udpreceiver() {}
+    , m_angle(0.0f)
+    , m_R(0)
+    , m_G(255)
+    , m_B(0)
+    , m_timeStamp() {}
 
 ProxyLEDStrip::~ProxyLEDStrip() {}
 
-void ProxyLEDStrip::setUp() {
-    odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
+void ProxyLEDStrip::setUp() {}
+//        cerr << "[" << getName() << "] Error while creating UDP sender:  " << exception << endl;
 
-    const string RECEIVER = "0.0.0.0";
-    const uint32_t RECEIVERPORT = kv.getValue< uint32_t >("proxy-ledstrip.listenPort");
-    try {
-        m_udpreceiver = shared_ptr< odcore::io::udp::UDPReceiver >(odcore::io::udp::UDPFactory::createUDPReceiver(RECEIVER, RECEIVERPORT));
-        m_udpreceiver->setPacketListener(this);
-        m_udpreceiver->start();
-    }
-    catch (std::string &exception) {
-        cerr << "[" << getName() << "] Error while creating UDP receiver:  " << exception << endl;
-    }
-
-
-    const string TARGET = kv.getValue< std::string >("proxy-ledstrip.comboxIp");
-    const uint32_t TARGETPORT = kv.getValue< uint32_t >("proxy-ledstrip.comboxPort");
-    try {
-        m_udpsender = std::shared_ptr< odcore::io::udp::UDPSender >(odcore::io::udp::UDPFactory::createUDPSender(TARGET, TARGETPORT));
-    }
-    catch (std::string &exception) {
-        cerr << "[" << getName() << "] Error while creating UDP sender:  " << exception << endl;
-    }
-}
-
-void ProxyLEDStrip::tearDown() {
-    m_udpreceiver->stop();
-    m_udpreceiver->setPacketListener(NULL);
-}
-
-void ProxyLEDStrip::nextPacket(const odcore::io::Packet &p) {
-    cout << "[" << getName() << "] Received a packet from " << p.getSender() << ", "
-         << "with " << p.getData().length()
-         // << " bytes containing '"
-         // << p.getData() << "'"
-         << endl;
-
-    opendlv::proxy::V2vReading nextMessage;
-    nextMessage.setSize(p.getData().length());
-    nextMessage.setData(p.getData());
-
-    odcore::data::Container c(nextMessage);
-    getConference().send(c);
-}
+void ProxyLEDStrip::tearDown() {}
 
 void ProxyLEDStrip::nextContainer(odcore::data::Container &c) {
-    if (c.getDataType() == opendlv::proxy::V2vRequest::ID()) {
-        cout << "[" << getName() << "] Got an outbound message" << std::endl;
+//  odcore::data::TimeStamp now;
+  
+  if (c.getDataType() == opendlv::perception::StimulusDirectionOfMovement::ID()) {
+    opendlv::perception::StimulusDirectionOfMovement stimulusDirectionOfMovement = c.getData<opendlv::perception::StimulusDirectionOfMovement>();
 
-        opendlv::proxy::V2vRequest message = c.getData< opendlv::proxy::V2vRequest >();
-        try {
-            m_udpsender->send(message.getData());
-        }
-        catch (string &exception) {
-            cerr << "[" << getName() << "] Data could not be sent: " << exception << endl;
+    opendlv::model::Direction direction = stimulusDirectionOfMovement.getDesiredDirectionOfMovement();
+
+    m_angle = direction.getAzimuth();
+    cout << "[" << getName() << "] Got an angle!" << endl;
+    CLOG2 << "[" << getName() << "] Direction azimuth: " << m_angle << std::endl;
+  }
+  
+/*
+  // code for testing purposes
+    if (a_container.getDataType() == opendlv::proxy::reverefh16::Steering::ID()) {
+opendlv::proxy::reverefh16::Steering steering = 
+        a_container.getData<opendlv::proxy::reverefh16::Steering>();
+ 
+        m_angle = steering.getRoadwheelangle();
+        //CLOG2<<"RoadWheelAngle: "<<m_angle<<std::endl;
+    }
+*/
+// code from competition
+//  if (a_container.getDataType() == (opendlv::perception::Object::ID() + 300)){
+//    opendlv::perception::Object inputObject = a_container.getData<opendlv::perception::Object>();
+//    
+//    if(inputObject.getDistance() < 10){
+//      m_tooClose = true;
+//      m_timeStamp = now;
+//    }
+//  }
+}
+
+// This method will do the main data processing job.
+odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyLEDStrip::body() {
+    const string SERIAL_PORT = "/dev/ttyUSB0";
+    //const string SERIAL_PORT = "/dev/ttyACM0"; // this is for the Arduino Uno with spare LED strip
+    const uint32_t BAUD_RATE = 115200;
+    
+    shared_ptr<SerialPort> serial;
+    try {
+        serial = shared_ptr<SerialPort>(SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
+    }
+    catch(string &exception) {
+        cerr << "[" << getName() << "] Serial port could not be created: " << exception << endl;
+        return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+    }
+
+    // variable for debugging purposes
+    //const float increment=0.05;
+    // boolean flags for debugging purposes
+    //bool test=false, sign=false;
+
+    uint8_t focus=1;
+
+    while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+    
+    CLOG2 << endl << "[" << getName() << "] Start while loop" << endl;
+    
+    /*
+    // debug code
+    if(test) // this is for the Arduino Uno with spare LED strip
+    {
+        CLOG2<<"angle: "<<m_angle<<" rad"<<std::endl;
+        if(sign) {m_angle+=increment;CLOG2<<"adding "<<increment<<endl;}
+        else {m_angle-=increment;CLOG2<<"subtracting "<<increment<<endl;}
+    }
+    */
+    
+    // capping the max angle at 45 deg = 0.785398 rad
+    if(std::fabs(m_angle) >= 0.785398f){
+        if(m_angle >= 0.0f){
+            m_angle = 0.785398f;
+            // for debugging purposes
+            //sign=false;
+        } else {
+            m_angle = -0.785398f;
+            // for debugging purposes
+            //sign=true;
         }
     }
+    
+    CLOG2 << "[" << getName() << "] angle: " << m_angle << " rad" << endl;
+
+    // Construct Arduino frame to control the LED strip
+    vector<uint8_t> ledRequest;
+    
+    /* 
+    * "focus" represents the centre of the LED section to be powered. 
+    * It is obtained through the transformation of the direction 
+    * of the movement angle (capped between [-45,45] deg) 
+    * into a percentage value
+    */
+    focus = round(-m_angle/(45.0f/180.0f*static_cast<float>(M_PI))*50.0f)+50.0f;
+    
+    uint8_t section_size=50; // the size of the LED section to be powered
+    uint8_t fade=10; // the number of LEDs to be dimmed at the edge of the lighted section
+    uint8_t checksum=0; // checksum resulting from the bitwise xor of the payload bytes
+    /*
+    if(sign) focus--;
+    else focus++;
+
+    if(focus>=146)
+    {
+        sign=true;  
+    }
+    else if(focus<1)
+    {
+        sign=false;
+    }*/
+
+    checksum = focus^section_size^fade^m_R^m_G^m_B;
+    
+    uint8_t R=m_R, G=m_G, B=m_B;
+    
+    // set the color to green
+    if(std::fabs(focus-50)<=10)
+    {
+        R=0; G=255; B=0;
+    }
+    else // set the color to orange
+    {
+        R=200; G=50; B=5;
+        // light orange: (180,65,10)
+    }
+
+    // Message header: 0xFEDE
+    // Message size: 9 bytes
+    ledRequest.push_back(0xFE);
+    ledRequest.push_back(0xDE);
+    ledRequest.push_back(focus);
+    ledRequest.push_back(section_size);
+    ledRequest.push_back(fade);
+    ledRequest.push_back(R);
+    ledRequest.push_back(G);
+    ledRequest.push_back(B);
+    ledRequest.push_back(checksum);
+    
+    string command(ledRequest.begin(),ledRequest.end());
+    CLOG2 << "[" << getName() << "] Frame : ";
+    for(uint8_t i=0;i<command.size();++i) std::cout<<(uint16_t)command.at(i)<<" ";
+    CLOG2 << " : frame size = " << command.size()
+          << " {focus: "<< (uint16_t)focus << ", section size: " << (uint16_t)section_size << ", fade: " << (uint16_t)fade
+          << ", R: " << (uint16_t)m_R << ", G: " << (uint16_t)m_G << ", B: " << (uint16_t)m_B << "}" << ", checksum: " << (uint16_t)checksum << endl;
+
+    serial->send(command);
+    cout << "[" << getName() << "] Frame sent." << endl;  
+  }
+  return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
+
+
 }
 }
 }

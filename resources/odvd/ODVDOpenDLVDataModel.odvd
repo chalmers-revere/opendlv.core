@@ -27,3 +27,9 @@ message opendlv.core.sensors.EchoReading [id = 166] {
   uint32 numberOfPoints [id = 3];
 }
 
+message opendlv.perception.StimulusDirectionOfMovement [id = 180] {
+  odcore::data::TimeStamp identified [id = 1];
+  opendlv.model.Direction desiredDirectionOfMovement [id = 2];
+  opendlv.model.Direction directionOfMovement [id = 3];
+}
+

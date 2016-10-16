@@ -23,9 +23,7 @@
 #include <memory>
 
 #include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
-#include <opendavinci/odcore/io/PacketListener.h>
-#include <opendavinci/odcore/io/udp/UDPReceiver.h>
-#include <opendavinci/odcore/io/udp/UDPSender.h>
+#include <opendavinci/odcore/data/TimeStamp.h>
 
 namespace opendlv {
 namespace core {
@@ -37,8 +35,7 @@ using namespace std;
 /**
  * Interface to a V2V unit.
  */
-class ProxyLEDStrip : public odcore::base::module::DataTriggeredConferenceClientModule,
-                 public odcore::io::PacketListener {
+class ProxyLEDStrip : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
     ProxyLEDStrip(const ProxyLEDStrip & /*obj*/) = delete;
     ProxyLEDStrip &operator=(const ProxyLEDStrip & /*obj*/) = delete;
@@ -55,16 +52,19 @@ class ProxyLEDStrip : public odcore::base::module::DataTriggeredConferenceClient
     virtual ~ProxyLEDStrip();
 
    public:
-    virtual void nextPacket(const odcore::io::Packet &p);
     virtual void nextContainer(odcore::data::Container &c);
 
    private:
     void setUp();
     void tearDown();
+    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
    private:
-    shared_ptr< odcore::io::udp::UDPSender > m_udpsender;
-    shared_ptr< odcore::io::udp::UDPReceiver > m_udpreceiver;
+    float m_angle;
+    uint8_t m_R;
+    uint8_t m_G;
+    uint8_t m_B;
+    odcore::data::TimeStamp m_timeStamp;
 };
 }
 }
