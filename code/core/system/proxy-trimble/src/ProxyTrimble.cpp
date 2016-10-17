@@ -45,10 +45,11 @@ ProxyTrimble::~ProxyTrimble() {}
 void ProxyTrimble::setUp() {
     const string TRIMBLE_IP = getKeyValueConfiguration().getValue< std::string >("proxy-trimble.ip");
     const uint32_t TRIMBLE_PORT = getKeyValueConfiguration().getValue< uint32_t >("proxy-trimble.port");
+    const bool DEBUG = (getKeyValueConfiguration().getValue< uint32_t >("proxy-trimble.port") == 1);
 
     // Separating string decoding for GPS messages received from Trimble unit from this class.
     // Therefore, we need to pass the getConference() reference to the other instance so that it can send containers.
-    m_trimbleStringDecoder = std::unique_ptr< TrimbleStringDecoder >(new TrimbleStringDecoder(getConference()));
+    m_trimbleStringDecoder = std::unique_ptr< TrimbleStringDecoder >(new TrimbleStringDecoder(getConference(),DEBUG));
 
     try {
         m_trimble = shared_ptr< TCPConnection >(TCPFactory::createTCPConnectionTo(TRIMBLE_IP, TRIMBLE_PORT));

@@ -40,7 +40,7 @@ class TrimbleStringDecoder : public odcore::io::StringListener {
     TrimbleStringDecoder &operator=(TrimbleStringDecoder const &) = delete;
 
    public:
-    TrimbleStringDecoder(odcore::io::conference::ContainerConference &);
+    TrimbleStringDecoder(odcore::io::conference::ContainerConference &, bool);
     virtual ~TrimbleStringDecoder();
 
     virtual void nextString(const std::string &s);
@@ -48,6 +48,7 @@ class TrimbleStringDecoder : public odcore::io::StringListener {
    private:
     odcore::io::conference::ContainerConference &m_conference;
     std::stringstream m_buffer;
+    bool m_debug;
 };
 }
 }
