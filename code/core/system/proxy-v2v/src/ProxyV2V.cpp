@@ -41,8 +41,10 @@ using namespace odcore::data;
 
 ProxyV2V::ProxyV2V(const int &argc, char **argv)
     : DataTriggeredConferenceClientModule(argc, argv, "proxy-v2v")
+    , m_initialised(false)
     , m_udpsender()
-    , m_udpreceiver() {}
+    , m_udpreceiver()
+    , m_debug() {}
 
 ProxyV2V::~ProxyV2V() {}
 
@@ -69,6 +71,8 @@ void ProxyV2V::setUp() {
     catch (std::string &exception) {
         cerr << "[" << getName() << "] Error while creating UDP sender:  " << exception << endl;
     }
+    m_debug = (kv.getValue<int32_t>("proxy-v2v.debug") == 1);
+    m_initialised = true;
 }
 
 void ProxyV2V::tearDown() {
@@ -77,11 +81,13 @@ void ProxyV2V::tearDown() {
 }
 
 void ProxyV2V::nextPacket(const odcore::io::Packet &p) {
-    cout << "[" << getName() << "] Received a packet from " << p.getSender() << ", "
-         << "with " << p.getData().length()
-         // << " bytes containing '"
-         // << p.getData() << "'"
-         << endl;
+    if(m_debug) {
+        cout << "[" << getName() << "] Received a packet from " << p.getSender() << ", "
+             << "with " << p.getData().length()
+             // << " bytes containing '"
+             // << p.getData() << "'"
+             << endl;
+    }
 
     opendlv::proxy::V2vReading nextMessage;
     nextMessage.setSize(p.getData().length());
@@ -92,8 +98,13 @@ void ProxyV2V::nextPacket(const odcore::io::Packet &p) {
 }
 
 void ProxyV2V::nextContainer(odcore::data::Container &c) {
+    if (!m_initialised) {
+        return;
+    }
     if (c.getDataType() == opendlv::proxy::V2vRequest::ID()) {
-        cout << "[" << getName() << "] Got an outbound message" << std::endl;
+        if (m_debug) {
+            cout << "[" << getName() << "] Got an outbound message" << endl;
+        }
 
         opendlv::proxy::V2vRequest message = c.getData< opendlv::proxy::V2vRequest >();
         try {

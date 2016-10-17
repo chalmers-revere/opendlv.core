@@ -63,8 +63,10 @@ class ProxyV2V : public odcore::base::module::DataTriggeredConferenceClientModul
     void tearDown();
 
    private:
+    bool m_initialised;
     shared_ptr< odcore::io::udp::UDPSender > m_udpsender;
     shared_ptr< odcore::io::udp::UDPReceiver > m_udpreceiver;
+    bool m_debug;
 };
 }
 }
