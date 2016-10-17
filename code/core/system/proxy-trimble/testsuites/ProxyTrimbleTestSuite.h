@@ -59,7 +59,8 @@ class ProxyTrimbleTest : public CxxTest::TestSuite {
 
     void testApplication() {
         MyContainerConference mcc;
-        TrimbleStringDecoder tsd(mcc);
+        const bool DEBUG = true;
+        TrimbleStringDecoder tsd(mcc,DEBUG);
 
         // TODO: Add Trimble data dump.
         fstream data("../2016-08-28-Trimble.dump", ios::binary | ios::in);

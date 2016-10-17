@@ -41,9 +41,10 @@ namespace proxy {
 using namespace std;
 using namespace odcore::data;
 
-TrimbleStringDecoder::TrimbleStringDecoder(odcore::io::conference::ContainerConference &conference)
+TrimbleStringDecoder::TrimbleStringDecoder(odcore::io::conference::ContainerConference &conference, bool debug)
     : m_conference(conference)
-    , m_buffer() {}
+    , m_buffer() 
+    , m_debug(debug) {}
 
 TrimbleStringDecoder::~TrimbleStringDecoder() {}
 
@@ -164,9 +165,10 @@ void TrimbleStringDecoder::nextString(string const &s) {
             cout << "[proxy-trimble] WARNING: Unknown packet type. " << type << endl;
         }
     }
-
-    cout << "[proxy-trimble] GPS sending signals : Latitude : " << latitude << setprecision(19)
+    if(m_debug){
+        cout << "[proxy-trimble] GPS sending signals : Latitude : " << latitude << setprecision(19)
               << " Longitude : " << setprecision(19) << longitude << " Heading: " << northHeading << " hasRtk: " << hasRtk << endl;
+    }
 
 
     if (gotGpgga && gotGpvtg) {
