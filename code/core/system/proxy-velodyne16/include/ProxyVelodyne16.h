@@ -22,7 +22,7 @@
 
 #include <memory>
 
-#include "opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h"
+#include "opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include "velodyne16Decoder.h"
 #include <opendavinci/odcore/io/udp/UDPFactory.h>
@@ -36,7 +36,7 @@ namespace proxy {
 using namespace std;
 using namespace odcore::wrapper;
 
-class ProxyVelodyne16 : public odcore::base::module::TimeTriggeredConferenceClientModule {
+class ProxyVelodyne16 : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
     /**
      * "Forbidden" copy constructor. Goal: The compiler should warn
@@ -68,7 +68,8 @@ class ProxyVelodyne16 : public odcore::base::module::TimeTriggeredConferenceClie
 
     virtual ~ProxyVelodyne16();
 
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    //odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    virtual void nextContainer(odcore::data::Container &c);
 
    private:
     virtual void setUp();

@@ -24,7 +24,7 @@
 
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include "velodyne64Decoder.h"
-#include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/io/udp/UDPFactory.h>
 #include <opendavinci/odcore/io/udp/UDPReceiver.h>
 
@@ -36,7 +36,7 @@ namespace proxy {
 using namespace std;
 using namespace odcore::wrapper;
 
-class ProxyVelodyne64 : public odcore::base::module::TimeTriggeredConferenceClientModule {
+class ProxyVelodyne64 : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
     ProxyVelodyne64(const ProxyVelodyne64 & /*obj*/) = delete;
     ProxyVelodyne64 &operator=(const ProxyVelodyne64 & /*obj*/) = delete;
@@ -52,7 +52,8 @@ class ProxyVelodyne64 : public odcore::base::module::TimeTriggeredConferenceClie
 
     virtual ~ProxyVelodyne64();
 
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    //odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    virtual void nextContainer(odcore::data::Container &c);
 
    private:
     void setUp();

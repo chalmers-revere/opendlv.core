@@ -118,9 +118,7 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite {
 
     void readCsvFile() {                                              //Read a .csv file that is compressed into a .zip file
         fstream fin("../atwallFrame1New.zip", ios::binary | ios::in); //Read xyz and intensity values of points in Frame 1 exported from VeloView. These values exist in a zip file in the parent folder
-        if (!fin.is_open()){
-            cout << "The file containing VeloView reference data is not found." << endl;
-        }
+        TS_ASSERT(fin.is_open());
         std::shared_ptr< odcore::wrapper::DecompressedData > dd = odcore::wrapper::CompressionFactory::getContents(fin);
         fin.close();
         vector< string > entries = dd->getListOfEntries();
@@ -156,9 +154,7 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite {
         pcap.setContainerListener(&p2b);       //Set the packetToByte class as the container listener of the PCAP decoder
 
         fstream lidarStream("../atwallshort.pcap", ios::binary | ios::in); //A sample .pcap file containing several Velodyne frames in the parent folder
-        if (!lidarStream.is_open()){
-            cout << "Sample .pcap file not found." << endl;
-        }
+        TS_ASSERT(lidarStream.is_open());
         char *buffer = new char[m_BUFFER_SIZE + 1];
         while (lidarStream.good()) {
             lidarStream.read(buffer, m_BUFFER_SIZE * sizeof(char));

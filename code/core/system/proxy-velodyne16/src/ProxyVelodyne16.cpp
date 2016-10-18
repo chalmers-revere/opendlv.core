@@ -37,7 +37,7 @@ using namespace odcore::wrapper;
 using namespace odcore::io::udp;
 
 ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv)
-    : TimeTriggeredConferenceClientModule(argc, argv, "proxy-velodyne16")
+    : DataTriggeredConferenceClientModule(argc, argv, "proxy-velodyne16")
     , m_memoryName()
     , m_memorySize(0)
     , m_udpReceiverIP()
@@ -69,12 +69,16 @@ void ProxyVelodyne16::tearDown() {
     m_udpreceiver->setStringListener(NULL);
 }
 
+void ProxyVelodyne16::nextContainer(odcore::data::Container &c){
+    cout<<c.getDataType()<<endl;
+}
+
 // This method will do the main data processing job.
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
+/*odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     }
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-}
+}*/
 }
 }
 }
