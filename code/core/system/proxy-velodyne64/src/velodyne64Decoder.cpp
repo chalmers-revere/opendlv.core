@@ -18,6 +18,7 @@
  */
 
 #include <cmath>
+#include <iomanip>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -35,7 +36,7 @@
 #include "velodyne64Decoder.h"
 
 
-#define toRadian(x) ((x)*m_PI / 180.0f)
+//#define toRadian(x) ((x)* M_PI / 180.0f)
 
 namespace opendlv {
 namespace core {
@@ -150,6 +151,10 @@ odcore::io::conference::ContainerConference &c, const string &s)
 
 Velodyne64Decoder::~Velodyne64Decoder() {
     free(m_segment);
+}
+
+float Velodyne64Decoder::toRadian(float angle) {
+    return angle * static_cast<float>(M_PI) / 180.0f;
 }
 
 //Update the shared point cloud when a complete scan is completed.
