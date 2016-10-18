@@ -17,14 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <memory>
 
+#include "ProxyVelodyne16.h"
+#include "opendavinci/odcore/base/KeyValueConfiguration.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
-#include "ProxyVelodyne16.h"
 
 
 namespace opendlv {
@@ -32,36 +33,45 @@ namespace core {
 namespace system {
 namespace proxy {
 
-    using namespace odcore::wrapper;
-    using namespace odcore::io::udp;
+using namespace odcore::wrapper;
+using namespace odcore::io::udp;
 
-    ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv) :
-        TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16"),
-        VelodyneSharedMemory(SharedMemoryFactory::createSharedMemory(NAME, SIZE)),
-        udpreceiver(UDPFactory::createUDPReceiver(RECEIVER, PORT)),
-        v16d(VelodyneSharedMemory,getConference()){}
+ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv)
+    : DataTriggeredConferenceClientModule(argc, argv, "proxy-velodyne16")
+    , m_memoryName()
+    , m_memorySize(0)
+    , m_udpReceiverIP()
+    , m_udpPort(0)
+    , m_velodyneSharedMemory(NULL)
+    , m_udpreceiver(NULL)
+    , m_velodyne16decoder(NULL) {}
 
-    ProxyVelodyne16::~ProxyVelodyne16() {}
+ProxyVelodyne16::~ProxyVelodyne16() {}
 
-    void ProxyVelodyne16::setUp() {
-        udpreceiver->setStringListener(&v16d);
-        // Start receiving bytes.
-        udpreceiver->start();
-    }
+void ProxyVelodyne16::setUp() {
+    m_memoryName = getKeyValueConfiguration().getValue< string >("proxy-velodyne16.sharedMemory.name");
+    m_memorySize = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.sharedMemory.size");
+    m_velodyneSharedMemory = SharedMemoryFactory::createSharedMemory(m_memoryName, m_memorySize);
 
-    void ProxyVelodyne16::tearDown() {
-        udpreceiver->stop();
-        udpreceiver->setStringListener(NULL);
-    }
+    m_udpReceiverIP = getKeyValueConfiguration().getValue< string >("proxy-velodyne16.udpReceiverIP");
+    m_udpPort = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.udpPort");
+    m_udpreceiver = UDPFactory::createUDPReceiver(m_udpReceiverIP, m_udpPort);
 
-    // This method will do the main data processing job.
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
-        while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING){
-        }
-        return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-    }
+    m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration")));
+
+    m_udpreceiver->setStringListener(m_velodyne16decoder.get());
+    // Start receiving bytes.
+    m_udpreceiver->start();
+}
+
+void ProxyVelodyne16::tearDown() {
+    m_udpreceiver->stop();
+    m_udpreceiver->setStringListener(NULL);
+}
+
+void ProxyVelodyne16::nextContainer(odcore::data::Container &){}
+
 }
 }
 }
 } // opendlv::core::system::proxy
-

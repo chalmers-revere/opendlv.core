@@ -22,70 +22,70 @@
 
 #include <memory>
 
-#include "opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h"
-#include "velodyne16Decoder.h"
+#include "opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
-#include <opendavinci/odcore/io/udp/UDPReceiver.h>
+#include "velodyne16Decoder.h"
 #include <opendavinci/odcore/io/udp/UDPFactory.h>
+#include <opendavinci/odcore/io/udp/UDPReceiver.h>
 
 namespace opendlv {
 namespace core {
 namespace system {
 namespace proxy {
 
-    using namespace std;
-    using namespace odcore::wrapper;
+using namespace std;
+using namespace odcore::wrapper;
 
-    class ProxyVelodyne16 : public odcore::base::module::TimeTriggeredConferenceClientModule {
-        private:
-            /**
-             * "Forbidden" copy constructor. Goal: The compiler should warn
-             * already at compile time for unwanted bugs caused by any misuse
-             * of the copy constructor.
-             *
-             * @param obj Reference to an object of this class.
-             */
-            ProxyVelodyne16(const ProxyVelodyne16 &/*obj*/);
+class ProxyVelodyne16 : public odcore::base::module::DataTriggeredConferenceClientModule {
+   private:
+    /**
+     * "Forbidden" copy constructor. Goal: The compiler should warn
+     * already at compile time for unwanted bugs caused by any misuse
+     * of the copy constructor.
+     *
+     * @param obj Reference to an object of this class.
+     */
+    ProxyVelodyne16(const ProxyVelodyne16 & /*obj*/);
 
-            /**
-             * "Forbidden" assignment operator. Goal: The compiler should warn
-             * already at compile time for unwanted bugs caused by any misuse
-             * of the assignment operator.
-             *
-             * @param obj Reference to an object of this class.
-             * @return Reference to this instance.
-             */
-            ProxyVelodyne16& operator=(const ProxyVelodyne16 &/*obj*/);
+    /**
+     * "Forbidden" assignment operator. Goal: The compiler should warn
+     * already at compile time for unwanted bugs caused by any misuse
+     * of the assignment operator.
+     *
+     * @param obj Reference to an object of this class.
+     * @return Reference to this instance.
+     */
+    ProxyVelodyne16 &operator=(const ProxyVelodyne16 & /*obj*/);
 
-        public:
-            /**
-             * Constructor.
-             *
-             * @param argc Number of command line arguments.
-             * @param argv Command line arguments.
-             */
-            ProxyVelodyne16(const int32_t &argc, char **argv);
+   public:
+    /**
+     * Constructor.
+     *
+     * @param argc Number of command line arguments.
+     * @param argv Command line arguments.
+     */
+    ProxyVelodyne16(const int32_t &argc, char **argv);
 
-            virtual ~ProxyVelodyne16();
+    virtual ~ProxyVelodyne16();
 
-            odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    //odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    virtual void nextContainer(odcore::data::Container &);
 
-        private:
-            virtual void setUp();
-            virtual void tearDown();
-            
-            const std::string NAME = "pointCloud";
-            const uint32_t MAX_POINT_SIZE=30000;  //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
-            const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4; // How many components do we have per vector?
-            const uint32_t SIZE_PER_COMPONENT = sizeof(float);
-            const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT; // What is the total size of the shared memory? 
-            const string RECEIVER = "0.0.0.0";
-            const uint32_t PORT = 2368;
-            
-            std::shared_ptr<SharedMemory> VelodyneSharedMemory;
-            std::shared_ptr<odcore::io::udp::UDPReceiver> udpreceiver;
-            opendlv::core::system::proxy::velodyne16Decoder v16d; 
-    };
+   private:
+    virtual void setUp();
+    virtual void tearDown();
+    
+   private:
+    string m_memoryName;   //Name of the shared memory
+    uint32_t m_memorySize; //The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000->ProxyVelodyne64.sharedMemory.size = 480000 in the configuration file.
+
+    string m_udpReceiverIP; //"0.0.0.0" to listen to all network interfaces
+    uint32_t m_udpPort;     //2368 for velodyne
+
+    std::shared_ptr< SharedMemory > m_velodyneSharedMemory;
+    std::shared_ptr< odcore::io::udp::UDPReceiver > m_udpreceiver;
+    std::shared_ptr< opendlv::core::system::proxy::Velodyne16Decoder > m_velodyne16decoder;
+};
 }
 }
 }
