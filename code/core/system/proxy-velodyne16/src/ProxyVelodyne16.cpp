@@ -69,16 +69,8 @@ void ProxyVelodyne16::tearDown() {
     m_udpreceiver->setStringListener(NULL);
 }
 
-void ProxyVelodyne16::nextContainer(odcore::data::Container &c){
-    cout<<c.getDataType()<<endl;
-}
+void ProxyVelodyne16::nextContainer(odcore::data::Container &){}
 
-// This method will do the main data processing job.
-/*odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyVelodyne16::body() {
-    while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-    }
-    return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-}*/
 }
 }
 }

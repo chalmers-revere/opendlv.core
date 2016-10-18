@@ -53,7 +53,7 @@ class ProxyVelodyne64 : public odcore::base::module::DataTriggeredConferenceClie
     virtual ~ProxyVelodyne64();
 
     //odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
-    virtual void nextContainer(odcore::data::Container &c);
+    virtual void nextContainer(odcore::data::Container &);
 
    private:
     void setUp();
