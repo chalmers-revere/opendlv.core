@@ -37,27 +37,27 @@ using namespace std;
 using namespace odcore::wrapper;
 
 // This class will handle bytes received via a UDP socket.
-class velodyne64Decoder : public odcore::io::StringListener {
+class Velodyne64Decoder : public odcore::io::StringListener {
    private:
     /**
                  * "Forbidden" copy constructor. Goal: The compiler should warn
                  * already at compile time for unwanted bugs caused by any misuse
                  * of the copy constructor.
                  */
-    velodyne64Decoder(const velodyne64Decoder &);
+    Velodyne64Decoder(const Velodyne64Decoder &);
 
     /**
                  * "Forbidden" assignment operator. Goal: The compiler should warn
                  * already at compile time for unwanted bugs caused by any misuse
                  * of the assignment operator.
                  */
-    velodyne64Decoder &operator=(const velodyne64Decoder &);
+    Velodyne64Decoder &operator=(const Velodyne64Decoder &);
 
 
    public:
-    velodyne64Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &);
+    Velodyne64Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &);
 
-    virtual ~velodyne64Decoder();
+    virtual ~Velodyne64Decoder();
 
     void sendSPC(const float &oldAzimuth, const float &newAzimuth);
 

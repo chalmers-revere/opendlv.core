@@ -1,5 +1,5 @@
 /**
- * velodyne16Decoder is used to decode VLP-16 data realized with OpenDaVINCI
+ * Velodyne16Decoder is used to decode VLP-16 data realized with OpenDaVINCI
  * Copyright (C) 2016 Hang Yin
  *
  * This library is free software; you can redistribute it and/or
@@ -34,29 +34,29 @@ namespace proxy {
 using namespace odcore::wrapper;
 
 // This class will handle bytes received via a UDP socket.
-class velodyne16Decoder : public odcore::io::StringListener {
+class Velodyne16Decoder : public odcore::io::StringListener {
    private:
     /**
          * "Forbidden" copy constructor. Goal: The compiler should warn
          * already at compile time for unwanted bugs caused by any misuse
          * of the copy constructor.
          */
-    velodyne16Decoder(const velodyne16Decoder &);
+    Velodyne16Decoder(const Velodyne16Decoder &);
 
     /**
          * "Forbidden" assignment operator. Goal: The compiler should warn
          * already at compile time for unwanted bugs caused by any misuse
          * of the assignment operator.
          */
-    velodyne16Decoder &operator=(const velodyne16Decoder &);
+    Velodyne16Decoder &operator=(const Velodyne16Decoder &);
 
    public:
     /**
          * Constructor.
          */
-    velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &);
+    Velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &);
 
-    virtual ~velodyne16Decoder();
+    virtual ~Velodyne16Decoder();
 
     void sendSPC(const float &oldAzimuth, const float &newAzimuth);
 

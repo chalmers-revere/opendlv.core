@@ -1,5 +1,5 @@
 /**
- * velodyne64Decoder is used to decode Velodyne HDL-64E data realized with OpenDaVINCI
+ * Velodyne64Decoder is used to decode Velodyne HDL-64E data realized with OpenDaVINCI
  * Copyright (C) 2016 Hang Yin
  *
  * This program is free software; you can redistribute it and/or
@@ -47,7 +47,7 @@ using namespace odcore::base;
 using namespace odcore::data;
 using namespace odcore::wrapper;
 
-velodyne64Decoder::velodyne64Decoder(const std::shared_ptr< SharedMemory > m,
+Velodyne64Decoder::Velodyne64Decoder(const std::shared_ptr< SharedMemory > m,
 odcore::io::conference::ContainerConference &c, const string &s)
     : m_pointIndex(0)
     , m_startID(0)
@@ -148,12 +148,12 @@ odcore::io::conference::ContainerConference &c, const string &s)
     }
 }
 
-velodyne64Decoder::~velodyne64Decoder() {
+Velodyne64Decoder::~Velodyne64Decoder() {
     free(m_segment);
 }
 
 //Update the shared point cloud when a complete scan is completed.
-void velodyne64Decoder::sendSPC(const float &oldAzimuth, const float &newAzimuth) {
+void Velodyne64Decoder::sendSPC(const float &oldAzimuth, const float &newAzimuth) {
     if (newAzimuth < oldAzimuth) {
         if (m_velodyneSharedMemory->isValid()) {
             Lock l(m_velodyneSharedMemory);
@@ -174,7 +174,7 @@ void velodyne64Decoder::sendSPC(const float &oldAzimuth, const float &newAzimuth
     }
 }
 
-void velodyne64Decoder::nextString(const string &payload) {
+void Velodyne64Decoder::nextString(const string &payload) {
     if (payload.length() == 1206) {
         //Decode HDL-64E data
         uint32_t position = 0; //position specifies the starting position to read from the 1206 bytes

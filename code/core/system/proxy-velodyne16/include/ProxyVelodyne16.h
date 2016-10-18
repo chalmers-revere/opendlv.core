@@ -83,7 +83,7 @@ class ProxyVelodyne16 : public odcore::base::module::TimeTriggeredConferenceClie
 
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory;
     std::shared_ptr< odcore::io::udp::UDPReceiver > m_udpreceiver;
-    std::shared_ptr< opendlv::core::system::proxy::velodyne16Decoder > m_velodyne16decoder;
+    std::shared_ptr< opendlv::core::system::proxy::Velodyne16Decoder > m_velodyne16decoder;
 };
 }
 }

@@ -113,7 +113,7 @@ class packetToByte : public odcore::io::conference::ContainerListener {
 
    private:
     MyContainerConference m_mcc;
-    opendlv::core::system::proxy::velodyne64Decoder m_velodyne64decoder;
+    opendlv::core::system::proxy::Velodyne64Decoder m_velodyne64decoder;
 };
 
 class ProxyVelodyne64Test : public CxxTest::TestSuite {

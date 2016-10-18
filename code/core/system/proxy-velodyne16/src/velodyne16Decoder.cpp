@@ -1,5 +1,5 @@
 /**
- * velodyne16Decoder is used to decode VLP-16 data realized with OpenDaVINCI
+ * Velodyne16Decoder is used to decode VLP-16 data realized with OpenDaVINCI
  * Copyright (C) 2016 Hang Yin
  *
  * This library is free software; you can redistribute it and/or
@@ -45,7 +45,7 @@ using namespace odcore::base;
 using namespace odcore::data;
 using namespace odcore::wrapper;
 
-velodyne16Decoder::velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
+Velodyne16Decoder::Velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
 odcore::io::conference::ContainerConference &c, const string &s)
     : m_pointIndex(0)
     , m_startID(0)
@@ -110,12 +110,12 @@ odcore::io::conference::ContainerConference &c, const string &s)
     }
 }
 
-velodyne16Decoder::~velodyne16Decoder() {
+Velodyne16Decoder::~Velodyne16Decoder() {
     free(m_segment);
 }
 
 //Update the shared point cloud when a complete scan is completed.
-void velodyne16Decoder::sendSPC(const float &oldAzimuth, const float &newAzimuth) {
+void Velodyne16Decoder::sendSPC(const float &oldAzimuth, const float &newAzimuth) {
     if (newAzimuth < oldAzimuth) {
         if (m_velodyneSharedMemory->isValid()) {
             Lock l(m_velodyneSharedMemory);
@@ -136,7 +136,7 @@ void velodyne16Decoder::sendSPC(const float &oldAzimuth, const float &newAzimuth
     }
 }
 
-void velodyne16Decoder::nextString(const string &payload) {
+void Velodyne16Decoder::nextString(const string &payload) {
     if (payload.length() == 1206) {
         //Decode VLP-16 data
         uint32_t position = 0; //position specifies the starting position to read from the 1206 bytes

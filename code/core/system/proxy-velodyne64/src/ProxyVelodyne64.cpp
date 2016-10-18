@@ -56,7 +56,7 @@ void ProxyVelodyne64::setUp() {
     m_udpPort = getKeyValueConfiguration().getValue< uint32_t >("ProxyVelodyne64.udpPort");
     m_udpreceiver = UDPFactory::createUDPReceiver(m_udpReceiverIP, m_udpPort);
 
-    m_velodyne64decoder = shared_ptr< velodyne64Decoder >(new velodyne64Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("ProxyVelodyne64.calibration")));
+    m_velodyne64decoder = shared_ptr< Velodyne64Decoder >(new Velodyne64Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("ProxyVelodyne64.calibration")));
 
     m_udpreceiver->setStringListener(m_velodyne64decoder.get());
     // Start receiving bytes.
