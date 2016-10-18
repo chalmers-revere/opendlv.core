@@ -84,8 +84,8 @@ class MyContainerConference : public odcore::io::conference::ContainerConference
 class packetToByte : public odcore::io::conference::ContainerListener {
    public:
     packetToByte(std::shared_ptr< odcore::wrapper::SharedMemory > m1, std::shared_ptr< odcore::wrapper::SharedMemory > m2)
-        : mcc(m2)
-        , v64decoder(m1, mcc, "../db.xml") //The calibration file db.xml is automatically copied to the parent folder of the test suite binary
+        : m_mcc(m2)
+        , m_velodyne64decoder(m1, m_mcc, "../db.xml") //The calibration file db.xml is automatically copied to the parent folder of the test suite binary
     {}
 
     ~packetToByte() {}
@@ -106,21 +106,21 @@ class packetToByte : public odcore::io::conference::ContainerListener {
             if (packetHeader.getIncl_len() == 1248) {
                 string payload = packet.getPayload();
                 payload = payload.substr(42, 1206); //Remove the 42-byte Ethernet header
-                v64decoder.nextString(payload);     //Let the Velodyne64 decoder decode the 1206-byte payload
+                m_velodyne64decoder.nextString(payload);     //Let the Velodyne64 decoder decode the 1206-byte payload
             }
         }
     }
 
    private:
-    MyContainerConference mcc;
-    opendlv::core::system::proxy::velodyne64Decoder v64decoder;
+    MyContainerConference m_mcc;
+    opendlv::core::system::proxy::velodyne64Decoder m_velodyne64decoder;
 };
 
 class ProxyVelodyne64Test : public CxxTest::TestSuite {
    public:
     ProxyVelodyne64Test()
-        : velodyneSM(SharedMemoryFactory::createSharedMemory(NAME, SIZE))
-        , segment(SharedMemoryFactory::createSharedMemory(NAME2, SIZE)) {}
+        : m_velodyneSharedMemory(SharedMemoryFactory::createSharedMemory(m_NAME, m_SIZE))
+        , m_segment(SharedMemoryFactory::createSharedMemory(m_NAME2, m_SIZE)) {}
 
     ~ProxyVelodyne64Test() {}
 
@@ -146,13 +146,13 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite {
             stringstream lineStream(value);
             string cell;
             getline(lineStream, cell, ',');
-            xDataV.push_back(stof(cell));
+            m_xDataV.push_back(stof(cell));
             getline(lineStream, cell, ',');
-            yDataV.push_back(stof(cell));
+            m_yDataV.push_back(stof(cell));
             getline(lineStream, cell, ',');
-            zDataV.push_back(stof(cell));
+            m_zDataV.push_back(stof(cell));
             getline(lineStream, cell, ',');
-            intensityV.push_back(stof(cell));
+            m_intensityV.push_back(stof(cell));
         }
     }
 
@@ -160,17 +160,17 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite {
     void testVelodyneDecodingFromFile() {
         readCsvFile();
         PCAPProtocol pcap;                     //Use the PCAP decoder of OpenDaVINCI to read the .pcap recording
-        packetToByte p2b(velodyneSM, segment); //This class extracts Velodyne payload from pcap packets
+        packetToByte p2b(m_velodyneSharedMemory, m_segment); //This class extracts Velodyne payload from pcap packets
         pcap.setContainerListener(&p2b);       //Set the packetToByte class as the container listener of the PCAP decoder
 
         fstream lidarStream("../atwallshort.pcap", ios::binary | ios::in); //A sample .pcap file containing several Velodyne frames in the parent folder
         if (!lidarStream.is_open()){
             cout << "Sample .pcap file not found." << endl;
         }
-        char *buffer = new char[BUFFER_SIZE + 1];
+        char *buffer = new char[m_BUFFER_SIZE + 1];
         while (lidarStream.good()) {
-            lidarStream.read(buffer, BUFFER_SIZE * sizeof(char));
-            string s(buffer, BUFFER_SIZE);
+            lidarStream.read(buffer, m_BUFFER_SIZE * sizeof(char));
+            string s(buffer, m_BUFFER_SIZE);
             pcap.nextString(s); //Read bytes from the .pcap file and feed them to the PCAP decoder
         }
         lidarStream.close();
@@ -181,16 +181,16 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite {
 
         uint32_t compare = 0; //Number of points matched between VeloView and our Velodyne decoder
 
-        if (segment->isValid()) {
-            float *velodyneRawData = static_cast< float * >(segment->getSharedMemory()); //the shared memory "segment" should already contain Velodyne data of Frame 0 decoded by our Velodyne64 decoder and stored in the send method of the MyContainerConference class
-            uint32_t mSize = segment->getSize() / 4;                                     //segment->getSize() returns to the memory size. Divide it by 4 because of float *velodyneRawData (4 bytes for float type)
+        if (m_segment->isValid()) {
+            float *velodyneRawData = static_cast< float * >(m_segment->getSharedMemory()); //the shared memory "m_segment" should already contain Velodyne data of Frame 0 decoded by our Velodyne64 decoder and stored in the send method of the MyContainerConference class
+            uint32_t mSize = m_segment->getSize() / 4;                                     //m_segment->getSize() returns to the memory size. Divide it by 4 because of float *velodyneRawData (4 bytes for float type)
 
             uint32_t mIndex = 0; //This variable searches the list of our decoded Velodyen64 values point by point to find points whose values match points provided by VeloView
             cout << "Before comparing:" << compare << "," << mIndex << endl;
-            for (uint32_t vCounter = 0; vCounter < xDataV.size(); vCounter++) {
+            for (uint32_t vCounter = 0; vCounter < m_xDataV.size(); vCounter++) {
                 for (uint32_t mCounter = mIndex; mCounter < mSize; mCounter += 4) {
-                    if ((abs(velodyneRawData[mCounter] - xDataV[vCounter]) < 0.1f) && ((abs(velodyneRawData[mCounter + 1] - yDataV[vCounter])) < 0.1f) &&
-                    ((abs(velodyneRawData[mCounter + 2] - zDataV[vCounter])) < 0.1f) && ((abs(velodyneRawData[mCounter + 3] - intensityV[vCounter])) <= 1.0f)) {
+                    if ((abs(velodyneRawData[mCounter] - m_xDataV[vCounter]) < 0.1f) && ((abs(velodyneRawData[mCounter + 1] - m_yDataV[vCounter])) < 0.1f) &&
+                    ((abs(velodyneRawData[mCounter + 2] - m_zDataV[vCounter])) < 0.1f) && ((abs(velodyneRawData[mCounter + 3] - m_intensityV[vCounter])) <= 1.0f)) {
                         compare++;
                         mIndex = mCounter + 4;
                         break;
@@ -199,25 +199,25 @@ class ProxyVelodyne64Test : public CxxTest::TestSuite {
             }
         }
 
-        cout << "Number of points from VeloView: " << xDataV.size() << endl;
+        cout << "Number of points from VeloView: " << m_xDataV.size() << endl;
         cout << "Number of points matched from our Velodyne decoder: " << compare << endl;
 
-        TS_ASSERT(compare == xDataV.size()); //All points from VeloView must be included by the data from our Velodyne decoder
+        TS_ASSERT(compare == m_xDataV.size()); //All points from VeloView must be included by the data from our Velodyne decoder
     }
 
    private:
-    const uint32_t BUFFER_SIZE = 4000;
-    const std::string NAME = "testVelodyne64SM"; //The name for the shared memory velodyneSM
-    const std::string NAME2 = "sharedSegment";   //The name for the shared memory segment
-    const uint32_t SIZE = 1616000;
+    const uint32_t m_BUFFER_SIZE = 4000;
+    const std::string m_NAME = "testVelodyne64SM"; //The name for the shared memory m_velodyneSharedMemory
+    const std::string m_NAME2 = "sharedSegment";   //The name for the shared memory segment
+    const uint32_t m_SIZE = 1616000;
     //The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=101000->ProxyVelodyne64.sharedMemory.size = 1616000
 
-    vector< float > xDataV;
-    vector< float > yDataV;
-    vector< float > zDataV;
-    vector< float > intensityV;
-    std::shared_ptr< odcore::wrapper::SharedMemory > velodyneSM; //This shared memory should be passed to the Velodyne64 decoder via the packetToByte class
-    std::shared_ptr< odcore::wrapper::SharedMemory > segment;    //This shared memory should be passed to MyContainerConference class which then has write access to this shared memory
+    vector< float > m_xDataV;
+    vector< float > m_yDataV;
+    vector< float > m_zDataV;
+    vector< float > m_intensityV;
+    std::shared_ptr< odcore::wrapper::SharedMemory > m_velodyneSharedMemory; //This shared memory should be passed to the Velodyne64 decoder via the packetToByte class
+    std::shared_ptr< odcore::wrapper::SharedMemory > m_segment;    //This shared memory should be passed to MyContainerConference class which then has write access to this shared memory
 };
 
 #endif /*PROXY_PROXYVELODYNE64_TESTSUITE_H*/

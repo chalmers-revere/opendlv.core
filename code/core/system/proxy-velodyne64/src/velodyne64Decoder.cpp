@@ -35,7 +35,7 @@
 #include "velodyne64Decoder.h"
 
 
-#define toRadian(x) ((x)*PI / 180.0f)
+#define toRadian(x) ((x)*m_PI / 180.0f)
 
 namespace opendlv {
 namespace core {
@@ -49,31 +49,31 @@ using namespace odcore::wrapper;
 
 velodyne64Decoder::velodyne64Decoder(const std::shared_ptr< SharedMemory > m,
 odcore::io::conference::ContainerConference &c, const string &s)
-    : pointIndex(0)
-    , startID(0)
-    , previousAzimuth(0.0)
-    , upperBlock(true)
-    , distance(0.0)
-    , VelodyneSharedMemory(m)
-    , segment(NULL)
-    , velodyneFrame(c)
-    , spc()
-    , calibration(s) {
+    : m_pointIndex(0)
+    , m_startID(0)
+    , m_previousAzimuth(0.0)
+    , m_upperBlock(true)
+    , m_distance(0.0)
+    , m_velodyneSharedMemory(m)
+    , m_segment(NULL)
+    , m_velodyneFrame(c)
+    , m_spc()
+    , m_calibration(s) {
     //Initial setup of the shared point cloud
-    spc.setName(VelodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
-    //spc.setSize(pointIndex* NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT); // Size in raw bytes.
-    //spc.setWidth(pointIndex); // Number of points.
-    spc.setHeight(1); // We have just a sequence of vectors.
-    spc.setNumberOfComponentsPerPoint(NUMBER_OF_COMPONENTS_PER_POINT);
-    spc.setComponentDataType(SharedPointCloud::FLOAT_T); // Data type per component.
-    spc.setUserInfo(SharedPointCloud::XYZ_INTENSITY);
+    m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
+    //m_spc.setSize(m_pointIndex* m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT); // Size in raw bytes.
+    //m_spc.setWidth(m_pointIndex); // Number of points.
+    m_spc.setHeight(1); // We have just a sequence of vectors.
+    m_spc.setNumberOfComponentsPerPoint(m_NUMBER_OF_COMPONENTS_PER_POINT);
+    m_spc.setComponentDataType(SharedPointCloud::FLOAT_T); // Data type per component.
+    m_spc.setUserInfo(SharedPointCloud::XYZ_INTENSITY);
 
     //Create memory for temporary storage of point cloud data for each frame
-    segment = (float *)malloc(SIZE);
+    m_segment = (float *)malloc(m_SIZE);
 
     //Load calibration data from the calibration file
     string line;
-    ifstream in(calibration);
+    ifstream in(m_calibration);
     if (!in.is_open()){
         cout << "Calibration file not found." << endl;
     }
@@ -88,35 +88,35 @@ odcore::io::conference::ContainerConference &c, const string &s)
             } else {
                 if (line[i] == '<') {
                     if (found[0]) {
-                        rotCorrection[counter[0]] = atof(tmp.c_str());
+                        m_rotCorrection[counter[0]] = atof(tmp.c_str());
                         counter[0]++;
                         found[0] = false;
                         continue;
                     }
 
                     if (found[1]) {
-                        vertCorrection[counter[1]] = atof(tmp.c_str());
+                        m_vertCorrection[counter[1]] = atof(tmp.c_str());
                         counter[1]++;
                         found[1] = false;
                         continue;
                     }
 
                     if (found[2]) {
-                        distCorrection[counter[2]] = atof(tmp.c_str());
+                        m_distCorrection[counter[2]] = atof(tmp.c_str());
                         counter[2]++;
                         found[2] = false;
                         continue;
                     }
 
                     if (found[3]) {
-                        vertOffsetCorrection[counter[3]] = atof(tmp.c_str());
+                        m_vertOffsetCorrection[counter[3]] = atof(tmp.c_str());
                         counter[3]++;
                         found[3] = false;
                         continue;
                     }
 
                     if (found[4]) {
-                        horizOffsetCorrection[counter[4]] = atof(tmp.c_str());
+                        m_horizOffsetCorrection[counter[4]] = atof(tmp.c_str());
                         counter[4]++;
                         found[4] = false;
                         continue;
@@ -149,28 +149,28 @@ odcore::io::conference::ContainerConference &c, const string &s)
 }
 
 velodyne64Decoder::~velodyne64Decoder() {
-    free(segment);
+    free(m_segment);
 }
 
 //Update the shared point cloud when a complete scan is completed.
 void velodyne64Decoder::sendSPC(const float &oldAzimuth, const float &newAzimuth) {
     if (newAzimuth < oldAzimuth) {
-        if (VelodyneSharedMemory->isValid()) {
-            Lock l(VelodyneSharedMemory);
-            memcpy(VelodyneSharedMemory->getSharedMemory(), segment, SIZE);
-            //spc.setName(VelodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
-            spc.setSize(pointIndex * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT); // Size in raw bytes.
-            spc.setWidth(pointIndex);                                                      // Number of points.
-            //spc.setHeight(1); // We have just a sequence of vectors.
-            //spc.setNumberOfComponentsPerPoint(NUMBER_OF_COMPONENTS_PER_POINT);
-            //spc.setComponentDataType(SharedPointCloud::FLOAT_T); // Data type per component.
-            //spc.setUserInfo(SharedPointCloud::XYZ_INTENSITY);
+        if (m_velodyneSharedMemory->isValid()) {
+            Lock l(m_velodyneSharedMemory);
+            memcpy(m_velodyneSharedMemory->getSharedMemory(), m_segment, m_SIZE);
+            //m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory m_segment with the data.
+            m_spc.setSize(m_pointIndex * m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT); // Size in raw bytes.
+            m_spc.setWidth(m_pointIndex);                                                      // Number of points.
+            //m_spc.setHeight(1); // We have just a sequence of vectors.
+            //m_spc.setNumberOfComponentsPerPoint(m_NUMBER_OF_COMPONENTS_PER_POINT);
+            //m_spc.setComponentDataType(SharedPointCloud::FLOAT_T); // Data type per component.
+            //m_spc.setUserInfo(SharedPointCloud::XYZ_INTENSITY);
 
-            Container imageFrame(spc);
-            velodyneFrame.send(imageFrame);
+            Container c(m_spc);
+            m_velodyneFrame.send(c);
         }
-        pointIndex = 0;
-        startID = 0;
+        m_pointIndex = 0;
+        m_startID = 0;
     }
 }
 
@@ -188,9 +188,9 @@ void velodyne64Decoder::nextString(const string &payload) {
             secondByte = (uint8_t)(payload.at(position + 1));
             dataValue = ntohs(firstByte * 256 + secondByte);
             if (dataValue == 0xddff) {
-                upperBlock = false; //Lower block
+                m_upperBlock = false; //Lower block
             } else {
-                upperBlock = true; //upper block
+                m_upperBlock = true; //upper block
             }
 
             //Decode rotational information: 2 bytes
@@ -198,45 +198,45 @@ void velodyne64Decoder::nextString(const string &payload) {
             secondByte = (uint8_t)(payload.at(position + 3));
             dataValue = ntohs(firstByte * 256 + secondByte);
             float azimuth = static_cast< float >(dataValue / 100.0);
-            sendSPC(previousAzimuth, azimuth); //Send a complete scan as one frame
-            previousAzimuth = azimuth;
+            sendSPC(m_previousAzimuth, azimuth); //Send a complete scan as one frame
+            m_previousAzimuth = azimuth;
             position += 4;
 
-            if (pointIndex < MAX_POINT_SIZE) {
+            if (m_pointIndex < m_MAX_POINT_SIZE) {
                 //Decode distance information and intensity of each sensor in a block
                 for (int counter = 0; counter < 32; counter++) {
                     //Decode distance: 2 bytes
                     static uint8_t sensorID(0);
-                    if (upperBlock)
+                    if (m_upperBlock)
                         sensorID = counter;
                     else
                         sensorID = counter + 32;
                     firstByte = (uint8_t)(payload.at(position));
                     secondByte = (uint8_t)(payload.at(position + 1));
                     dataValue = ntohs(firstByte * 256 + secondByte);
-                    distance = static_cast< float >(dataValue * 0.2f / 100.0f) + distCorrection[sensorID] / 100.0f;
-                    if (distance > 1.0f) {
+                    m_distance = static_cast< float >(dataValue * 0.2f / 100.0f) + m_distCorrection[sensorID] / 100.0f;
+                    if (m_distance > 1.0f) {
                         static float xyDistance, xData, yData, zData, intensity;
-                        xyDistance = distance * cos(toRadian(vertCorrection[sensorID]));
-                        xData = xyDistance * sin(toRadian(azimuth - rotCorrection[sensorID])) - horizOffsetCorrection[sensorID] / 100.0f * cos(toRadian(azimuth - rotCorrection[sensorID]));
-                        yData = xyDistance * cos(toRadian(azimuth - rotCorrection[sensorID])) + horizOffsetCorrection[sensorID] / 100.0f * sin(toRadian(azimuth - rotCorrection[sensorID]));
-                        zData = distance * sin(toRadian(vertCorrection[sensorID])) + vertOffsetCorrection[sensorID] / 100.0f;
+                        xyDistance = m_distance * cos(toRadian(m_vertCorrection[sensorID]));
+                        xData = xyDistance * sin(toRadian(azimuth - m_rotCorrection[sensorID])) - m_horizOffsetCorrection[sensorID] / 100.0f * cos(toRadian(azimuth - m_rotCorrection[sensorID]));
+                        yData = xyDistance * cos(toRadian(azimuth - m_rotCorrection[sensorID])) + m_horizOffsetCorrection[sensorID] / 100.0f * sin(toRadian(azimuth - m_rotCorrection[sensorID]));
+                        zData = m_distance * sin(toRadian(m_vertCorrection[sensorID])) + m_vertOffsetCorrection[sensorID] / 100.0f;
                         //Decode intensity: 1 byte
                         uint8_t intensityInt = (uint8_t)(payload.at(position + 2));
                         intensity = (float)intensityInt;
 
                         //Store coordinate information of each point to the malloc memory
-                        segment[startID] = xData;
-                        segment[startID + 1] = yData;
-                        segment[startID + 2] = zData;
-                        segment[startID + 3] = intensity;
+                        m_segment[m_startID] = xData;
+                        m_segment[m_startID + 1] = yData;
+                        m_segment[m_startID + 2] = zData;
+                        m_segment[m_startID + 3] = intensity;
 
-                        pointIndex++;
-                        startID += NUMBER_OF_COMPONENTS_PER_POINT;
+                        m_pointIndex++;
+                        m_startID += m_NUMBER_OF_COMPONENTS_PER_POINT;
                     }
                     position += 3;
 
-                    if (pointIndex >= MAX_POINT_SIZE) {
+                    if (m_pointIndex >= m_MAX_POINT_SIZE) {
                         position += 3 * (31 - counter); //Discard the points of the current frame when the preallocated shared memory is full; move the position to be read in the 1206 bytes
                         break;
                     }

@@ -57,14 +57,16 @@ class ProxyVelodyne64 : public odcore::base::module::TimeTriggeredConferenceClie
    private:
     void setUp();
     void tearDown();
-    string memoryName;    //Name of the shared memory
-    uint32_t memorySize;  //The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=101000->ProxyVelodyne64.sharedMemory.size = 1616000 in the configuration file.
-    string udpReceiverIP; //"0.0.0.0" to listen to all network interfaces
-    uint32_t udpPort;     //2368 for velodyne
+    
+   private:
+    string m_memoryName;    //Name of the shared memory
+    uint32_t m_memorySize;  //The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=101000->ProxyVelodyne64.sharedMemory.size = 1616000 in the configuration file.
+    string m_udpReceiverIP; //"0.0.0.0" to listen to all network interfaces
+    uint32_t m_udpPort;     //2368 for velodyne
 
-    std::shared_ptr< SharedMemory > VelodyneSharedMemory;
-    std::shared_ptr< odcore::io::udp::UDPReceiver > udpreceiver;
-    std::shared_ptr< opendlv::core::system::proxy::velodyne64Decoder > v64dSp;
+    std::shared_ptr< SharedMemory > m_velodyneSharedMemory;
+    std::shared_ptr< odcore::io::udp::UDPReceiver > m_udpreceiver;
+    std::shared_ptr< opendlv::core::system::proxy::velodyne64Decoder > m_velodyne64decoder;
 };
 }
 }

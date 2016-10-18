@@ -38,35 +38,35 @@ using namespace odcore::io::udp;
 
 ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv)
     : TimeTriggeredConferenceClientModule(argc, argv, "ProxyVelodyne16")
-    , memoryName()
-    , memorySize(0)
-    , udpReceiverIP()
-    , udpPort(0)
-    , VelodyneSharedMemory(NULL)
-    , udpreceiver(NULL)
-    , v16dSp(NULL) {}
+    , m_memoryName()
+    , m_memorySize(0)
+    , m_udpReceiverIP()
+    , m_udpPort(0)
+    , m_velodyneSharedMemory(NULL)
+    , m_udpreceiver(NULL)
+    , m_velodyne16decoder(NULL) {}
 
 ProxyVelodyne16::~ProxyVelodyne16() {}
 
 void ProxyVelodyne16::setUp() {
-    memoryName = getKeyValueConfiguration().getValue< string >("ProxyVelodyne16.sharedMemory.name");
-    memorySize = getKeyValueConfiguration().getValue< uint32_t >("ProxyVelodyne16.sharedMemory.size");
-    VelodyneSharedMemory = SharedMemoryFactory::createSharedMemory(memoryName, memorySize);
+    m_memoryName = getKeyValueConfiguration().getValue< string >("ProxyVelodyne16.sharedMemory.name");
+    m_memorySize = getKeyValueConfiguration().getValue< uint32_t >("ProxyVelodyne16.sharedMemory.size");
+    m_velodyneSharedMemory = SharedMemoryFactory::createSharedMemory(m_memoryName, m_memorySize);
 
-    udpReceiverIP = getKeyValueConfiguration().getValue< string >("ProxyVelodyne16.udpReceiverIP");
-    udpPort = getKeyValueConfiguration().getValue< uint32_t >("ProxyVelodyne16.udpPort");
-    udpreceiver = UDPFactory::createUDPReceiver(udpReceiverIP, udpPort);
+    m_udpReceiverIP = getKeyValueConfiguration().getValue< string >("ProxyVelodyne16.udpReceiverIP");
+    m_udpPort = getKeyValueConfiguration().getValue< uint32_t >("ProxyVelodyne16.udpPort");
+    m_udpreceiver = UDPFactory::createUDPReceiver(m_udpReceiverIP, m_udpPort);
 
-    v16dSp = shared_ptr< velodyne16Decoder >(new velodyne16Decoder(VelodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("ProxyVelodyne16.calibration")));
+    m_velodyne16decoder = shared_ptr< velodyne16Decoder >(new velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("ProxyVelodyne16.calibration")));
 
-    udpreceiver->setStringListener(v16dSp.get());
+    m_udpreceiver->setStringListener(m_velodyne16decoder.get());
     // Start receiving bytes.
-    udpreceiver->start();
+    m_udpreceiver->start();
 }
 
 void ProxyVelodyne16::tearDown() {
-    udpreceiver->stop();
-    udpreceiver->setStringListener(NULL);
+    m_udpreceiver->stop();
+    m_udpreceiver->setStringListener(NULL);
 }
 
 // This method will do the main data processing job.

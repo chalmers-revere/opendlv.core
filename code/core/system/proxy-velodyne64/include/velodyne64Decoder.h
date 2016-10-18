@@ -64,27 +64,27 @@ class velodyne64Decoder : public odcore::io::StringListener {
     virtual void nextString(const std::string &s);
 
    private:
-    const uint32_t MAX_POINT_SIZE = 101000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed. speed.
-    const uint32_t SIZE_PER_COMPONENT = sizeof(float);
-    const uint8_t NUMBER_OF_COMPONENTS_PER_POINT = 4;                                           // How many components do we have per vector?
-    const uint32_t SIZE = MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * SIZE_PER_COMPONENT; // What is the total size of the shared memory?
-    const float PI = 3.14159;
+    const uint32_t m_MAX_POINT_SIZE = 101000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed. speed.
+    const uint32_t m_SIZE_PER_COMPONENT = sizeof(float);
+    const uint8_t m_NUMBER_OF_COMPONENTS_PER_POINT = 4;                                           // How many components do we have per vector?
+    const uint32_t m_SIZE = m_MAX_POINT_SIZE * m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT; // What is the total size of the shared memory?
+    const float m_PI = 3.14159;
 
-    uint32_t pointIndex;
-    uint32_t startID;
-    float previousAzimuth;
-    bool upperBlock;
-    float distance;
-    std::shared_ptr< SharedMemory > VelodyneSharedMemory; //shared memory for the shared point cloud
-    float *segment;                                       //temporary memory for transferring data of each frame to the shared memory
-    odcore::io::conference::ContainerConference &velodyneFrame;
-    odcore::data::SharedPointCloud spc;
-    float rotCorrection[64];
-    float vertCorrection[64];
-    float distCorrection[64];
-    float vertOffsetCorrection[64];
-    float horizOffsetCorrection[64];
-    string calibration;
+    uint32_t m_pointIndex;
+    uint32_t m_startID;
+    float m_previousAzimuth;
+    bool m_upperBlock;
+    float m_distance;
+    std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for the shared point cloud
+    float *m_segment;                                       //temporary memory for transferring data of each frame to the shared memory
+    odcore::io::conference::ContainerConference &m_velodyneFrame;
+    odcore::data::SharedPointCloud m_spc;
+    float m_rotCorrection[64];
+    float m_vertCorrection[64];
+    float m_distCorrection[64];
+    float m_vertOffsetCorrection[64];
+    float m_horizOffsetCorrection[64];
+    string m_calibration;
 };
 }
 }
