@@ -63,7 +63,7 @@ class Velodyne64Decoder : public odcore::io::StringListener {
 
    private:
     float toRadian(float);
-    void sendSPC(const float &oldAzimuth, const float &newAzimuth);
+    void sendSharedPointCloud(const float &oldAzimuth, const float &newAzimuth);
    private:
     const uint32_t m_MAX_POINT_SIZE = 101000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed. speed.
     const uint32_t m_SIZE_PER_COMPONENT = sizeof(float);
@@ -77,7 +77,7 @@ class Velodyne64Decoder : public odcore::io::StringListener {
     float m_distance;
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for the shared point cloud
     float *m_segment;                                       //temporary memory for transferring data of each frame to the shared memory
-    odcore::io::conference::ContainerConference &m_velodyneFrame;
+    odcore::io::conference::ContainerConference &m_velodyneContainer;
     odcore::data::SharedPointCloud m_spc;
     float m_rotCorrection[64];
     float m_vertCorrection[64];

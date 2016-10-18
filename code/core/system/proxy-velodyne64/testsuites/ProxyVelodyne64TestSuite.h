@@ -56,8 +56,6 @@ class MyContainerConference : public odcore::io::conference::ContainerConference
         , m_velodyneMemory(m) {}
 
     virtual void send(odcore::data::Container &c) const {
-        if (c.getDataType() == odcore::data::SharedPointCloud::ID()) {
-        }
         m_counter++;
         if (m_counter == 2) { //We are only interested in the x, y, z, intensity values of points in the second Velodyne frame (Frame 1)
             if (c.getDataType() == odcore::data::SharedPointCloud::ID()) {
@@ -91,12 +89,6 @@ class packetToByte : public odcore::io::conference::ContainerListener {
     ~packetToByte() {}
 
     virtual void nextContainer(odcore::data::Container &c) {
-        if (c.getDataType() == odcore::data::pcap::GlobalHeader::ID()) {
-            cout << "Get the global header" << endl;
-        }
-        if (c.getDataType() == odcore::data::pcap::PacketHeader::ID()) {
-            //cout<<"Received a packet!"<<endl;
-        }
         if (c.getDataType() == odcore::data::pcap::Packet::ID()) {
             // Here, we have a valid packet.
 

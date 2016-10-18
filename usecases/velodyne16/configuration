@@ -73,12 +73,12 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 # CONFIGURATION FOR VELODYNE64
 #
 
-ProxyVelodyne16.sharedMemory.name = velodyne16SM
-#The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000->ProxyVelodyne64.sharedMemory.size = 480000 
-ProxyVelodyne16.sharedMemory.size = 480000
-ProxyVelodyne16.udpReceiverIP = 0.0.0.0
-ProxyVelodyne16.udpPort = 2368
-ProxyVelodyne16.calibration = VLP-16.xml
+proxy-velodyne16.sharedMemory.name = velodyne16SM
+#The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000->proxy-velodyne64.sharedMemory.size = 480000 
+proxy-velodyne16.sharedMemory.size = 480000
+proxy-velodyne16.udpReceiverIP = 0.0.0.0
+proxy-velodyne16.udpPort = 2368
+proxy-velodyne16.calibration = VLP-16.xml
 
 ###############################################################################
 ###############################################################################

@@ -35,9 +35,6 @@
 
 #include "velodyne64Decoder.h"
 
-
-//#define toRadian(x) ((x)* M_PI / 180.0f)
-
 namespace opendlv {
 namespace core {
 namespace system {
@@ -57,13 +54,11 @@ odcore::io::conference::ContainerConference &c, const string &s)
     , m_distance(0.0)
     , m_velodyneSharedMemory(m)
     , m_segment(NULL)
-    , m_velodyneFrame(c)
+    , m_velodyneContainer(c)
     , m_spc()
     , m_calibration(s) {
-    //Initial setup of the shared point cloud
+    //Initial setup of the shared point cloud (N.B. The size and width of the shared point cloud depends on the number of points of a frame, hence they are not set up in the constructor)
     m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
-    //m_spc.setSize(m_pointIndex* m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT); // Size in raw bytes.
-    //m_spc.setWidth(m_pointIndex); // Number of points.
     m_spc.setHeight(1); // We have just a sequence of vectors.
     m_spc.setNumberOfComponentsPerPoint(m_NUMBER_OF_COMPONENTS_PER_POINT);
     m_spc.setComponentDataType(SharedPointCloud::FLOAT_T); // Data type per component.
@@ -158,21 +153,16 @@ float Velodyne64Decoder::toRadian(float angle) {
 }
 
 //Update the shared point cloud when a complete scan is completed.
-void Velodyne64Decoder::sendSPC(const float &oldAzimuth, const float &newAzimuth) {
+void Velodyne64Decoder::sendSharedPointCloud(const float &oldAzimuth, const float &newAzimuth) {
     if (newAzimuth < oldAzimuth) {
         if (m_velodyneSharedMemory->isValid()) {
             Lock l(m_velodyneSharedMemory);
             memcpy(m_velodyneSharedMemory->getSharedMemory(), m_segment, m_SIZE);
-            //m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory m_segment with the data.
+            //Set the size and width of the shared point cloud of the current frame
             m_spc.setSize(m_pointIndex * m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT); // Size in raw bytes.
             m_spc.setWidth(m_pointIndex);                                                      // Number of points.
-            //m_spc.setHeight(1); // We have just a sequence of vectors.
-            //m_spc.setNumberOfComponentsPerPoint(m_NUMBER_OF_COMPONENTS_PER_POINT);
-            //m_spc.setComponentDataType(SharedPointCloud::FLOAT_T); // Data type per component.
-            //m_spc.setUserInfo(SharedPointCloud::XYZ_INTENSITY);
-
             Container c(m_spc);
-            m_velodyneFrame.send(c);
+            m_velodyneContainer.send(c);
         }
         m_pointIndex = 0;
         m_startID = 0;
@@ -203,7 +193,7 @@ void Velodyne64Decoder::nextString(const string &payload) {
             secondByte = (uint8_t)(payload.at(position + 3));
             dataValue = ntohs(firstByte * 256 + secondByte);
             float azimuth = static_cast< float >(dataValue / 100.0);
-            sendSPC(m_previousAzimuth, azimuth); //Send a complete scan as one frame
+            sendSharedPointCloud(m_previousAzimuth, azimuth); //Send a complete scan as one frame
             m_previousAzimuth = azimuth;
             position += 4;
 
@@ -212,10 +202,12 @@ void Velodyne64Decoder::nextString(const string &payload) {
                 for (int counter = 0; counter < 32; counter++) {
                     //Decode distance: 2 bytes
                     static uint8_t sensorID(0);
-                    if (m_upperBlock)
+                    if (m_upperBlock){
                         sensorID = counter;
-                    else
+                    }
+                    else{
                         sensorID = counter + 32;
+                    }
                     firstByte = (uint8_t)(payload.at(position));
                     secondByte = (uint8_t)(payload.at(position + 1));
                     dataValue = ntohs(firstByte * 256 + secondByte);
