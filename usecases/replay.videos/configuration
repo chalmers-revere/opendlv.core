@@ -18,13 +18,11 @@
 #
 # GLOBAL CONFIGURATION
 #
-global.car = file://data/Models/Car1.objx
-global.scenario = file://data/Track.scnx
+#global.car = Car.objx
+#global.scenario = Track.scnx
+global.car = file:///opt/opendlv.data/Car.objx
+global.scenario = file:///opt/opendlv.data/Track.scnx
 global.showGrid = 0
-
-# Location of the origin of the reference frame (example: 57.70485804 N, 11.93831921 E)
-global.reference.WGS84.latitude = 57.70485804
-global.reference.WGS84.longitude = -11.93831921
 
 # The following attributes define the buffer sizes for recording and
 # replaying. You need to adjust these parameters depending on the
@@ -92,8 +90,8 @@ odplayerh264.portbaseforchildprocesses = 28000 # Every spawned child processes i
 #
 # CONFIGURATION FOR ODCOCKPIT
 #
-odcockpit.plugins = configurationviewer,healthstatusviewer,livefeed,logmessage,player,sessionviewer,sharedimageviewer,streetmapviewer # List of modules to show in odcockpit; leave blank to show all.
-odcockpit.directoriesForSharedLibaries = /opt,/lib # List of directories to search for libodvd*.so files.
+#odcockpit.plugins = configurationviewer,healthstatusviewer,livefeed,logmessage,player,sessionviewer,sharedimageviewer,streetmapviewer # List of modules to show in odcockpit; leave blank to show all.
+#odcockpit.directoriesForSharedLibaries = /opt,/lib # List of directories to search for libodvd*.so files.
 
 
 ###############################################################################
