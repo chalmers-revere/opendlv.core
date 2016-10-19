@@ -40,7 +40,7 @@ services:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne16 --cid=${CID}"
         
-    # Micro-service for odrecorder.
+    #odrecorder.
     odrecorder:
         build: .
         depends_on:
