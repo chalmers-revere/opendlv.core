@@ -61,6 +61,26 @@ ADD_EXECUTABLE (${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/apps/${PROJECT_NAME
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} ${PROJECT_NAME}-static ${LIBRARIES}) 
 
 ###############################################################################
+# This custom command copies the "atwallshort.pcap" recording file and the Velodyne calibration file "db.xml" to where
+# the test suites are generated (more correctly to the parent folder) so
+# that the test suite "velodyneTestSuite.h" can open it during
+# exection.
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/sampleShort.pcap
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleShort.pcap ${CMAKE_BINARY_DIR}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleShort.pcap)
+ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyPCAPFile DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sampleShort.pcap)
+
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/VLP-16.xml
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/VLP-16.xml ${CMAKE_BINARY_DIR}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/VLP-16.xml)
+ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyCalibrationFile DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/VLP-16.xml)
+
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/sampleVeloViewFrame1.zip
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleVeloViewFrame1.zip ${CMAKE_BINARY_DIR}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleVeloViewFrame1.zip)
+ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyZipFile DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sampleVeloViewFrame1.zip)
+
+###############################################################################
 # Enable CxxTest for all available testsuites.
 IF(CXXTEST_FOUND)
     FILE(GLOB thisproject-testsuites "${CMAKE_CURRENT_SOURCE_DIR}/testsuites/*.h")
@@ -89,6 +109,10 @@ IF(CXXTEST_FOUND)
         ENDIF()
         SET_TESTS_PROPERTIES(${testsuite-short}-TestSuite PROPERTIES TIMEOUT 3000)
         TARGET_LINK_LIBRARIES(${testsuite-short}-TestSuite ${PROJECT_NAME}-static ${LIBRARIES})
+        
+        # For the test suites that use a test pcap recording file, we are additionally copying
+        # the required file to where the test suites are going to be executed.
+        ADD_DEPENDENCIES(${testsuite-short}-TestSuite ${PROJECT_NAME}-CopyPCAPFile ${PROJECT_NAME}-CopyCalibrationFile ${PROJECT_NAME}-CopyZipFile)
     ENDFOREACH()
 ENDIF(CXXTEST_FOUND)
 

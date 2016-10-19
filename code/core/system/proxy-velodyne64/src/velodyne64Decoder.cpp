@@ -159,7 +159,7 @@ void Velodyne64Decoder::sendSharedPointCloud(const float &oldAzimuth, const floa
             Lock l(m_velodyneSharedMemory);
             memcpy(m_velodyneSharedMemory->getSharedMemory(), m_segment, m_SIZE);
             //Set the size and width of the shared point cloud of the current frame
-            m_spc.setSize(m_pointIndex * m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT); // Size in raw bytes.
+            m_spc.setSize(m_SIZE); // Size in raw bytes.
             m_spc.setWidth(m_pointIndex);                                                      // Number of points.
             Container c(m_spc);
             m_velodyneContainer.send(c);

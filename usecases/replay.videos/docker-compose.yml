@@ -21,9 +21,9 @@ services:
         volumes:
         - /tmp/.X11-unix:/tmp/.X11-unix
         - ~/recordings:/opt/recordings
+        - .:/opt/opendlv.data
         ipc: host
-        user: root
-        restart: always
+        user: odv
         depends_on:
             - odsupercomponent
         command: "/opt/od4/bin/odcockpit --cid=${CID}"

@@ -40,6 +40,18 @@ services:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne16 --cid=${CID}"
         
-
+    #odrecorder.
+    odrecorder:
+        build: .
+        depends_on:
+            - odsupercomponent
+            - velodyne16
+        volumes:
+            - ~/recordings:/opt/recordings
+        user: odv
+        network_mode: host
+        ipc: host
+        working_dir: "/opt/recordings"
+        command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
         
 
