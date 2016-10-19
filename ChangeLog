@@ -1,3 +1,4 @@
+0.3.0 - Velodyne 16
 0.2.2 - Enable ccache by default
 0.2.1 - Added proxy-trimble and WGS84 coordinate broadcasting
 0.2.0 - proxy-velodyne and CAN timestamping
