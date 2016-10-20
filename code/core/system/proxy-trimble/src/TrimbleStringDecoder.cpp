@@ -180,7 +180,7 @@ void TrimbleStringDecoder::nextString(string const &s) {
         if (hasOldWGS84) {
             // Set oldWGS84 coordinate as reference, transform wgs84 into Cartesian frame, and compute heading.
             opendlv::data::environment::Point3 p = oldWGS84.transform(wgs84);
-            northHeading = p.getAngleXY() + M_PI*0.5;
+            northHeading = p.getAngleXY() - M_PI*0.5;
             hasHeading = true;
             oldWGS84 = wgs84;
         }
