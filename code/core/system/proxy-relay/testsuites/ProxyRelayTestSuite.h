@@ -1,5 +1,5 @@
 /**
- * proxy-beacons - Interface to the beacons.
+ * proxy-relays - Interface to relays.
  * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or
@@ -17,13 +17,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_PROXYBEACONS_TESTSUITE_H
-#define PROXY_PROXYBEACONS_TESTSUITE_H
+#ifndef PROXY_PROXYRELAY_TESTSUITE_H
+#define PROXY_PROXYRELAY_TESTSUITE_H
 
 #include "cxxtest/TestSuite.h"
 
 // Include local header files.
-#include "../include/ProxyBeacons.h"
+#include "../include/ProxyRelay.h"
 
 using namespace std;
 using namespace odcore::data;
@@ -32,21 +32,21 @@ using namespace opendlv::core::system::proxy;
 /**
  * This class derives from SensorBoard to allow access to protected methods.
  */
-class ProxyTestling : public ProxyBeacons {
+class ProxyTestling : public ProxyRelay {
    private:
     ProxyTestling();
 
    public:
     ProxyTestling(const int32_t &argc, char **argv)
-        : ProxyBeacons(argc, argv) {}
+        : ProxyRelay(argc, argv) {}
 
-    // Here, you need to add all methods which are protected in ProxyBeacons and which are needed for the test cases.
+    // Here, you need to add all methods which are protected in ProxyRelay and which are needed for the test cases.
 };
 
 /**
  * The actual testsuite starts here.
  */
-class ProxyBeaconsTest : public CxxTest::TestSuite {
+class ProxyRelayTest : public CxxTest::TestSuite {
    private:
     ProxyTestling *dt;
 
@@ -86,7 +86,7 @@ class ProxyBeaconsTest : public CxxTest::TestSuite {
     /**
          * This constructor is only necessary to initialize the pointer variable.
          */
-    ProxyBeaconsTest()
+    ProxyRelayTest()
         : dt(NULL) {}
 
    private:
@@ -97,7 +97,7 @@ class ProxyBeaconsTest : public CxxTest::TestSuite {
      *
      * @param obj Reference to an object of this class.
      */
-    ProxyBeaconsTest(const ProxyBeaconsTest & /*obj*/);
+    ProxyRelayTest(const ProxyRelayTest & /*obj*/);
 
     /**
      * "Forbidden" assignment operator. Goal: The compiler should warn
@@ -107,7 +107,7 @@ class ProxyBeaconsTest : public CxxTest::TestSuite {
      * @param obj Reference to an object of this class.
      * @return Reference to this instance.
      */
-    ProxyBeaconsTest &operator=(const ProxyBeaconsTest & /*obj*/);
+    ProxyRelayTest &operator=(const ProxyRelayTest & /*obj*/);
 };
 
-#endif /*PROXY_PROXYBEACONS_TESTSUITE_H*/
+#endif /*PROXY_PROXYRELAY_TESTSUITE_H*/

@@ -1,5 +1,5 @@
 /**
- * proxy-beacons - Interface to the beacons.
+ * proxy-relays - Interface to relays.
  * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_PROXYBEACONS_H
-#define PROXY_PROXYBEACONS_H
+#ifndef PROXY_PROXYRELAY_H
+#define PROXY_PROXYRELAY_H
 
 #include <memory>
 
@@ -34,10 +34,10 @@ using namespace std;
 /**
  * Interface to beacons.
  */
-class ProxyBeacons : public odcore::base::module::DataTriggeredConferenceClientModule {
+class ProxyRelay : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
-    ProxyBeacons(const ProxyBeacons & /*obj*/) = delete;
-    ProxyBeacons &operator=(const ProxyBeacons & /*obj*/) = delete;
+    ProxyRelay(const ProxyRelay & /*obj*/) = delete;
+    ProxyRelay &operator=(const ProxyRelay & /*obj*/) = delete;
 
    public:
     /**
@@ -46,9 +46,9 @@ class ProxyBeacons : public odcore::base::module::DataTriggeredConferenceClientM
      * @param argc Number of command line arguments.
      * @param argv Command line arguments.
      */
-    ProxyBeacons(const int &argc, char **argv);
+    ProxyRelay(const int &argc, char **argv);
 
-    virtual ~ProxyBeacons();
+    virtual ~ProxyRelay();
 
    public:
     virtual void nextContainer(odcore::data::Container &c);
@@ -59,14 +59,10 @@ class ProxyBeacons : public odcore::base::module::DataTriggeredConferenceClientM
     odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
    private:
-    float m_angle;
-    uint8_t m_R;
-    uint8_t m_G;
-    uint8_t m_B;
 };
 }
 }
 }
 } // opendlv::core::system::proxy
 
-#endif /*PROXY_PROXYBEACONS_H*/
+#endif /*PROXY_PROXYRELAY_H*/

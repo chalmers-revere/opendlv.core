@@ -1,4 +1,4 @@
-# proxy-beacons - Interface to the beacons.
+# proxy-relays - Interface to relays.
 # Copyright (C) 2016 Chalmers REVERE
 #
 # This program is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (opendlv-core-system-proxy-beacons)
+PROJECT (opendlv-core-system-proxy-relay)
 
 ###########################################################################
 # Set the search path for .cmake files.

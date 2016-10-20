@@ -1,5 +1,5 @@
 /**
- * proxy-beacons - Interface to the beacons.
+ * proxy-relays - Interface to relays.
  * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or
@@ -17,9 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "ProxyBeacons.h"
+#include "ProxyRelay.h"
 
 int32_t main(int32_t argc, char **argv) {
-    opendlv::core::system::proxy::ProxyBeacons beacons(argc, argv);
-    return beacons.runModule();
+    opendlv::core::system::proxy::ProxyRelay relay(argc, argv);
+    return relay.runModule();
 }
