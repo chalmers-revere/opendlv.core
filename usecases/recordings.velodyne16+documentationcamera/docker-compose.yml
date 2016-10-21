@@ -1,0 +1,57 @@
+version: '2'
+# Please note that docker-compose does not prescribe a startup order
+
+services:
+    #odsupercomponent
+    odsupercomponent:
+        build: .
+        network_mode: "host"
+        volumes:
+        - .:/opt/opendlv.data
+        user: root
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
+        
+    #proxy-velodyne16
+    velodyne16:
+        build: .
+        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
+        network_mode: "host"
+        volumes:
+        - .:/opt/opendlv.data
+        ipc: host
+        user: root
+        working_dir: "/opt/opendlv.data"
+        depends_on:
+            - odsupercomponent
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne16 --cid=${CID}"
+
+
+    # Micro-service for proxy-camera.
+    proxy-camera:
+        build: .
+        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
+        depends_on:
+            - odsupercomponent
+        devices:
+             - "/dev/video0:/dev/video0" 
+        user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
+        network_mode: host
+        ipc: host
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID} --freq=20"
+        
+    #odrecorder.
+    odrecorder:
+        build: .
+        depends_on:
+            - odsupercomponent
+            - velodyne16
+            - proxy-camera
+        volumes:
+            - ~/recordings:/opt/recordings
+        user: root
+        network_mode: host
+        ipc: host
+        working_dir: "/opt/recordings"
+        command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
+        
+
