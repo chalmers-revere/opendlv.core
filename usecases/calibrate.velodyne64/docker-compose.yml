@@ -10,7 +10,7 @@ services:
         - .:/opt/opendlv.data
         user: odv
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
-        
+       
     #odcockpit
     odcockpit:
         build: .
@@ -26,8 +26,8 @@ services:
             - odsupercomponent
         command: "/opt/od4/bin/odcockpit --cid=${CID}"
         
-    #proxy-velodyne16
-    velodyne16:
+    #proxy-velodyne64
+    velodyne64:
         build: .
         image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
         network_mode: "host"
@@ -38,20 +38,7 @@ services:
         working_dir: "/opt/opendlv.data"
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne16 --cid=${CID}"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne64 --cid=${CID}"
         
-    #odrecorder.
-    odrecorderh264:
-        build: .
-        depends_on:
-            - odsupercomponent
-            - velodyne16
-        volumes:
-            - ~/recordings:/opt/recordings
-        user: odv
-        network_mode: host
-        ipc: host
-        working_dir: "/opt/recordings"
-        command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
         
 

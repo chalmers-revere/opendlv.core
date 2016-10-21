@@ -1,4 +1,4 @@
-This folder provides the instructions for using proxy-velodyne16, a program which decodes a live stream from a VLP-16 lidar. A docker-compose file is provided to start all micro-services to decode VLP-16 packets and visualize them as 3D point cloud. It includes three services: odsupercomponent, odcockpit, and opendlv-core-system-proxy-velodyne16 (or proxy-velodyne16 for short). odsupercomponent is used for software component lifecycle management in OpenDaVINCI. odcockpit is a visualization tool of OpenDaVINCI. proxy-velodyne16 listens to VLP-16 packets and decodes them in real time. This tutorial assumes that git, Docker, and Docker Compose are installed. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/
+This folder provides the instructions for recording VLP-16 lidar data. A docker-compose file is provided to start all micro-services to decode VLP-16 packets, visualize them as 3D point cloud, and record VLP-16 data. It includes four services: odsupercomponent, odcockpit, opendlv-core-system-proxy-velodyne16 (or proxy-velodyne16 for short), and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. odcockpit is a visualization tool of OpenDaVINCI. proxy-velodyne16 listens to VLP-16 packets and decodes them in real time. odrecorderh264 is used for recording. This tutorial assumes that git, Docker, and Docker Compose are installed. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/
 
 ### Pull the OpenDaVINCI Docker base image
 
@@ -37,6 +37,7 @@ Note that this network setup will disable the access to the Internet. Since prox
     
     $ sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev lo
  
+Alternatively, by visiting 192.168.1.201 in a web browser, one can modify the configuration of VLP-16. The MAC address of VLP-16 can be found and DHCP can be enabled. Then it is possible to use VLP-16 without changing IP address.
  
 ### Use proxy-velodyne16 with Docker Compose
 
@@ -54,20 +55,22 @@ Here CID is a user-defined environment variable that specifies the cid of the UD
     
     $ docker-compose up --build
 
-This will activate odsupercomponent, the visualization tool odcockpit, and proxy-velodyne16. The VLP-16 packets will be visualized as 3D point cloud in the EnvironmentViewer plugin in odcockpit. In EnvironmentViewer, unselect the stationary elements XYZAxes, Grid, Surroundings, AerialImage and the dynamic element EgoCar to have a clean background for the point cloud. By default, EnvironmentViewer uses free camera view which allows a user to do the following operations:
+This will activate odsupercomponent, the visualization tool odcockpit, proxy-velodyne16 and odrecorderh264. The VLP-16 packets will be visualized as 3D point cloud in the EnvironmentViewer plugin in odcockpit. Meanwhile, the micro-service odrecorderh264 will record VLP-16 data. In EnvironmentViewer, unselect the stationary elements XYZAxes, Grid, Surroundings, AerialImage and the dynamic element EgoCar to have a clean background for the point cloud. By default, EnvironmentViewer uses free camera view which allows a user to do the following operations:
 
 - Use **W**/**S** on the keyboard to zoom in and zoom out
 - Use **A**/**D** on the keyboard to move the display window left and right
 - Drag the vertical bar on the left to adjust the perspective (the same operation can also be performed in the display window with the same effect)
 - Drag the horizontal bar at the bottom to rotate clockwise and counter-clockwise (the same operation can also be performed in the display window with the same effect)
 
-To stop proxy-velodyne16, run
+To stop the recording, run
 
     $ docker-compose stop
     
 Remove the stopped containers:
 
     $ docker-compose rm
+    
+After the recording, the recording files are stored at ~/recordings, including a .rec file which stores all OpenDaVINCI containers, and a .rec.mem file which stores the recording data. The recording file format is CID-xxx-odrecorderh264_yyy, where xxx is the cid number and yyy is the timestamp.
     
 Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes all micro-services run with cid 123 instead of 111:
 

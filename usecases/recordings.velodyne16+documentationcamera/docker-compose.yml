@@ -40,7 +40,7 @@ services:
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID} --freq=20"
         
     #odrecorder.
-    odrecorder:
+    odrecorderh264:
         build: .
         depends_on:
             - odsupercomponent
