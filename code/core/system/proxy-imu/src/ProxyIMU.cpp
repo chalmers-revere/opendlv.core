@@ -40,6 +40,7 @@ ProxyIMU::ProxyIMU(int32_t const &a_argc, char **a_argv)
     : TimeTriggeredConferenceClientModule(
       a_argc, a_argv, "proxy-imu")
     , m_device()
+    , m_debug()
 {
 }
 
@@ -59,6 +60,12 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body()
     auto accelerometerReading = m_device->ReadAccelerometer();
     odcore::data::Container accelerometerContainer(accelerometerReading);
     getConference().send(accelerometerContainer);
+
+    if(m_debug) {
+      std::cout << gyroscopeReading.toString() << std::endl;
+      std::cout << accelerometerReading.toString() << std::endl;
+    }
+
   }
 
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
@@ -81,6 +88,8 @@ void ProxyIMU::setUp()
     std::cerr << "[proxy-imu] No valid device driver defined."
               << std::endl;
   }
+
+  m_debug = (kv.getValue<int32_t>("proxy-imu.debug") == 1);
 }
 
 void ProxyIMU::tearDown()

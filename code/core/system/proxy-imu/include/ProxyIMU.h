@@ -48,6 +48,7 @@ class ProxyIMU : public odcore::base::module::TimeTriggeredConferenceClientModul
   void tearDown();
 
   std::unique_ptr<Device> m_device;
+  bool m_debug;
 };
 }
 } 
