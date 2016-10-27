@@ -72,7 +72,7 @@ void PololuAltImu10Device::I2cWriteRegister(uint8_t a_register, uint8_t a_value)
   uint8_t status = write(m_deviceFile, buffer, 2);
 
   if (status != 2) {
-    std::cerr <<  "Failed to write to the i2c bus." << std::endl;
+    std::cerr <<  "Failed to write to the i2c bus. status code: " << status << std::endl;
     return;
   }
 }
