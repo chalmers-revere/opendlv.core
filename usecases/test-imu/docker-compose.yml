@@ -24,12 +24,14 @@ services:
         build: .
         network_mode: "host"
         volumes:
-        - .:/opt/copplar.data
+        - .:/opt/opendlv.data
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
         
-    # micro service for proxy-v2v.
-    proxy-v2v:
+    # micro service for proxy-imu.
+    proxy-imu:
         build: .
+        devices:
+        - "/dev/ttyS1:/dev/ttyS1"
         network_mode: "host"
         depends_on:
             - odsupercomponent
