@@ -74,3 +74,8 @@ message opendlv.proxy.reverefh16.Steering [id = 199] {
     odcore::data::TimeStamp fromSensor [id = 3];
 }
 
+message opendlv.proxy.reverefh16.Driveline  [id = 200] {
+	double enginetorque [id = 1];
+	double enginespeed [id = 2];
+	double currentgear [id = 3];
+}
