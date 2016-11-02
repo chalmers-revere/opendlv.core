@@ -30,20 +30,20 @@ namespace system {
 namespace proxy {
 
 class Device {
- public:
-  Device();
-  Device(Device const &) = delete;
-  Device &operator=(Device const &) = delete;
-  virtual ~Device();
+   public:
+    Device();
+    Device(Device const &) = delete;
+    Device &operator=(Device const &) = delete;
+    virtual ~Device();
 
-  bool IsInitialized() const;
-  virtual opendlv::proxy::AccelerometerReading ReadAccelerometer() = 0;
-  virtual opendlv::proxy::AltimeterReading ReadAltimeter() = 0;
-  virtual opendlv::proxy::CompassReading ReadCompass() = 0;
-  virtual opendlv::proxy::GyroscopeReading ReadGyroscope() = 0;
+    bool IsInitialized() const;
+    virtual opendlv::proxy::AccelerometerReading ReadAccelerometer() = 0;
+    virtual opendlv::proxy::AltimeterReading ReadAltimeter() = 0;
+    virtual opendlv::proxy::CompassReading ReadCompass() = 0;
+    virtual opendlv::proxy::GyroscopeReading ReadGyroscope() = 0;
 
- protected:
-  bool m_initialized;
+   protected:
+    bool m_initialized;
 };
 }
 }

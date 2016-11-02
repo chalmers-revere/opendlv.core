@@ -26,20 +26,16 @@ namespace core {
 namespace system {
 namespace proxy {
 
-Device::Device():
-  m_initialized(false)
-{
+Device::Device()
+    : m_initialized(false) {
 }
 
-Device::~Device()
-{
+Device::~Device() {
 }
 
-bool Device::IsInitialized() const
-{
-  return m_initialized;
+bool Device::IsInitialized() const {
+    return m_initialized;
 }
-
 }
 }
 }

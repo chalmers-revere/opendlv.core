@@ -20,8 +20,7 @@
 
 #include "ProxyIMU.h"
 
-int32_t main(int32_t argc, char **argv)
-{
-  opendlv::core::system::proxy::ProxyIMU imu(argc, argv);
-  return imu.runModule();
+int32_t main(int32_t argc, char **argv) {
+    opendlv::core::system::proxy::ProxyIMU imu(argc, argv);
+    return imu.runModule();
 }
