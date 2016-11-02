@@ -32,71 +32,77 @@
 #include "Pololualtimu10device.h"
 
 namespace opendlv {
-namespace core {
-namespace system {
-namespace proxy {
+    namespace core {
+        namespace system {
+            namespace proxy {
 
-ProxyIMU::ProxyIMU(int32_t const &a_argc, char **a_argv)
-    : TimeTriggeredConferenceClientModule(
-      a_argc, a_argv, "proxy-imu")
-    , m_device()
-    , m_debug()
-{
-}
+                ProxyIMU::ProxyIMU(int32_t const &a_argc, char **a_argv)
+                        : TimeTriggeredConferenceClientModule(
+                        a_argc, a_argv, "proxy-imu"), m_device(), m_debug() {
+                }
 
-ProxyIMU::~ProxyIMU()
-{
-}
+                ProxyIMU::~ProxyIMU() {
+                }
 
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body()
-{
-  while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
-      == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+                odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
+                    while (getModuleStateAndWaitForRemainingTimeInTimeslice()
+                           == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
 
-    auto gyroscopeReading = m_device->ReadGyroscope();
-    odcore::data::Container gyroscopeContainer(gyroscopeReading);
-    getConference().send(gyroscopeContainer);
+                        auto gyroscopeReading = m_device->ReadGyroscope();
+                        odcore::data::Container gyroscopeContainer(gyroscopeReading);
+                        getConference().send(gyroscopeContainer);
 
-    auto accelerometerReading = m_device->ReadAccelerometer();
-    odcore::data::Container accelerometerContainer(accelerometerReading);
-    getConference().send(accelerometerContainer);
+                        auto accelerometerReading = m_device->ReadAccelerometer();
+                        odcore::data::Container accelerometerContainer(accelerometerReading);
+                        getConference().send(accelerometerContainer);
 
-    if(m_debug) {
-      std::cout << gyroscopeReading.toString() << std::endl;
-      std::cout << accelerometerReading.toString() << std::endl;
+                        auto magnetometerReading = m_device->ReadCompass();
+                        odcore::data::Container compassContainer(magnetometerReading);
+                        getConference().send(compassContainer);
+
+                        auto altimeterReading = m_device->ReadAltimeter();
+                        odcore::data::Container altimeterContainer(altimeterReading);
+                        getConference().send(altimeterContainer);
+
+
+
+
+                        if (m_debug) {
+                            std::cout << gyroscopeReading.toString() << std::endl;
+                            std::cout << accelerometerReading.toString() << std::endl;
+                            std::cout << magnetometerReading.toString() << std::endl;
+                            std::cout << altimeterReading.toString() << std::endl;
+                        }
+
+                    }
+
+                    return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+                }
+
+                void ProxyIMU::setUp() {
+                    odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
+
+                    std::string const type = kv.getValue<std::string>("proxy-imu.type");
+
+                    if (type.compare("pololu.altimu10") == 0) {
+                        std::string const deviceNode =
+                                kv.getValue<std::string>("proxy-imu.pololu.altimu10.device_node");
+
+                        m_device = std::unique_ptr<Device>(new PololuAltImu10Device(deviceNode));
+                    }
+
+                    if (m_device.get() == nullptr) {
+                        std::cerr << "[proxy-imu] No valid device driver defined."
+                                  << std::endl;
+                    }
+
+                    m_debug = (kv.getValue<int32_t>("proxy-imu.debug") == 1);
+                }
+
+                void ProxyIMU::tearDown() {
+                }
+
+            }
+        }
     }
-
-  }
-
-  return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-}
-
-void ProxyIMU::setUp()
-{
-  odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
-
-  std::string const type = kv.getValue<std::string>("proxy-imu.type");
-
-  if (type.compare("pololu.altimu10") == 0) {
-    std::string const deviceNode = 
-        kv.getValue<std::string>("proxy-imu.pololu.altimu10.device_node");
-
-    m_device = std::unique_ptr<Device>(new PololuAltImu10Device(deviceNode));
-  }
-
-  if (m_device.get() == nullptr) {
-    std::cerr << "[proxy-imu] No valid device driver defined."
-              << std::endl;
-  }
-
-  m_debug = (kv.getValue<int32_t>("proxy-imu.debug") == 1);
-}
-
-void ProxyIMU::tearDown()
-{
-}
-
-}
-}
-}
 } // opendlv::core::system::proxy

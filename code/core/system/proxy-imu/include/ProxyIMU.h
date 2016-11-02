@@ -26,33 +26,38 @@
 #include <opendavinci/odcore/data/Container.h>
 
 namespace opendlv {
-namespace core {
-namespace system {
-namespace proxy {
+    namespace core {
+        namespace system {
+            namespace proxy {
 
-class Device;
+                class Device;
 
 /**
  * This class provides interface to an IMU through I2C.
  */
-class ProxyIMU : public odcore::base::module::TimeTriggeredConferenceClientModule {
- public:
-  ProxyIMU(int32_t const &, char **);
-  ProxyIMU(ProxyIMU const &) = delete;
-  ProxyIMU &operator=(ProxyIMU const &) = delete;
-  virtual ~ProxyIMU();
-  odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+                class ProxyIMU : public odcore::base::module::TimeTriggeredConferenceClientModule {
+                public:
+                    ProxyIMU(int32_t const &, char **);
 
- private:
-  void setUp();
-  void tearDown();
+                    ProxyIMU(ProxyIMU const &) = delete;
 
-  std::unique_ptr<Device> m_device;
-  bool m_debug;
-};
-}
-} 
-} 
+                    ProxyIMU &operator=(ProxyIMU const &) = delete;
+
+                    virtual ~ProxyIMU();
+
+                    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+
+                private:
+                    void setUp();
+
+                    void tearDown();
+
+                    std::unique_ptr <Device> m_device;
+                    bool m_debug;
+                };
+            }
+        }
+    }
 } // opendlv::core::system::proxy
 
 #endif
