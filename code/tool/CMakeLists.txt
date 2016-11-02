@@ -17,11 +17,11 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(opendlv-core-system)
+project(opendlv-core-tool)
 
 ###########################################################################
 # Set the search path for .cmake files.
-SET (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake.Modules" ${CMAKE_MODULE_PATH})
+SET (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cmake.Modules" ${CMAKE_MODULE_PATH})
 SET (CMAKE_MODULE_PATH "${CMAKE_INSTALL_PREFIX}/share/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules" ${CMAKE_MODULE_PATH})
 SET (CMAKE_MODULE_PATH "${OPENDAVINCI_DIR}/share/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules" ${CMAKE_MODULE_PATH})
 
@@ -47,26 +47,14 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
 
 ###########################################################################
 # Add subfolders with sources.
-add_subdirectory(health)
-add_subdirectory(proxy-applanix)
-add_subdirectory(proxy-camera)
-add_subdirectory(proxy-camera-axis)
-add_subdirectory(proxy-fh16)
-add_subdirectory(proxy-ledstrip)
-add_subdirectory(proxy-sick)
-add_subdirectory(proxy-trimble)
-add_subdirectory(proxy-v2v)
-add_subdirectory(proxy-velodyne16)
-add_subdirectory(proxy-velodyne64)
-add_subdirectory(ps3controller)
-
-#install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../config/configuration DESTINATION . COMPONENT system)
+add_subdirectory(camera-projection)
+#add_subdirectory(imu-calibration)
 
 ###########################################################################
 # Enable CPack to create .deb and .rpm.
 #
 # Read version from first line of ChangeLog
-FILE (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/../../../ChangeLog" BUILD_NUMBER)
+FILE (STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/../../ChangeLog" BUILD_NUMBER)
 MACRO (setup_package_version_variables _packageName)
         STRING (REGEX MATCHALL "[0-9]+" _versionComponents "${_packageName}")
         LIST (LENGTH _versionComponents _len)
