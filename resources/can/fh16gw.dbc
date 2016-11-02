@@ -36,8 +36,13 @@ BS_:
 BU_: Chalmers VehicleGateWay
 
 
+BO_ 264 Driveline: 5 Vector__XXX
+ SG_ EngineTorque : 16|16@1+ (1,0) [0|0] "Nm" Vector__XXX
+ SG_ EngineSpeed : 0|16@1+ (0.125,0) [0|0] "rpm" Vector__XXX
+ SG_ CurrentGear : 32|8@1+ (1,-125) [-125|130] "" Vector__XXX
+
 BO_ 262 ManualDriver: 4 VehicleGateWay
- SG_ TorsionBarTorque : 23|16@0+ (0.0009765625,-32) [-32|31.9990234375] "Nm" Vector__XXX
+ SG_ TorsionBarTorque : 16|16@1+ (0.0009765625,-32) [-32|31.9990234375] "Nm" Vector__XXX
  SG_ BrakePedalPosition : 8|8@1+ (0.4,0) [0|102] "Percent" Vector__XXX
  SG_ AccelerationPedalPosition : 0|8@1+ (0.4,0) [0|102] "Percent" Vector__XXX
 
@@ -116,9 +121,9 @@ BA_ "GenMsgCycleTime" BO_ 260 10;
 BA_ "GenMsgCycleTime" BO_ 259 100;
 BA_ "GenMsgCycleTime" BO_ 258 10;
 BA_ "GenMsgCycleTime" BO_ 257 20;
+BA_ "GenSigStartValue" SG_ 264 CurrentGear 125;
 BA_ "GenSigStartValue" SG_ 262 BrakePedalPosition 255;
 BA_ "GenSigStartValue" SG_ 262 AccelerationPedalPosition 255;
 BA_ "GenSigStartValue" SG_ 515 AccelerationRequestPedal 255;
 BA_ "GenSigStartValue" SG_ 263 SteeringWheelAngle 65535;
 BA_ "GenSigStartValue" SG_ 263 RoadWheelAngle 32765.3997378768;
-
