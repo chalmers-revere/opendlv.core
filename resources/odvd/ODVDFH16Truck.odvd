@@ -75,7 +75,7 @@ message opendlv.proxy.reverefh16.Steering [id = 199] {
 }
 
 message opendlv.proxy.reverefh16.Driveline  [id = 200] {
-	double enginetorque [id = 1];
-	double enginespeed [id = 2];
-	double currentgear [id = 3];
+	float enginetorque [id = 1];
+	float enginespeed [id = 2];
+	int8 currentgear [id = 3];
 }
