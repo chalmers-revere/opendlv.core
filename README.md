@@ -17,3 +17,4 @@ the OpenDLV core binaries on the latest OpenDaVINCI framework running on Ubuntu 
 ## Run the resulting Docker image:
 
     docker run -ti --rm --net host --user odv chalmersrevere/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest /bin/bash
+

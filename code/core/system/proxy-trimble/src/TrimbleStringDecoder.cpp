@@ -27,6 +27,7 @@
 
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
+#include <opendlv/data/environment/Point3.h>
 #include <opendlv/data/environment/WGS84Coordinate.h>
 
 #include "odvdtrimble/GeneratedHeaders_ODVDTrimble.h"
@@ -49,20 +50,22 @@ TrimbleStringDecoder::TrimbleStringDecoder(odcore::io::conference::ContainerConf
 TrimbleStringDecoder::~TrimbleStringDecoder() {}
 
 void TrimbleStringDecoder::nextString(string const &s) {
-    double timestamp;
-    double latitude;
-    double longitude;
-    float altitude;
-    float northHeading;
-    float speed;
-    uint8_t latitudeDirection;
-    uint8_t longitudeDirection;
-    uint8_t satelliteCount;
-    bool hasHeading;
-    bool hasRtk;
+    static bool hasOldWGS84 = false;
+    static opendlv::data::environment::WGS84Coordinate oldWGS84;
+    double timestamp = 0;
+    double latitude = 0;
+    double longitude = 0;
+    float altitude = 0;
+    float northHeading = 0;
+    float speed = 0;
+    uint8_t latitudeDirection = 0;
+    uint8_t longitudeDirection = 0;
+    uint8_t satelliteCount = 0;
+    bool hasHeading = false;
+    bool hasRtk = false;
 
     bool gotGpgga = false;
-    bool gotGpvtg = false;
+//    bool gotGpvtg = false;
 
     vector< string > messages;
 
@@ -137,28 +140,29 @@ void TrimbleStringDecoder::nextString(string const &s) {
             }
         }
         else if (type == "GPVTG") {
-            try {
-                gotGpvtg = true;
+// The Trimble unit does not support heading without two antennas.
+//            try {
+//                gotGpvtg = true;
 
-                string headingStr = fields.at(1);
+//                string headingStr = fields.at(1);
 
-                // cout << "HeadingStr: " << headingStr << endl;
+//                // cout << "HeadingStr: " << headingStr << endl;
 
-                if (headingStr.empty()) {
-                    northHeading = 0.0f;
-                    hasHeading = false;
-                }
-                else {
-                    northHeading = stod(headingStr) * M_PI / 180.0;
-                    hasHeading = true;
-                }
+//                if (headingStr.empty()) {
+//                    northHeading = 0.0f;
+//                    hasHeading = false;
+//                }
+//                else {
+//                    northHeading = stod(headingStr) * M_PI / 180.0;
+//                    hasHeading = true;
+//                }
 
-                // Convert to m/s.
-                speed = stof(fields.at(7)) / 3.6f;
-            }
-            catch (...) {
-                cout << "WARNING: Read error for GPVTG." << endl;
-            }
+//                // Convert to m/s.
+//                speed = stof(fields.at(7)) / 3.6f;
+//            }
+//            catch (...) {
+//                cout << "WARNING: Read error for GPVTG." << endl;
+//            }
         } else if (type == "GPHDT") {
         } else if (type == "GPRMC") {
         } else {
@@ -170,8 +174,19 @@ void TrimbleStringDecoder::nextString(string const &s) {
               << " Longitude : " << setprecision(19) << longitude << " Heading: " << northHeading << " hasRtk: " << hasRtk << endl;
     }
 
+    if (gotGpgga/* && gotGpvtg*/) {
+        // Calculate heading using two consecutive GPS position.
+        opendlv::data::environment::WGS84Coordinate wgs84(latitude, longitude);
+        if (hasOldWGS84) {
+            // Set oldWGS84 coordinate as reference, transform wgs84 into Cartesian frame, and compute heading.
+            opendlv::data::environment::Point3 p = oldWGS84.transform(wgs84);
+            northHeading = p.getAngleXY() - M_PI*0.5;
+            hasHeading = true;
+            oldWGS84 = wgs84;
+        }
+        hasOldWGS84 = true;
 
-    if (gotGpgga && gotGpvtg) {
+
         opendlv::core::sensors::trimble::GpsReading gps(timestamp,
                                                         latitude,
                                                         longitude,
@@ -187,7 +202,6 @@ void TrimbleStringDecoder::nextString(string const &s) {
         m_conference.send(c);
 
         // Distribute WGS84 coordinate.
-        opendlv::data::environment::WGS84Coordinate wgs84(latitude, longitude);
         Container c2(wgs84);
         m_conference.send(c2);
     }

@@ -67,6 +67,12 @@ odsupercomponent.pulsetimeack.yield = 5000 # (in microseconds)
 # List of modules (without blanks) that will not get a pulse message from odsupercomponent.
 odsupercomponent.pulsetimeack.exclude = odcockpit
 
+###############################################################################
+###############################################################################
+#
+# CONFIGURATION FOR ODCOCKPIT
+#
+odcockpit.directoriesForSharedLibaries = /opt
 
 ###############################################################################
 ###############################################################################
