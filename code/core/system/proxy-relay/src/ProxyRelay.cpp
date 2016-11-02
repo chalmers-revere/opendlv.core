@@ -17,17 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <cmath>
-#include <stdint.h>
-
-#include <iostream>
-#include <memory>
 #include <string>
 #include <vector>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
 #include <opendavinci/odcore/data/Container.h>
+#include <opendavinci/odcore/strings/StringToolbox.h>
 
+#include <odvdvehicle/GeneratedHeaders_ODVDVehicle.h>
+
+#include "Gpio.h"
 #include "ProxyRelay.h"
 
 namespace opendlv {
@@ -35,28 +34,72 @@ namespace core {
 namespace system {
 namespace proxy {
 
-using namespace std;
-using namespace odcore::base;
-using namespace odcore::data;
-using namespace odcore::wrapper;
-
 ProxyRelay::ProxyRelay(const int &argc, char **argv)
-    : DataTriggeredConferenceClientModule(argc, argv, "proxy-relay") {}
-
-ProxyRelay::~ProxyRelay() {}
-
-void ProxyRelay::setUp() {}
-
-void ProxyRelay::tearDown() {}
-
-void ProxyRelay::nextContainer(odcore::data::Container &) {}
-
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyRelay::body() {
-    while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-        cout << "[" << getName() << "] Frame sent." << endl;
-    }
-    return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+    : DataTriggeredConferenceClientModule(argc, argv, "proxy-relay"),
+    m_gpio()
+{
 }
+
+ProxyRelay::~ProxyRelay() 
+{
+}
+
+void ProxyRelay::setUp()
+{
+  odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
+
+  std::string const path = kv.getValue<std::string>("proxy-relay.gpioSystemPath");
+
+  std::string const valuesString = 
+      kv.getValue<std::string>("proxy-relay.values");
+
+  std::vector<bool> values;
+
+  std::vector<std::string> valuesVector = 
+      odcore::strings::StringToolbox::split(valuesString, ',');
+  for (auto valueString : valuesVector) {
+    bool value = static_cast<bool>(std::stoi(valueString));
+    values.push_back(value);
+  }
+
+  std::string const pinsString = 
+      kv.getValue<std::string>("proxy-relay.gpio.pins");
+
+  std::vector<uint16_t> pins;
+
+  std::vector<std::string> pinsVector = 
+      odcore::strings::StringToolbox::split(pinsString, ',');
+  for (auto pinString : pinsVector) {
+    uint16_t pin = std::stoi(pinString);
+    pins.push_back(pin);
+  }
+
+  m_gpio = std::unique_ptr<Gpio>(new Gpio(path, values, pins));
+}
+
+void ProxyRelay::tearDown()
+{
+}
+
+void ProxyRelay::nextContainer(odcore::data::Container &a_container)
+{
+  if (a_container.getDataType() == opendlv::proxy::RelayRequest::ID()) {
+    opendlv::proxy::RelayRequest request = 
+        a_container.getData<opendlv::proxy::RelayRequest>();
+
+    std::string deviceId = request.getDeviceId();
+
+    if (deviceId != getIdentifier()) {
+      return;
+    }
+
+    bool relayValue = request.getRelayValue();
+    uint8_t relayIndex = request.getRelayIndex();
+
+    m_gpio->SetValue(relayIndex, relayValue);
+  }
+}
+
 }
 }
 }

@@ -29,15 +29,15 @@ namespace core {
 namespace system {
 namespace proxy {
 
-using namespace std;
+class Gpio;
 
 /**
- * Interface to beacons.
+ * Interface to GPIO relays.
  */
 class ProxyRelay : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
-    ProxyRelay(const ProxyRelay & /*obj*/) = delete;
-    ProxyRelay &operator=(const ProxyRelay & /*obj*/) = delete;
+    ProxyRelay(const ProxyRelay &) = delete;
+    ProxyRelay &operator=(const ProxyRelay &) = delete;
 
    public:
     /**
@@ -46,20 +46,20 @@ class ProxyRelay : public odcore::base::module::DataTriggeredConferenceClientMod
      * @param argc Number of command line arguments.
      * @param argv Command line arguments.
      */
-    ProxyRelay(const int &argc, char **argv);
+    ProxyRelay(const int &, char **);
 
     virtual ~ProxyRelay();
 
    public:
-    virtual void nextContainer(odcore::data::Container &c);
+    virtual void nextContainer(odcore::data::Container &);
 
    private:
     void setUp();
     void tearDown();
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
-   private:
+    std::unique_ptr<Gpio> m_gpio;
 };
+
 }
 }
 }

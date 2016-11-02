@@ -1,5 +1,6 @@
-/*
- * Copyright (C) 2016 Chalmers REVERE
+/**
+ * proxy-relays - Interface to relays.
+ * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,20 +17,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-// The following messages that are common to different vehicles.
-message opendlv.proxy.ActuationRequest [id = 160] {
-  float acceleration [id = 1];
-  float steering [id = 2];
-  bool isValid [id = 3];
-}
+#ifndef PROXY_RELAY_GPIO_H_
+#define PROXY_RELAY_GPIO_H_
 
-message opendlv.proxy.RelayRequest [id = 170] {
-  bool relayValue [id = 1];
-  uint8 relayIndex [id = 2];
-  string deviceId [id = 3];
-}
+#include <string>
+#include <vector>
 
-// This message broadcasts the system's health as key/values.
-message opendlv.system.HealthStatus [id = 200] {
-    map<string,string> status [id = 1];
+namespace opendlv {
+namespace core {
+namespace system {
+namespace proxy {
+
+class Gpio {
+ public:
+  Gpio(std::string, std::vector<bool>, std::vector<uint16_t>);
+  Gpio(Gpio const &) = delete;
+  Gpio &operator=(Gpio const &) = delete;
+  virtual ~Gpio();
+  bool IsActive(uint16_t const) const;
+  void Reset();
+  void SetValue(uint16_t const, bool const);
+
+ private:
+  std::string m_path;
+  std::vector<bool> m_initialValues;
+  std::vector<uint16_t> m_pins;
+};
+
 }
+}
+}
+} // opendlv::core::system::proxy
+
+#endif
