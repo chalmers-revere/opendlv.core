@@ -33,7 +33,7 @@ steerrequest.steerreq_deltatrq in 0x201 at bit 0 for 16 bit is unsigned little e
 
 // CAN message for reading the steering.
 steering.steeringwheelangle in 0x107 at bit 16 for 16 bit is unsigned little endian multiply by 0.0009765625 add -31.374 with range [-31.374, 32.6250234375];
-steering.roadwheelangle in 0x107 at bit 0 for 16 bit is unsigned little endian multiply by 5.8751E-005 add -1.925 with range [-1.925, 1.925246785];
+steering.roadwheelangle in 0x107 at bit 0 for 16 bit is unsigned little endian multiply by 0.000058751 add -1.925 with range [-1.925, 1.925246785];
 
 // CAN message for reading the axle loads.
 axleloads.driveaxle2load in 0x105 at bit 32 for 16 bit is unsigned little endian multiply by 0.5 add 0 with range [0, 32767.5];
