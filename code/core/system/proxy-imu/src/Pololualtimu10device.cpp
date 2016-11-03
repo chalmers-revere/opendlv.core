@@ -35,7 +35,11 @@ namespace proxy {
  */
 PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName)
     : Device()
-    , m_deviceFile() {
+    , m_deviceFile()
+    , m_compassMaxVal{0,0,0}
+    , m_compassMinVal{0,0,0}
+
+{
     m_deviceFile = open(a_deviceName.c_str(), O_RDWR);
     if (m_deviceFile < 0) {
         std::cerr << "Failed to open the i2c bus." << std::endl;
@@ -275,10 +279,27 @@ opendlv::proxy::CompassReading PololuAltImu10Device::ReadCompass() {
     float scaledY = static_cast< double >(y) / 6842.0;
     float scaledZ = static_cast< double >(z) / 6842.0;
 
+
     float reading[] = {scaledX, scaledY, scaledZ};
+    CalibrateCompass(reading);
+
     opendlv::proxy::CompassReading compassReading(reading);
     opendlv::proxy::AccelerometerReading accelerometerReading(reading);
     return compassReading;
+}
+
+void PololuAltImu10Device::CalibrateCompass(float* a_val)
+{
+    for(uint8_t i = 0; i < 3; i++) {
+        if(a_val[i] > m_compassMaxVal[i]) {
+            m_compassMaxVal[i] = a_val[i];
+        } else if(a_val[i] < m_compassMinVal[i]) {
+            m_compassMinVal[i] = a_val[i];
+        }
+        a_val[i] -= (m_compassMinVal[i] + m_compassMaxVal[i]) / 2.0f ;
+    }
+    // a_val[1] -= (magYmin + magYmax) /2 ;
+    // a_val[2] -= (magZmin + magZmax) /2 ; 
 }
 
 

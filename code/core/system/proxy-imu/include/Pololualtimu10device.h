@@ -64,7 +64,13 @@ class PololuAltImu10Device : public Device {
 
     void initLPS25();
 
+    void CalibrateCompass(float*);
+
     int16_t m_deviceFile;
+
+    float m_compassMaxVal[3];
+
+    float m_compassMinVal[3];
 };
 
 namespace lis3RegAddr {

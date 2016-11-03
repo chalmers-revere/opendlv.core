@@ -67,10 +67,10 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
 
 
         if (m_debug) {
-            std::cout << gyroscopeReading.toString() << std::endl;
-            std::cout << accelerometerReading.toString() << std::endl;
-            std::cout << magnetometerReading.toString() << std::endl;
-            std::cout << altimeterReading.toString() << std::endl;
+            std::cout << gyroscopeReading.toString() << ", "
+            << accelerometerReading.toString() << ", "
+            << magnetometerReading.toString() << ", "
+            << altimeterReading.toString() << std::endl;
         }
     }
 
