@@ -303,7 +303,7 @@ opendlv::proxy::CompassReading PololuAltImu10Device::ReadCompass() {
 void PololuAltImu10Device::CalibrateCompass(float* a_val)
 {
 
-    std::cout << "Raw: " << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
+    std::cout << "Raw: "<< 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
 
     for(uint8_t i = 0; i < 3; i++) {
         if(a_val[i] > m_compassMaxVal[i]) {
@@ -329,7 +329,7 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
 
     // a_val[1] -= (magYmin + magYmax) /2 ;
     // a_val[2] -= (magZmin + magZmax) /2 ;
-    std::cout << "Tilt compensation: "<< 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
+    std::cout << "Tilt compensation: "<< 180 * atan2(a_val[1],a_val[0]) / M_PI << " (Pitch, Roll): " << pitch << "," << roll <<std::endl;
 }
 
 
