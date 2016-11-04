@@ -71,6 +71,8 @@ class PololuAltImu10Device : public Device {
     float m_compassMaxVal[3];
 
     float m_compassMinVal[3];
+
+    float m_heavyAcc[3];
 };
 
 namespace lis3RegAddr {

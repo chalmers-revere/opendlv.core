@@ -38,6 +38,7 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName)
     , m_deviceFile()
     , m_compassMaxVal{0,0,0}
     , m_compassMinVal{0,0,0}
+    , m_heavyAcc{0,0,0}
 
 {
     m_deviceFile = open(a_deviceName.c_str(), O_RDWR);
@@ -190,6 +191,17 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     float scaledY = ((0.061 * static_cast< double >(y)) / 1000) * gravatyAccel;
     float scaledZ = ((0.061 * static_cast< double >(z)) / 1000) * gravatyAccel;
 
+    //For magnetometer calibration
+    m_heavyAcc[0] += 0.5f*(scaledX - m_heavyAcc[0]);
+    m_heavyAcc[1] += 0.5f*(scaledY - m_heavyAcc[1]);
+    m_heavyAcc[2] += 0.5f*(scaledZ - m_heavyAcc[2]);
+
+    float vecLength = sqrt(m_heavyAcc[0]*m_heavyAcc[0]+m_heavyAcc[1]*m_heavyAcc[1]+m_heavyAcc[2]*m_heavyAcc[2]);
+    for(uint8_t i = 0; i < 3; i++) {
+        m_heavyAcc[i] = m_heavyAcc[i]/vecLength;
+    }
+
+
     float reading[] = {scaledX, scaledY, scaledZ};
     opendlv::proxy::AccelerometerReading accelerometerReading(reading);
     return accelerometerReading;
@@ -296,8 +308,19 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
         } else if(a_val[i] < m_compassMinVal[i]) {
             m_compassMinVal[i] = a_val[i];
         }
+        //Hard iron calibration
         a_val[i] -= (m_compassMinVal[i] + m_compassMaxVal[i]) / 2.0f ;
+        //Soft iron calibration
+        a_val[i]  = (a_val[i] - m_compassMinVal[i]) / (m_compassMaxVal[i] - m_compassMinVal[i]) * 2 - 1;
     }
+    //Tilt compensation
+    float pitch = asin(m_heavyAcc[0]);
+    if(abs(cosf(pitch)) > 0.00001f){
+        float roll = -asin(m_heavyAcc[1] / cosf(pitch)); 
+        a_val[0] = a_val[0]*cosf(pitch)+a_val[2]*sinf(pitch);
+        a_val[1] = a_val[0]*sinf(pitch)*sinf(roll) + a_val[1]*cosf(roll) - a_val[2]*sinf(roll)*cosf(pitch);
+    }
+
     // a_val[1] -= (magYmin + magYmax) /2 ;
     // a_val[2] -= (magZmin + magZmax) /2 ;
     std::cout << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
