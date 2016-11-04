@@ -320,9 +320,10 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
     std::cout << "Calibrated: " << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
 
     //Tilt compensation
-    float roll = atan2(m_heavyAcc[1],m_heavyAcc[2]);
+    float pitch = atan2(m_heavyAcc[1],m_heavyAcc[2]);
     float pitch = atan2(-m_heavyAcc[0], sqrt(m_heavyAcc[1]*m_heavyAcc[1]+m_heavyAcc[2]*m_heavyAcc[2]));
 
+    a_val[0] = a_val[0]*cosf(pitch)+a_val[2]*sinf(pitch);
     a_val[1] = a_val[0]*sinf(pitch)*sinf(roll) + a_val[1]*cosf(roll) - a_val[2]*sinf(roll)*cosf(pitch);
     std::cout << "Tilt compensation: "<< 180 * atan2(a_val[1],a_val[0]) / M_PI << " (Pitch, Roll): " << pitch << "," << roll <<std::endl;
 
