@@ -303,7 +303,7 @@ opendlv::proxy::CompassReading PololuAltImu10Device::ReadCompass() {
 void PololuAltImu10Device::CalibrateCompass(float* a_val)
 {
 
-    std::cout << "Raw: "<< 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
+    std::cout << "Raw: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
 
     for(uint8_t i = 0; i < 3; i++) {
         if(a_val[i] > m_compassMaxVal[i]) {
