@@ -299,7 +299,8 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
         a_val[i] -= (m_compassMinVal[i] + m_compassMaxVal[i]) / 2.0f ;
     }
     // a_val[1] -= (magYmin + magYmax) /2 ;
-    // a_val[2] -= (magZmin + magZmax) /2 ; 
+    // a_val[2] -= (magZmin + magZmax) /2 ;
+    std::cout << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
 }
 
 
