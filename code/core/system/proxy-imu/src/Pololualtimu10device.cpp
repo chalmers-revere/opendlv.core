@@ -314,7 +314,7 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
         //Hard iron calibration
         a_val[i] -= (m_compassMinVal[i] + m_compassMaxVal[i]) / 2.0f ;
         //Soft iron calibration
-        a_val[i]  = (a_val[i] - m_compassMinVal[i]) / (m_compassMaxVal[i] - m_compassMinVal[i]) * 2 - 1;
+        // a_val[i]  = (a_val[i] - m_compassMinVal[i]) / (m_compassMaxVal[i] - m_compassMinVal[i]) * 2 - 1;
     }
 
     std::cout << "Calibrated: " << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
