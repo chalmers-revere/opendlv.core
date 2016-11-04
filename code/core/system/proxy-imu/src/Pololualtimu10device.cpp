@@ -314,12 +314,12 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
         a_val[i]  = (a_val[i] - m_compassMinVal[i]) / (m_compassMaxVal[i] - m_compassMinVal[i]) * 2 - 1;
     }
     //Tilt compensation
-    float pitch = asin(m_heavyAcc[0]);
-    if(abs(cosf(pitch)) > 0.00001f){
-        float roll = -asin(m_heavyAcc[1] / cosf(pitch)); 
-        a_val[0] = a_val[0]*cosf(pitch)+a_val[2]*sinf(pitch);
-        a_val[1] = a_val[0]*sinf(pitch)*sinf(roll) + a_val[1]*cosf(roll) - a_val[2]*sinf(roll)*cosf(pitch);
-    }
+    // float pitch = asin(m_heavyAcc[0]);
+    // if(abs(cosf(pitch)) > 0.00001f){
+    //     float roll = -asin(m_heavyAcc[1] / cosf(pitch)); 
+    //     a_val[0] = a_val[0]*cosf(pitch)+a_val[2]*sinf(pitch);
+    //     a_val[1] = a_val[0]*sinf(pitch)*sinf(roll) + a_val[1]*cosf(roll) - a_val[2]*sinf(roll)*cosf(pitch);
+    // }
 
     // a_val[1] -= (magYmin + magYmax) /2 ;
     // a_val[2] -= (magZmin + magZmax) /2 ;
