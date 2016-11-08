@@ -48,7 +48,7 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
 ###########################################################################
 # Add subfolders with sources.
 add_subdirectory(camera-projection)
-#add_subdirectory(imu-calibration)
+add_subdirectory(camera-replay)
 
 ###########################################################################
 # Enable CPack to create .deb and .rpm.
