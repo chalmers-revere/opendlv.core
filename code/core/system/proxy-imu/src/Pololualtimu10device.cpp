@@ -186,7 +186,9 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     z = (z << 8) | zla;
 
     //FS = ±2 --> 0.061 mg/LSB -->
-    static double gravatyAccel = 9.81;
+    static double gravityAccel = -9.81;
+    //Hardcoded caliberation
+    //TODO: better calibration
     float scaledX = ((0.061 * static_cast< double >(x)) / 1000) * gravatyAccel;
     float scaledY = ((0.061 * static_cast< double >(y)) / 1000) * gravatyAccel;
     float scaledZ = ((0.061 * static_cast< double >(z)) / 1000) * gravatyAccel;
@@ -382,6 +384,7 @@ opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
 
     //FS = ±245 --> 8.75 mdps/LSB
     static double PI = 3.14159265359;
+    //Calibration also needed.
     float scaledX = (((8.75 * static_cast< double >(x)) / 1000) / 180) * PI;
     float scaledY = (((8.75 * static_cast< double >(y)) / 1000) / 180) * PI;
     float scaledZ = (((8.75 * static_cast< double >(z)) / 1000) / 180) * PI;
