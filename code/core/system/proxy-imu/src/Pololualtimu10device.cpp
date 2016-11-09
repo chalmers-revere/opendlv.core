@@ -189,9 +189,9 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     static double gravityAccel = -9.81;
     //Hardcoded caliberation
     //TODO: better calibration
-    float scaledX = ((0.061 * static_cast< double >(x)) / 1000) * gravatyAccel;
-    float scaledY = ((0.061 * static_cast< double >(y)) / 1000) * gravatyAccel;
-    float scaledZ = ((0.061 * static_cast< double >(z)) / 1000) * gravatyAccel;
+    float scaledX = ((0.061 * static_cast< double >(x)) / 1000) * gravityAccel;
+    float scaledY = ((0.061 * static_cast< double >(y)) / 1000) * gravityAccel;
+    float scaledZ = ((0.061 * static_cast< double >(z)) / 1000) * gravityAccel;
 
     //For magnetometer calibration
     m_heavyAcc[0] += 0.5f*(scaledX - m_heavyAcc[0]);
