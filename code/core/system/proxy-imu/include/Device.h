@@ -39,6 +39,7 @@ class Device {
     bool IsInitialized() const;
     virtual opendlv::proxy::AccelerometerReading ReadAccelerometer() = 0;
     virtual opendlv::proxy::AltimeterReading ReadAltimeter() = 0;
+    virtual opendlv::proxy::TemperatureReading ReadTemperature() = 0;
     virtual opendlv::proxy::CompassReading ReadCompass() = 0;
     virtual opendlv::proxy::GyroscopeReading ReadGyroscope() = 0;
 

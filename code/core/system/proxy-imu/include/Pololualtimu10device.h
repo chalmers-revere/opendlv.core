@@ -45,6 +45,8 @@ class PololuAltImu10Device : public Device {
 
     opendlv::proxy::AltimeterReading ReadAltimeter();
 
+    opendlv::proxy::TemperatureReading ReadTemperature();
+
     opendlv::proxy::CompassReading ReadCompass();
 
     opendlv::proxy::GyroscopeReading ReadGyroscope();

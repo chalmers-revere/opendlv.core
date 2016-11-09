@@ -43,11 +43,11 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName)
 {
     m_deviceFile = open(a_deviceName.c_str(), O_RDWR);
     if (m_deviceFile < 0) {
-        std::cerr << "Failed to open the i2c bus." << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to open the i2c bus." << std::endl;
         return;
     }
 
-    std::cout << "I2C bus " << a_deviceName << " opened successfully."
+    std::cout << "[Pololu Altimu] I2C bus " << a_deviceName << " opened successfully."
               << std::endl;
 
     initLSM6();
@@ -64,7 +64,7 @@ PololuAltImu10Device::~PololuAltImu10Device() {
 void PololuAltImu10Device::accessLSM6() {
     uint8_t address = 0x6b;
     if (ioctl(m_deviceFile, I2C_SLAVE, address) < 0) {
-        std::cerr << "Failed to acquire bus access or talk to slave device. (LSM6 / Accel /Gyro)"
+        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LSM6 / Accel /Gyro)"
                   << std::endl;
         return;
     }
@@ -73,7 +73,7 @@ void PololuAltImu10Device::accessLSM6() {
 void PololuAltImu10Device::accessLIS3() {
     uint8_t address = 0x1E;
     if (ioctl(m_deviceFile, I2C_SLAVE, address) < 0) {
-        std::cerr << "Failed to acquire bus access or talk to slave device. (LIS3 / Magnetometer)"
+        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LIS3 / Magnetometer)"
                   << std::endl;
         return;
     }
@@ -82,7 +82,7 @@ void PololuAltImu10Device::accessLIS3() {
 void PololuAltImu10Device::accessLPS25() {
     uint8_t address = 0x5d;
     if (ioctl(m_deviceFile, I2C_SLAVE, address) < 0) {
-        std::cerr << "Failed to acquire bus access or talk to slave device. (LPS25 / Pressure)"
+        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LPS25 / Pressure)"
                   << std::endl;
         return;
     }
@@ -146,7 +146,7 @@ void PololuAltImu10Device::I2cWriteRegister(uint8_t a_register, uint8_t a_value)
     uint8_t status = write(m_deviceFile, buffer, 2);
 
     if (status != 2) {
-        std::cerr << "Failed to write to the i2c bus. status code: " << status << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to write to the i2c bus at register:" << a_register << ". status code: " << status << std::endl;
         std::cout << errno;
         return;
     }
@@ -159,14 +159,14 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
 
     uint8_t status = write(m_deviceFile, buffer, 1);
     if (status != 1) {
-        std::cerr << "Failed to write to the i2c bus." << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Accelerometer)" << std::endl;
         return nullptr;
     }
 
     uint8_t outBuffer[6];
     status = read(m_deviceFile, outBuffer, 6);
     if (status != 6) {
-        std::cerr << "Failed to read to the i2c bus." << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Accelerometer)" << std::endl;
     }
 
     uint8_t xla = outBuffer[0];
@@ -196,10 +196,6 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     m_heavyAcc[1] += 0.5f*(scaledY - m_heavyAcc[1]);
     m_heavyAcc[2] += 0.5f*(scaledZ - m_heavyAcc[2]);
 
-    // float vecLength = sqrt(m_heavyAcc[0]*m_heavyAcc[0]+m_heavyAcc[1]*m_heavyAcc[1]+m_heavyAcc[2]*m_heavyAcc[2]);
-    // for(uint8_t i = 0; i < 3; i++) {
-    //     m_heavyAcc[i] = m_heavyAcc[i]/vecLength;
-    // }
 
 
     float reading[] = {scaledX, scaledY, scaledZ};
@@ -215,14 +211,14 @@ opendlv::proxy::AltimeterReading PololuAltImu10Device::ReadAltimeter() {
 
     uint8_t status = write(m_deviceFile, buffer, 1);
     if (status != 1) {
-        std::cerr << "Failed to write to the i2c bus." << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Altimeter/Pressure)" << std::endl;
         return 0;
     }
 
     uint8_t outBuffer[3];
     status = read(m_deviceFile, outBuffer, 3);
     if (status != 3) {
-        std::cerr << "Failed to read to the i2c bus." << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Altimeter/Pressure)" << std::endl;
     }
 
     uint8_t pxl = outBuffer[0];
@@ -233,29 +229,45 @@ opendlv::proxy::AltimeterReading PololuAltImu10Device::ReadAltimeter() {
     int32_t pressure_raw = (int32_t)ph << 16 | (uint16_t)pl << 8 | pxl;
     double pressure_bar = static_cast< double >(pressure_raw) / 4096;
 
-    //Temperature
-    buffer[0] = lps25RegAddr::TEMP_OUT_L | (1 << 7);
-    status = write(m_deviceFile, buffer, 1);
-    if (status != 1) {
-        std::cerr << "Failed to write to the i2c bus." << std::endl;
-        return 0;
-    }
-
-    status = read(m_deviceFile, outBuffer, 2);
-    if (status != 2) {
-        std::cerr << "Failed to read to the i2c bus." << std::endl;
-    }
-
-    uint8_t tl = outBuffer[0];
-    uint8_t th = outBuffer[1];
-    // combine bytes
-
-    std::cout << "Temperature: " << 42.5 + ((int16_t)(th << 8 | tl)) / 480.0 << std::endl;
-
+    // converts pressure in mbar to altitude in meters, using 1976 US
+    // Standard Atmosphere model (note that this formula only applies to a
+    // height of 11 km, or about 36000 ft)
+    //  If altimeter setting (QNH, barometric pressure adjusted to sea
+    //  level) is given, this function returns an indicated altitude
+    //  compensated for actual regional pressure; otherwise, it returns
+    //  the pressure altitude above the standard pressure level of 1013.25
+    //  mbar or 29.9213 inHg
     double altitude = (1 - pow(pressure_bar / 1013.25, 0.190263)) * 44330.8;
 
     opendlv::proxy::AltimeterReading altimeterReading(altitude);
     return altimeterReading;
+}
+
+opendlv::proxy::TemperatureReading PololuAltImu10Device::ReadTemperature() {
+    accessLPS25();
+
+    //Temperature
+    uint8_t buffer[] = {lps25RegAddr::TEMP_OUT_L | (1 << 7)};
+    uint8_t status = write(m_deviceFile, buffer, 1);
+    if (status != 1) {
+        std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Temperature)" << std::endl;
+        return 0;
+    }
+
+    uint8_t outBuffer[2];
+    status = read(m_deviceFile, outBuffer, 2);
+    if (status != 2) {
+        std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Temperature)" << std::endl;
+    }
+
+    uint8_t tl = outBuffer[0];
+    uint8_t th = outBuffer[1];
+
+    // combine bytes
+    float temperature = 42.5 + ((int16_t)(th << 8 | tl)) / 480.0;
+
+    opendlv::proxy::TemperatureReading temperatureReading(temperature);
+    return temperatureReading;
 }
 
 opendlv::proxy::CompassReading PololuAltImu10Device::ReadCompass() {
@@ -264,14 +276,14 @@ opendlv::proxy::CompassReading PololuAltImu10Device::ReadCompass() {
 
     uint8_t status = write(m_deviceFile, buffer, 1);
     if (status != 1) {
-        std::cerr << "Failed to write to the i2c bus." << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Compass)" << std::endl;
         return nullptr;
     }
 
     uint8_t outBuffer[6];
     status = read(m_deviceFile, outBuffer, 6);
     if (status != 6) {
-        std::cerr << "Failed to read to the i2c bus." << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Compass)" << std::endl;
     }
 
     uint8_t xlm = outBuffer[0];
@@ -304,7 +316,7 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
 {
 
 
-    std::cout << "Raw values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
+    // std::cout << "Raw values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
     for(uint8_t i = 0; i < 3; i++) {
         if(a_val[i] > m_compassMaxVal[i]) {
             m_compassMaxVal[i] = a_val[i];
@@ -316,8 +328,8 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
         //Soft iron calibration
         // a_val[i]  = (a_val[i] - m_compassMinVal[i]) / (m_compassMaxVal[i] - m_compassMinVal[i]) * 2 - 1;
     }
-    std::cout << "Calibrated values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
-    std::cout << "Heading: " << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
+    // std::cout << "Calibrated values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
+    // std::cout << "Heading: " << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
 
     //Tilt compensation
     float roll = atan2(m_heavyAcc[1],m_heavyAcc[2]);
@@ -325,7 +337,7 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
 
     a_val[0] = a_val[0]*cosf(pitch)+a_val[2]*sinf(pitch);
     a_val[1] = a_val[0]*sinf(pitch)*sinf(roll) + a_val[1]*cosf(roll) - a_val[2]*sinf(roll)*cosf(pitch);
-    std::cout << "Tilt compensation: "<< 180 * atan2(a_val[1],a_val[0]) / M_PI << " (Pitch, Roll): " << pitch << "," << roll <<std::endl;
+    // std::cout << "Tilt compensation: "<< 180 * atan2(a_val[1],a_val[0]) / M_PI << " (Pitch, Roll): " << pitch << "," << roll <<std::endl;
 
     // a_val[1] -= (magYmin + magYmax) /2 ;
     // a_val[2] -= (magZmin + magZmax) /2 ;
@@ -338,14 +350,14 @@ opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
 
     uint8_t status = write(m_deviceFile, buffer, 1);
     if (status != 1) {
-        std::cerr << "Failed to write to the i2c bus." << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Gyroscope)" << std::endl;
         return nullptr;
     }
 
     uint8_t outBuffer[6];
     status = read(m_deviceFile, outBuffer, 6);
     if (status != 6) {
-        std::cerr << "Failed to read to the i2c bus." << std::endl;
+        std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Gyroscope)" << std::endl;
     }
 
     uint8_t xla = outBuffer[0];

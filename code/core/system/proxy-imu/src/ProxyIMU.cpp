@@ -65,12 +65,17 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
         odcore::data::Container altimeterContainer(altimeterReading);
         getConference().send(altimeterContainer);
 
+        auto temperatureReading = m_device->ReadTemperature();
+        odcore::data::Container temperatureContainer(temperatureReading);
+        getConference().send(temperatureContainer);
+
 
         if (m_debug) {
             std::cout << gyroscopeReading.toString() << ", "
             << accelerometerReading.toString() << ", "
             << magnetometerReading.toString() << ", "
-            << altimeterReading.toString() << std::endl;
+            << altimeterReading.toString() << ","
+            << temperatureReading.toString() << std::endl;
         }
     }
 
