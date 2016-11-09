@@ -5,7 +5,6 @@ services:
     #odsupercomponent
     odsupercomponent:
         build: .
-        image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         network_mode: "host"
         volumes:
         - .:/opt/opendlv.data
@@ -14,7 +13,6 @@ services:
     #odcockpit
     odcockpit:
         build: .
-        image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         network_mode: "host"
         environment:
         - DISPLAY=$DISPLAY
