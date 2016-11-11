@@ -33,13 +33,17 @@ namespace proxy {
 
 class PololuAltImu10Device : public Device {
    public:
-    PololuAltImu10Device(std::string const &);
+    PololuAltImu10Device(std::string const &, std::string &);
 
     PololuAltImu10Device(PololuAltImu10Device const &) = delete;
 
     PololuAltImu10Device &operator=(PololuAltImu10Device const &) = delete;
 
     virtual ~PololuAltImu10Device();
+
+    void readCalibrationFile();
+
+    void writeCalibrationFile();
 
     opendlv::proxy::AccelerometerReading ReadAccelerometer();
 
@@ -69,6 +73,10 @@ class PololuAltImu10Device : public Device {
     void CalibrateCompass(float*);
 
     int16_t m_deviceFile;
+
+    std::string m_calibrationFile;
+
+    std::string m_calibrationPath;
 
     float m_compassMaxVal[3];
 

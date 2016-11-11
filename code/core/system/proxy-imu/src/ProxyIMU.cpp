@@ -85,13 +85,20 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
 void ProxyIMU::setUp() {
     odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
 
-    std::string const type = kv.getValue< std::string >("proxy-imu.type");
+    std::string const type = kv.getValue<std::string>("proxy-imu.type");
+    std::string calibrationFile = "";
+    try {
+        calibrationFile = kv.getValue<std::string>("proxy-imu.calibrationfile");
+    }
+    catch(...) {
+        calibrationFile = "";
+    }
 
     if (type.compare("pololu.altimu10") == 0) {
         std::string const deviceNode =
         kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
 
-        m_device = std::unique_ptr< Device >(new PololuAltImu10Device(deviceNode));
+        m_device = std::unique_ptr< Device >(new PololuAltImu10Device(deviceNode, calibrationFile));
     }
 
     if (m_device.get() == nullptr) {
@@ -100,6 +107,8 @@ void ProxyIMU::setUp() {
     }
 
     m_debug = (kv.getValue< int32_t >("proxy-imu.debug") == 1);
+
+
 }
 
 void ProxyIMU::tearDown() {

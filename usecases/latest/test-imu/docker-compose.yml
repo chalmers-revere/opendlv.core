@@ -33,6 +33,8 @@ services:
         devices:
         - "/dev/i2c-2:/dev/i2c-2"
         network_mode: "host"
+        volumes:
+            - .:/opt/opendlv.core.configuration
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --freq=2"

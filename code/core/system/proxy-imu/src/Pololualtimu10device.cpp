@@ -22,6 +22,9 @@
 #include <math.h>
 #include <sys/ioctl.h>
 
+#include <iostream>
+#include <fstream>
+
 #include "Pololualtimu10device.h"
 
 namespace opendlv {
@@ -33,9 +36,11 @@ namespace proxy {
  * Constructor for PololuAltImuV5 device interfacing through I2C.
  *
  */
-PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName)
+PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::string &a_calibrationFile)
     : Device()
     , m_deviceFile()
+    , m_calibrationFile(a_calibrationFile)
+    , m_calibrationPath("/opt/opendlv.core.configuration/")
     , m_compassMaxVal{0,0,0}
     , m_compassMinVal{0,0,0}
     , m_heavyAcc{0,0,0}
@@ -59,6 +64,43 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName)
 
 
 PololuAltImu10Device::~PololuAltImu10Device() {
+}
+
+void PololuAltImu10Device::readCalibrationFile() {
+    if(m_calibrationFile.empty()) {
+        return;
+    }
+    std::ofstream file;
+    file.open(m_calibrationPath+m_calibrationFile);
+    if(file.is_open()){
+
+    } else {
+        std::cout << "[Pololu Altimu] Could not read the calibration settings." << std::endl;
+    }
+    file.close();
+}
+
+void PololuAltImu10Device::writeCalibrationFile() {
+    if(m_calibrationFile.empty()) {
+        return;
+    }
+    std::ofstream file;
+    file.open(m_calibrationPath+m_calibrationFile);
+    if(file.is_open()){
+        file << "m_compassMaxVal";
+        for(uint8_t i = 0; i < 3; i++) {
+            file << " " << m_compassMaxVal[i];
+        }
+        file << std::endl;
+        file << "m_compassMinVal";
+        for(uint8_t i = 0; i < 3; i++) {
+            file << " " << m_compassMinVal[i];
+        }
+        file << std::endl;
+    } else {
+        std::cout << "[Pololu Altimu] Could not save the calibration settings." << std::endl;
+    }
+    file.close();
 }
 
 void PololuAltImu10Device::accessLSM6() {
