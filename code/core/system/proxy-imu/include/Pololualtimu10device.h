@@ -33,15 +33,13 @@ namespace proxy {
 
 class PololuAltImu10Device {
    public:
-    PololuAltImu10Device(std::string const &, std::string &);
+    PololuAltImu10Device(std::string const &, std::string &, bool &);
 
     PololuAltImu10Device(PololuAltImu10Device const &) = delete;
 
     PololuAltImu10Device &operator=(PololuAltImu10Device const &) = delete;
 
     virtual ~PololuAltImu10Device();
-
-    void loadCalibrationFile();
 
     void saveCalibrationFile();
 
@@ -60,6 +58,8 @@ class PololuAltImu10Device {
 
    private:
     void I2cWriteRegister(uint8_t, uint8_t);
+    
+    bool loadCalibrationFile();
 
     void accessLSM6();
 
@@ -88,6 +88,8 @@ class PololuAltImu10Device {
     float m_heavyAcc[3];
 
     bool m_initialized;
+
+    bool m_debug;
 };
 
 namespace lis3RegAddr {
