@@ -21,7 +21,6 @@ services:
     # Micro-service for odsupercomponent.
     odsupercomponent:
         build: .
-        image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         network_mode: host
         volumes:
             - .:/opt/opendlv.core.configuration
@@ -65,7 +64,6 @@ services:
     # Micro-service for odrecorderh264.
     odrecorderh264:
         build: .
-        image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         depends_on:
             - odsupercomponent
             - proxy-camera
