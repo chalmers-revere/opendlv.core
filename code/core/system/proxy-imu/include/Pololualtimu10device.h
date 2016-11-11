@@ -24,14 +24,14 @@
 #include <iostream>
 #include <string>
 
-#include "Device.h"
+#include "odvdimu/GeneratedHeaders_ODVDIMU.h"
 
 namespace opendlv {
 namespace core {
 namespace system {
 namespace proxy {
 
-class PololuAltImu10Device : public Device {
+class PololuAltImu10Device {
    public:
     PololuAltImu10Device(std::string const &, std::string &);
 
@@ -41,9 +41,9 @@ class PololuAltImu10Device : public Device {
 
     virtual ~PololuAltImu10Device();
 
-    void readCalibrationFile();
+    void loadCalibrationFile();
 
-    void writeCalibrationFile();
+    void saveCalibrationFile();
 
     opendlv::proxy::AccelerometerReading ReadAccelerometer();
 
@@ -54,6 +54,9 @@ class PololuAltImu10Device : public Device {
     opendlv::proxy::CompassReading ReadCompass();
 
     opendlv::proxy::GyroscopeReading ReadGyroscope();
+
+    bool IsInitialized() const;
+
 
    private:
     void I2cWriteRegister(uint8_t, uint8_t);
@@ -83,6 +86,8 @@ class PololuAltImu10Device : public Device {
     float m_compassMinVal[3];
 
     float m_heavyAcc[3];
+
+    bool m_initialized;
 };
 
 namespace lis3RegAddr {

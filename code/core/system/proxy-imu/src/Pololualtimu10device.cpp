@@ -37,14 +37,13 @@ namespace proxy {
  *
  */
 PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::string &a_calibrationFile)
-    : Device()
-    , m_deviceFile()
+    : m_deviceFile()
     , m_calibrationFile(a_calibrationFile)
     , m_calibrationPath("/opt/opendlv.core.configuration/")
     , m_compassMaxVal{0,0,0}
     , m_compassMinVal{0,0,0}
     , m_heavyAcc{0,0,0}
-
+    , m_initialized(false)
 {
     m_deviceFile = open(a_deviceName.c_str(), O_RDWR);
     if (m_deviceFile < 0) {
@@ -66,7 +65,7 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
 PololuAltImu10Device::~PololuAltImu10Device() {
 }
 
-void PololuAltImu10Device::readCalibrationFile() {
+void PololuAltImu10Device::loadCalibrationFile() {
     if(m_calibrationFile.empty()) {
         return;
     }
@@ -80,7 +79,7 @@ void PololuAltImu10Device::readCalibrationFile() {
     file.close();
 }
 
-void PololuAltImu10Device::writeCalibrationFile() {
+void PololuAltImu10Device::saveCalibrationFile() {
     if(m_calibrationFile.empty()) {
         return;
     }
@@ -435,6 +434,12 @@ opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
     opendlv::proxy::GyroscopeReading gyroscopeReading(reading);
     return gyroscopeReading;
 }
+
+bool PololuAltImu10Device::IsInitialized() const {
+    return m_initialized;
+}
+
+
 }
 }
 }

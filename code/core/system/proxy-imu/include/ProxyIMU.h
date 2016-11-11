@@ -30,7 +30,7 @@ namespace core {
 namespace system {
 namespace proxy {
 
-class Device;
+class PololuAltImu10Device;
 
 /**
  * This class provides interface to an IMU through I2C.
@@ -52,7 +52,7 @@ class ProxyIMU : public odcore::base::module::TimeTriggeredConferenceClientModul
 
     void tearDown();
 
-    std::unique_ptr< Device > m_device;
+    std::unique_ptr< PololuAltImu10Device > m_device;
     bool m_debug;
 };
 }

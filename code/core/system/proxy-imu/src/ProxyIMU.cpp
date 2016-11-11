@@ -98,7 +98,8 @@ void ProxyIMU::setUp() {
         std::string const deviceNode =
         kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
 
-        m_device = std::unique_ptr< Device >(new PololuAltImu10Device(deviceNode, calibrationFile));
+        m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, calibrationFile));
+        m_device->loadCalibrationFile();
     }
 
     if (m_device.get() == nullptr) {
@@ -112,6 +113,7 @@ void ProxyIMU::setUp() {
 }
 
 void ProxyIMU::tearDown() {
+    m_device->saveCalibrationFile();
 }
 }
 }
