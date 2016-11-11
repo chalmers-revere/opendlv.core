@@ -48,7 +48,7 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
 ###########################################################################
 # Add subfolders with sources.
 add_subdirectory(mapped-can-extractor)
-
+add_subdirectory(signalinjector)
 #install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../config/configuration DESTINATION . COMPONENT system)
 
 ###########################################################################
