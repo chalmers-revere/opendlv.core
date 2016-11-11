@@ -24,8 +24,11 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "Pololualtimu10device.h"
+
+#include "opendavinci/odcore/strings/StringToolbox.h"
 
 namespace opendlv {
 namespace core {
@@ -69,12 +72,21 @@ void PololuAltImu10Device::loadCalibrationFile() {
     if(m_calibrationFile.empty()) {
         return;
     }
-    std::ofstream file;
-    file.open(m_calibrationPath+m_calibrationFile);
+    std::ifstream file(m_calibrationPath+m_calibrationFile, std::ifstream::out);
     if(file.is_open()){
+        std::string line;
+        while(std::getline(file, line)) {
+            std::vector<std::string> strList = odcore::strings::StringToolbox::split(line, ' ');
+            for(uint8_t i = 0; i < strList.size(); i++) { 
+                std::cout << strList[i] << ",";
+            }
+            std::cout << std::endl;
 
+        }
+
+        std::cout << "[Pololu Altimu] Loaded the calibration settings." << std::endl;
     } else {
-        std::cout << "[Pololu Altimu] Could not read the calibration settings." << std::endl;
+        std::cout << "[Pololu Altimu] Could not load the calibration settings." << std::endl;
     }
     file.close();
 }
@@ -83,8 +95,7 @@ void PololuAltImu10Device::saveCalibrationFile() {
     if(m_calibrationFile.empty()) {
         return;
     }
-    std::ofstream file;
-    file.open(m_calibrationPath+m_calibrationFile);
+    std::ofstream file(m_calibrationPath+m_calibrationFile, std::ifstream::in);
     if(file.is_open()){
         file << "m_compassMaxVal";
         for(uint8_t i = 0; i < 3; i++) {
@@ -96,6 +107,7 @@ void PololuAltImu10Device::saveCalibrationFile() {
             file << " " << m_compassMinVal[i];
         }
         file << std::endl;
+        std::cout << "[Pololu Altimu] Saved the calibration settings." << std::endl;
     } else {
         std::cout << "[Pololu Altimu] Could not save the calibration settings." << std::endl;
     }
@@ -170,6 +182,46 @@ void PololuAltImu10Device::initLIS3() {
     // 0x0C = 0b00001100
     // OMZ = 11 (ultra-high-performance mode for Z)
     I2cWriteRegister(lis3RegAddr::CTRL_REG4, 0x0C);
+
+    //Initial values for calibration
+    accessLIS3();
+    uint8_t buffer[] = {lis3RegAddr::OUT_X_L | 0x80};
+
+    uint8_t status = write(m_deviceFile, buffer, 1);
+    if (status != 1) {
+        std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Compass)" << std::endl;
+    }
+
+    uint8_t outBuffer[6];
+    status = read(m_deviceFile, outBuffer, 6);
+    if (status != 6) {
+        std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Compass)" << std::endl;
+    }
+
+    uint8_t xlm = outBuffer[0];
+    uint8_t xhm = outBuffer[1];
+    uint8_t ylm = outBuffer[2];
+    uint8_t yhm = outBuffer[3];
+    uint8_t zlm = outBuffer[4];
+    uint8_t zhm = outBuffer[5];
+
+    int16_t x = (int16_t)(xhm << 8 | xlm);
+    int16_t y = (int16_t)(yhm << 8 | ylm);
+    int16_t z = (int16_t)(zhm << 8 | zlm);
+
+    //F
+    //FS=±4 gauss  --> 6842 LSB/gauss
+    float scaledX = static_cast< double >(x) / 6842.0;
+    float scaledY = static_cast< double >(y) / 6842.0;
+    float scaledZ = static_cast< double >(z) / 6842.0;
+
+    m_compassMinVal[0] = scaledX;
+    m_compassMinVal[1] = scaledY;
+    m_compassMinVal[2] = scaledZ;
+    m_compassMaxVal[0] = scaledX;
+    m_compassMaxVal[1] = scaledY;
+    m_compassMaxVal[2] = scaledZ;
+
 }
 
 void PololuAltImu10Device::initLPS25() {

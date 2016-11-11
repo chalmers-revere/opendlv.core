@@ -74,7 +74,7 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 
 proxy-imu.type = pololu.altimu10
-proxy-imu.pololu.altimu10.device_node = /dev/i2c-
+proxy-imu.pololu.altimu10.device_node = /dev/i2c-2
 proxy-imu.calibrationfile = calibration.txt
 proxy-imu.debug = 1
 
