@@ -73,7 +73,7 @@ bool PololuAltImu10Device::loadCalibrationFile() {
     if(m_calibrationFile.empty()) {
         return 1;
     }
-    std::ifstream file(m_calibrationPath+m_calibrationFile, std::ifstream::out);
+    std::ifstream file(m_calibrationPath+m_calibrationFile, std::ifstream::in);
     if(file.is_open()){
         std::string line;
         while(std::getline(file, line)) {
@@ -93,16 +93,17 @@ bool PololuAltImu10Device::loadCalibrationFile() {
             }
         }
 
-        std::cout << "[Pololu Altimu] Loaded the calibration settings." << std::endl;
+        std::cout << "[Pololu Altimu] Loaded the calibration settings.";
         if(m_debug) {
-            std::cout << "[Pololu Altimu] Loaded: m_compassMaxVal(" << m_compassMaxVal[0] << "," << m_compassMaxVal[1] 
-            << "," << m_compassMaxVal[2] << "), m_compassMinVal(" << m_compassMinVal[0] << "," << m_compassMinVal[1] 
-            << "," << m_compassMinVal[2] <<")" << std::endl;
+            std::cout << "\nLoaded:\nm_compassMaxVal(" << m_compassMaxVal[0] << "," << m_compassMaxVal[1] 
+            << "," << m_compassMaxVal[2] << ")\nm_compassMinVal(" << m_compassMinVal[0] << "," << m_compassMinVal[1] 
+            << "," << m_compassMinVal[2] <<")";
         }
+        std::cout << std::endl;
         file.close();
         return 0;
     } else {
-        std::cout << "[Pololu Altimu] Could not load the calibration settings. Starting on fresh settings" << std::endl;
+        std::cout << "[Pololu Altimu] Could not load the calibration settings. Starting on fresh settings." << std::endl;
         file.close();
         return 1;
     }
@@ -112,7 +113,7 @@ void PololuAltImu10Device::saveCalibrationFile() {
     if(m_calibrationFile.empty()) {
         return;
     }
-    std::ofstream file(m_calibrationPath+m_calibrationFile, std::ifstream::in);
+    std::ofstream file(m_calibrationPath+m_calibrationFile, std::ifstream::out);
     if(file.is_open()){
         file << "m_compassMaxVal";
         for(uint8_t i = 0; i < 3; i++) {
@@ -124,7 +125,13 @@ void PololuAltImu10Device::saveCalibrationFile() {
             file << " " << m_compassMinVal[i];
         }
         file << std::endl;
-        std::cout << "[Pololu Altimu] Saved the calibration settings." << std::endl;
+        std::cout << "[Pololu Altimu] Saved the calibration settings.";
+        if(m_debug) {
+            std::cout << "[\nSaved:\nm_compassMaxVal(" << m_compassMaxVal[0] << "," << m_compassMaxVal[1] 
+            << "," << m_compassMaxVal[2] << "),\nm_compassMinVal(" << m_compassMinVal[0] << "," << m_compassMinVal[1] 
+            << "," << m_compassMinVal[2] <<")";
+        }
+        std::cout << std::endl;
     } else {
         std::cout << "[Pololu Altimu] Could not save the calibration settings." << std::endl;
     }

@@ -78,7 +78,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
             << temperatureReading.toString() << std::endl;
         }
     }
-    m_device->saveCalibrationFile();
+
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 
@@ -112,6 +112,7 @@ void ProxyIMU::setUp() {
 }
 
 void ProxyIMU::tearDown() {
+    m_device->saveCalibrationFile();
 }
 }
 }
