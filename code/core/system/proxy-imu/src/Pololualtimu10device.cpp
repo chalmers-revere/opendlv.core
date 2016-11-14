@@ -127,7 +127,7 @@ void PololuAltImu10Device::saveCalibrationFile() {
         file << std::endl;
         std::cout << "[Pololu Altimu] Saved the calibration settings.";
         if(m_debug) {
-            std::cout << "[\nSaved:\nm_compassMaxVal(" << m_compassMaxVal[0] << "," << m_compassMaxVal[1] 
+            std::cout << "\nSaved:\nm_compassMaxVal(" << m_compassMaxVal[0] << "," << m_compassMaxVal[1] 
             << "," << m_compassMaxVal[2] << "),\nm_compassMinVal(" << m_compassMinVal[0] << "," << m_compassMinVal[1] 
             << "," << m_compassMinVal[2] <<")";
         }
@@ -135,6 +135,7 @@ void PololuAltImu10Device::saveCalibrationFile() {
     } else {
         std::cout << "[Pololu Altimu] Could not save the calibration settings." << std::endl;
     }
+    file.flush();
     file.close();
 }
 
@@ -429,7 +430,6 @@ opendlv::proxy::CompassReading PololuAltImu10Device::ReadCompass() {
     CalibrateCompass(reading);
 
     opendlv::proxy::CompassReading compassReading(reading);
-    opendlv::proxy::AccelerometerReading accelerometerReading(reading);
     return compassReading;
 }
 
