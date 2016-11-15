@@ -1,5 +1,5 @@
-# proxy-v2v - Interface to V2V.
-# Copyright (C) 2016 Chalmers REVERE
+# proxy-imu - Interface to pololu altimu v5.
+# Copyright (C) 2016 Christian Berger
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,7 +17,7 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (opendlv-core-system-proxy-v2v)
+PROJECT (opendlv-core-system-proxy-imu)
 
 ###########################################################################
 # Set the search path for .cmake files.
@@ -45,12 +45,13 @@ INCLUDE (CheckCxxTestEnvironment)
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
-# Find ODVDV2V.
-find_package(ODVDV2V REQUIRED)
+# Find ODVDIMU.
+find_package(ODVDIMU REQUIRED)
+
 
 ###############################################################################
-# Set header files from ODVDV2V.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDV2V_INCLUDE_DIRS})
+# Set header files from ODVDIMU.
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDIMU_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set include directory.
@@ -58,7 +59,7 @@ INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
-              ${ODVDV2V_LIBRARIES})
+              ${ODVDIMU_LIBRARIES})
 
 ###############################################################################
 # Build this project.
