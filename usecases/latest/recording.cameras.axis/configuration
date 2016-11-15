@@ -27,16 +27,7 @@ global.buffer.memorySegmentSize = 2800000 # Size of a memory segment in bytes.
 global.buffer.numberOfMemorySegments = 20 # Number of memory segments.
 
 # The following key describes the list of modules expected to participate in this --cid session.
-global.session.expectedModules = proxy-camera-axis-axis
-
-
-###############################################################################
-###############################################################################
-#
-# CONFIGURATION FOR ODCOCKPIT
-#
-odcockpit.plugins = configurationviewer,healthstatusviewer,livefeed,logmessage,sessionviewer,sharedimageviewer # List of modules to show in odcockpit; leave blank to show all.
-odcockpit.directoriesForSharedLibaries = /opt # List of directories to search for libodvd*.so files.
+global.session.expectedModules = odrecorderh264,proxy-camera:1,proxy-camera:2,proxy-camera:3,proxy-camera:4,proxy-camera:5
 
 
 ###############################################################################
@@ -75,11 +66,42 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 ###############################################################################
 ###############################################################################
 #
+# CONFIGURATION FOR ODPLAYER
+#
+odplayer.input = file://recorder.rec
+odplayer.autoRewind = 0 # 0 = no rewind in the case of EOF, 1 = rewind.
+odplayer.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. play, pause, rewind, step_forward)
+odplayer.timeScale = 1.0 # A time scale factor of 1.0 means real time, a factor of 0 means as fast as possible. The smaller the time scale factor is the faster runs the replay.
+
+odplayerh264.input = file://recorder.rec
+odplayerh264.autoRewind = 0 # 0 = no rewind in the case of EOF, 1 = rewind.
+odplayerh264.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. play, pause, rewind, step_forward)
+odplayerh264.timeScale = 1.0 # A time scale factor of 1.0 means real time, a factor of 0 means as fast as possible. The smaller the time scale factor is the faster runs the replay.
+odplayerh264.portbaseforchildprocesses = 28000 # Every spawned child processes is connecting to the parent process via TCP using the base port plus its increasing ID.
+
+
+###############################################################################
+###############################################################################
+#
+# CONFIGURATION FOR ODRECORDER
+#
+#odrecorder.output = file://recorder.rec
+odrecorder.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. start and stop recording)
+odrecorder.dumpSharedData = 1 # 0 = do not dump shared images and shared images, 1 = otherwise
+
+#odrecorderh264.output = file://recorder.rec
+odrecorderh264.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. start and stop recording)
+odrecorderh264.dumpSharedData = 1 # 0 = do not dump shared images and shared images, 1 = otherwise
+odrecorderh264.lossless = 1 # Set to 1 to enable h264 lossless encoding.
+odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes is connecting to the parent process via TCP using the base port plus its increasing ID.
+
+###############################################################################
+###############################################################################
+#
 # CONFIGURATION FOR PROXY
 #
-
-proxy-camera-axis:0.debug = 1               # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera-axis:0.name = front-left
+proxy-camera-axis:0.name = AxisCamera0
+proxy-camera-axis:0.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
 proxy-camera-axis:0.address = 10.42.42.90
 proxy-camera-axis:0.username = root
 proxy-camera-axis:0.password = gcdc
@@ -87,8 +109,8 @@ proxy-camera-axis:0.width = 1280
 proxy-camera-axis:0.height = 720
 proxy-camera-axis:0.calibrationfile = /opt/opendlv.core.configuration/file.yml  # This file must be accessible from within the Docker container.
 
-proxy-camera-axis:1.debug = 1               # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera-axis:1.name = front-right
+proxy-camera-axis:1.name = AxisCamera1
+proxy-camera-axis:1.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
 proxy-camera-axis:1.address = 10.42.42.91
 proxy-camera-axis:1.username = root
 proxy-camera-axis:1.password = gcdc
@@ -96,8 +118,8 @@ proxy-camera-axis:1.width = 1280
 proxy-camera-axis:1.height = 720
 proxy-camera-axis:1.calibrationfile = /opt/opendlv.core.configuration/file.yml  # This file must be accessible from within the Docker container.
 
+proxy-camera-axis:2.name = AxisCamera2
 proxy-camera-axis:2.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera-axis:2.name = rear-right
 proxy-camera-axis:2.address = 10.42.42.92
 proxy-camera-axis:2.username = root
 proxy-camera-axis:2.password = gcdc
@@ -105,13 +127,11 @@ proxy-camera-axis:2.width = 1280
 proxy-camera-axis:2.height = 720
 proxy-camera-axis:2.calibrationfile = /opt/opendlv.core.configuration/file.yml  # This file must be accessible from within the Docker container.
 
+proxy-camera-axis:3.name = AxisCamera3
 proxy-camera-axis:3.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera-axis:3.type = opencv-ip-axis
-proxy-camera-axis:3.name = rear-left
 proxy-camera-axis:3.address = 10.42.42.93
 proxy-camera-axis:3.username = root
 proxy-camera-axis:3.password = gcdc
 proxy-camera-axis:3.width = 1280
 proxy-camera-axis:3.height = 720
 proxy-camera-axis:3.calibrationfile = /opt/opendlv.core.configuration/file.yml  # This file must be accessible from within the Docker container.
-
