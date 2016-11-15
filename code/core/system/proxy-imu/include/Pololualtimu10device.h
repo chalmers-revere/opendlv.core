@@ -79,8 +79,6 @@ class PololuAltImu10Device {
 
     std::string m_calibrationFile;
 
-    std::string m_calibrationPath;
-
     float m_compassMaxVal[3];
 
     float m_compassMinVal[3];

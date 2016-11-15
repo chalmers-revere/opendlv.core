@@ -42,7 +42,6 @@ namespace proxy {
 PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::string &a_calibrationFile, bool &a_debug)
     : m_deviceFile()
     , m_calibrationFile(a_calibrationFile)
-    , m_calibrationPath("/opt/opendlv.core.configuration/")
     , m_compassMaxVal{0,0,0}
     , m_compassMinVal{0,0,0}
     , m_heavyAcc{0,0,0}
@@ -73,7 +72,7 @@ bool PololuAltImu10Device::loadCalibrationFile() {
     if(m_calibrationFile.empty()) {
         return 1;
     }
-    std::ifstream file(m_calibrationPath+m_calibrationFile, std::ifstream::in);
+    std::ifstream file(m_calibrationFile, std::ifstream::in);
     if(file.is_open()){
         std::string line;
         while(std::getline(file, line)) {
@@ -113,7 +112,7 @@ void PololuAltImu10Device::saveCalibrationFile() {
     if(m_calibrationFile.empty()) {
         return;
     }
-    std::ofstream file(m_calibrationPath+m_calibrationFile, std::ifstream::out);
+    std::ofstream file(m_calibrationFile, std::ifstream::out);
     if(file.is_open()){
         file << "m_compassMaxVal";
         for(uint8_t i = 0; i < 3; i++) {
