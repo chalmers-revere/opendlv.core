@@ -23,6 +23,10 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include <vector>
+
+
+#include <opendavinci/odcore/wrapper/Eigen.h>
 
 #include "odvdimu/GeneratedHeaders_ODVDIMU.h"
 
@@ -33,7 +37,7 @@ namespace proxy {
 
 class PololuAltImu10Device {
    public:
-    PololuAltImu10Device(std::string const &, std::string &, bool &);
+    PololuAltImu10Device(std::string const &, std::vector<double> const &, std::string &, bool const &, bool &);
 
     PololuAltImu10Device(PololuAltImu10Device const &) = delete;
 
@@ -49,11 +53,12 @@ class PololuAltImu10Device {
 
     opendlv::proxy::TemperatureReading ReadTemperature();
 
-    opendlv::proxy::CompassReading ReadCompass();
+    opendlv::proxy::MagnetometerReading ReadMagnetometer();
 
     opendlv::proxy::GyroscopeReading ReadGyroscope();
 
     bool IsInitialized() const;
+
 
 
    private:
@@ -73,17 +78,23 @@ class PololuAltImu10Device {
 
     void initLPS25();
 
-    void CalibrateCompass(float*);
+    void CalibrateMagnetometer(float*);
+
+    Eigen::Vector3f Rotate(Eigen::Vector3f, Eigen::Matrix3d);
 
     int16_t m_deviceFile;
 
+    Eigen::Matrix3d m_rotationMatrix;
+
     std::string m_calibrationFile;
 
-    float m_compassMaxVal[3];
+    bool const m_lockCalibration;
 
-    float m_compassMinVal[3];
+    float m_magnetometerMaxVal[3];
 
-    float m_heavyAcc[3];
+    float m_magnetometerMinVal[3];
+
+    // float m_heavyAcc[3];
 
     bool m_initialized;
 

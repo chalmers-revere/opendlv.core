@@ -19,13 +19,13 @@
 
 version: '2'
 
-services:
-    odsupercomponent:
-        build: .
-        network_mode: "host"
-        volumes:
-        - .:/opt/opendlv.data
-        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
+# services:
+#     odsupercomponent:
+#         build: .
+#         network_mode: "host"
+#         volumes:
+#         - .:/opt/opendlv.data
+#         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
         
     # micro service for proxy-imu.
     proxy-imu:

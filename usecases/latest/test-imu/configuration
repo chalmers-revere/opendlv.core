@@ -76,12 +76,12 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 proxy-imu.type = pololu.altimu10
 proxy-imu.pololu.altimu10.device_node = /dev/i2c-2
 proxy-imu.calibrationfile = /opt/opendlv.core.configuration/calibration.txt
+proxy-imu.mount.roll = 0.0
+proxy-imu.mount.pitch = 0.0
+proxy-imu.mount.yaw = 180.0
 proxy-imu.debug = 1
 
 ## Future calibration values
 #proxy-imu.mount.x = 0.0
 #proxy-imu.mount.y = 0.0
 #proxy-imu.mount.z = 0.3
-#proxy-imu.mount.roll = 0.0
-#proxy-imu.mount.pitch = 0.0
-#proxy-imu.mount.yaw = 0.0

@@ -24,8 +24,8 @@ message opendlv.proxy.AltimeterReading [id = 162] {
   float altitude [id = 1];
 }
 
-message opendlv.proxy.CompassReading [id = 163] {
-  float magneticFieldVector[3] [id = 1];
+message opendlv.proxy.MagnetometerReading [id = 163] {
+  float magneticField[3] [id = 1];
 }
 
 message opendlv.proxy.GyroscopeReading [id = 168] {
