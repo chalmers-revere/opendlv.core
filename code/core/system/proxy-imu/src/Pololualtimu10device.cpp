@@ -457,7 +457,7 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     float scaledY = static_cast< double >(y) / 6842.0;
     float scaledZ = static_cast< double >(z) / 6842.0;
     
-    float reading[] = {scaledX, scaledY, scaledZ};
+    float reading[3] = {scaledX, scaledY, scaledZ};
     if(!m_lockCalibration){
         CalibrateMagnetometer(reading);
     }
@@ -466,7 +466,9 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
     adjustedReading.normalize();
-
+    reading[0] = adjustedReading[0];
+    reading[1] = adjustedReading[1];
+    reading[2] = adjustedReading[2];
 
     opendlv::proxy::MagnetometerReading magnetometerReading(reading);
     return magnetometerReading;
