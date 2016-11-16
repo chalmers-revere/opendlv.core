@@ -458,9 +458,7 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     float scaledZ = static_cast< double >(z) / 6842.0;
     
     float reading[3] = {scaledX, scaledY, scaledZ};
-    if(!m_lockCalibration){
-        CalibrateMagnetometer(reading);
-    }
+    CalibrateMagnetometer(reading);
 
     Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);
     
@@ -480,10 +478,12 @@ void PololuAltImu10Device::CalibrateMagnetometer(float* a_val)
 
     // std::cout << "Raw values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
     for(uint8_t i = 0; i < 3; i++) {
-        if(a_val[i] > m_magnetometerMaxVal[i]) {
-            m_magnetometerMaxVal[i] = a_val[i];
-        } else if(a_val[i] < m_magnetometerMinVal[i]) {
-            m_magnetometerMinVal[i] = a_val[i];
+        if(!m_lockCalibration){
+            if(a_val[i] > m_magnetometerMaxVal[i] ) {
+                m_magnetometerMaxVal[i] = a_val[i];
+            } else if(a_val[i] < m_magnetometerMinVal[i]) {
+                m_magnetometerMinVal[i] = a_val[i];
+            }
         }
         //Hard iron calibration
         a_val[i] -= (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i]) / 2.0f ;
