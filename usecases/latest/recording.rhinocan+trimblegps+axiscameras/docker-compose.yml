@@ -138,5 +138,5 @@ services:
         network_mode: host
         ipc: host
         working_dir: "/opt/recordings"
-        command: "/opt/od4/bin/odrecorderh264 --cid=${CID}"
+        command: "/opt/od4/bin/odrecorderh264 --cid=${CID} --freq=10"
 
