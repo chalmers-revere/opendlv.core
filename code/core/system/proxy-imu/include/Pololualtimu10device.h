@@ -53,7 +53,7 @@ class PololuAltImu10Device {
 
     opendlv::proxy::TemperatureReading ReadTemperature();
 
-    opendlv::proxy::CompassReading ReadCompass();
+    opendlv::proxy::MagnetometerReading ReadMagnetometer();
 
     opendlv::proxy::GyroscopeReading ReadGyroscope();
 
@@ -78,19 +78,19 @@ class PololuAltImu10Device {
 
     void initLPS25();
 
-    void CalibrateCompass(float*);
+    void CalibrateMagnetometer(float*);
 
     Eigen::Vector3f Rotate(Eigen::Vector3f, Eigen::Matrix3d);
-    
+
     int16_t m_deviceFile;
 
     Eigen::Matrix3d m_rotationMatrix;
 
     std::string m_calibrationFile;
 
-    float m_compassMaxVal[3];
+    float m_magnetometerMaxVal[3];
 
-    float m_compassMinVal[3];
+    float m_magnetometerMinVal[3];
 
     // float m_heavyAcc[3];
 

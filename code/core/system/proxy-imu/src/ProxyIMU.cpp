@@ -58,9 +58,9 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
         odcore::data::Container accelerometerContainer(accelerometerReading);
         getConference().send(accelerometerContainer);
 
-        auto magnetometerReading = m_device->ReadCompass();
-        odcore::data::Container compassContainer(magnetometerReading);
-        getConference().send(compassContainer);
+        auto magnetometerReading = m_device->ReadMagnetometer();
+        odcore::data::Container magnetometerContainer(magnetometerReading);
+        getConference().send(magnetometerContainer);
 
         auto altimeterReading = m_device->ReadAltimeter();
         odcore::data::Container altimeterContainer(altimeterReading);
