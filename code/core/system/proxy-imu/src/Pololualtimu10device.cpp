@@ -39,10 +39,11 @@ namespace proxy {
  * Constructor for PololuAltImuV5 device interfacing through I2C.
  *
  */
-PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::vector<double> const &a_mountRotation, std::string &a_calibrationFile, bool &a_debug)
+PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::vector<double> const &a_mountRotation, std::string &a_calibrationFile, bool const &a_lockCalibration, bool &a_debug)
     : m_deviceFile()
     , m_rotationMatrix()
     , m_calibrationFile(a_calibrationFile)
+    , m_lockCalibration(a_lockCalibration)
     , m_magnetometerMaxVal{0,0,0}
     , m_magnetometerMinVal{0,0,0}
     // , m_heavyAcc{0,0,0}
@@ -134,7 +135,7 @@ bool PololuAltImu10Device::loadCalibrationFile() {
 }
 
 void PololuAltImu10Device::saveCalibrationFile() {
-    if(m_calibrationFile.empty()) {
+    if(m_calibrationFile.empty() & m_lockCalibration) {
         return;
     }
     std::ofstream file(m_calibrationFile, std::ifstream::out);
@@ -457,7 +458,9 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     float scaledZ = static_cast< double >(z) / 6842.0;
     
     float reading[] = {scaledX, scaledY, scaledZ};
-    CalibrateMagnetometer(reading);
+    if(!m_lockCalibration){
+        CalibrateMagnetometer(reading);
+    }
 
     Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);
     

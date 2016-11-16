@@ -37,7 +37,7 @@ namespace proxy {
 
 class PololuAltImu10Device {
    public:
-    PololuAltImu10Device(std::string const &, std::vector<double> const &, std::string &, bool &);
+    PololuAltImu10Device(std::string const &, std::vector<double> const &, std::string &, bool const &, bool &);
 
     PololuAltImu10Device(PololuAltImu10Device const &) = delete;
 
@@ -87,6 +87,8 @@ class PololuAltImu10Device {
     Eigen::Matrix3d m_rotationMatrix;
 
     std::string m_calibrationFile;
+
+    bool const m_lockCalibration;
 
     float m_magnetometerMaxVal[3];
 
