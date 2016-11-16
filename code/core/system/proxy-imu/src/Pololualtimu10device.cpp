@@ -135,7 +135,7 @@ bool PololuAltImu10Device::loadCalibrationFile() {
 }
 
 void PololuAltImu10Device::saveCalibrationFile() {
-    if(m_calibrationFile.empty() & m_lockCalibration) {
+    if(m_calibrationFile.empty() || m_lockCalibration) {
         return;
     }
     std::ofstream file(m_calibrationFile, std::ifstream::out);
