@@ -135,3 +135,10 @@ proxy-camera-axis:3.password = gcdc
 proxy-camera-axis:3.width = 1280
 proxy-camera-axis:3.height = 720
 proxy-camera-axis:3.calibrationfile = /opt/opendlv.core.configuration/file.yml  # This file must be accessible from within the Docker container.
+
+proxy-trimble.ip = 10.42.42.112    # Change to Trimble IP.
+proxy-trimble.port = 9999          # Change to Trimble TCP port.
+
+proxy-fh16.devicenode = /dev/pcan2  # PEAK CAN device.
+proxy-fh16.record_gcm = 0           # 1 = dump generic CAN messages.
+proxy-fh16.record_mapped_data = 0   # 1 = record mapped containers.
