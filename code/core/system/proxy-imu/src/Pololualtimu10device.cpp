@@ -265,20 +265,12 @@ void PololuAltImu10Device::initLIS3() {
         float scaledY = static_cast< double >(y) / 6842.0;
         float scaledZ = static_cast< double >(z) / 6842.0;
 
-
-        Eigen::Vector3f rawReading(scaledX,scaledY,scaledZ);
-        Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
-
-        for(uint8_t i = 0; i < 3; i++){
-            m_compassMinVal[i] = adjustedReading[i];
-            m_compassMaxVal[i] = adjustedReading[i];
-        }
-        // m_compassMinVal[0] = scaledX;
-        // m_compassMinVal[1] = scaledY;
-        // m_compassMinVal[2] = scaledZ;
-        // m_compassMaxVal[0] = scaledX;
-        // m_compassMaxVal[1] = scaledY;
-        // m_compassMaxVal[2] = scaledZ;
+        m_compassMinVal[0] = scaledX;
+        m_compassMinVal[1] = scaledY;
+        m_compassMinVal[2] = scaledZ;
+        m_compassMaxVal[0] = scaledX;
+        m_compassMaxVal[1] = scaledY;
+        m_compassMaxVal[2] = scaledZ;
     }
 
 }
