@@ -21,6 +21,7 @@
 #include <cstring>
 #include <ctype.h>
 #include <iostream>
+#include <vector>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
 #include <opendavinci/odcore/data/Container.h>
@@ -85,6 +86,10 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
 void ProxyIMU::setUp() {
     odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
 
+    double roll = kv.getValue<double>("proxy-imu.mount.roll")*M_PI/180.0;
+    double pitch = kv.getValue<double>("proxy-imu.mount.pitch")*M_PI/180.0;
+    double yaw = kv.getValue<double>("proxy-imu.mount.yaw")*M_PI/180.0;
+    std::vector<double> const mountRotation({roll, pitch, yaw});
     std::string const type = kv.getValue<std::string>("proxy-imu.type");
     std::string calibrationFile = "";
     m_debug = (kv.getValue< int32_t >("proxy-imu.debug") == 1);
@@ -99,16 +104,13 @@ void ProxyIMU::setUp() {
         std::string const deviceNode =
         kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
 
-        m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, calibrationFile, m_debug));
+        m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, mountRotation, calibrationFile, m_debug));
     }
 
     if (m_device.get() == nullptr) {
         std::cerr << "[proxy-imu] No valid device driver defined."
                   << std::endl;
     }
-
-
-
 }
 
 void ProxyIMU::tearDown() {

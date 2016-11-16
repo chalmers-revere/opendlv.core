@@ -39,12 +39,13 @@ namespace proxy {
  * Constructor for PololuAltImuV5 device interfacing through I2C.
  *
  */
-PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::string &a_calibrationFile, bool &a_debug)
+PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::vector<double> const &a_mountRotation, std::string &a_calibrationFile, bool &a_debug)
     : m_deviceFile()
+    , m_rotationMatrix()
     , m_calibrationFile(a_calibrationFile)
     , m_compassMaxVal{0,0,0}
     , m_compassMinVal{0,0,0}
-    , m_heavyAcc{0,0,0}
+    // , m_heavyAcc{0,0,0}
     , m_initialized(false)
     , m_debug(a_debug)
 {
@@ -61,6 +62,30 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
     initLIS3();
     initLPS25();
 
+    double roll = a_mountRotation[0];
+    double pitch = a_mountRotation[1];
+    double yaw = a_mountRotation[2];
+
+    Eigen::Matrix3d rX;
+    Eigen::Matrix3d rY;
+    Eigen::Matrix3d rZ;
+
+    rX <<
+        1,  0,  0,
+        0,  std::cos(roll), -std::sin(roll),
+        0,  std::sin(roll), std::cos(roll);
+    rY << 
+        std::cos(pitch), 0,  std::sin(pitch),
+        0,  1,  0,
+        -std::sin(pitch),    0,  std::cos(pitch);
+    rZ <<
+        std::cos(yaw), -std::sin(yaw),    0,
+        std::sin(yaw), std::cos(yaw), 0,
+        0,  0,  1;
+    m_rotationMatrix = rX*rY*rZ;
+    if(m_debug){
+        std::cout << "Rotation matrix: \n" << m_rotationMatrix << std::endl;
+    }
     m_initialized = true;
 }
 
@@ -240,12 +265,20 @@ void PololuAltImu10Device::initLIS3() {
         float scaledY = static_cast< double >(y) / 6842.0;
         float scaledZ = static_cast< double >(z) / 6842.0;
 
-        m_compassMinVal[0] = scaledX;
-        m_compassMinVal[1] = scaledY;
-        m_compassMinVal[2] = scaledZ;
-        m_compassMaxVal[0] = scaledX;
-        m_compassMaxVal[1] = scaledY;
-        m_compassMaxVal[2] = scaledZ;
+
+        Eigen::Vector3f rawReading(scaledX,scaledY,scaledZ);
+        Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
+
+        for(uint8_t i = 0; i < 3; i++){
+            m_compassMinVal[i] = adjustedReading[i];
+            m_compassMaxVal[i] = adjustedReading[i];
+        }
+        // m_compassMinVal[0] = scaledX;
+        // m_compassMinVal[1] = scaledY;
+        // m_compassMinVal[2] = scaledZ;
+        // m_compassMaxVal[0] = scaledX;
+        // m_compassMaxVal[1] = scaledY;
+        // m_compassMaxVal[2] = scaledZ;
     }
 
 }
@@ -312,14 +345,21 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     float scaledY = ((0.061 * static_cast< double >(y)) / 1000) * gravityAccel;
     float scaledZ = ((0.061 * static_cast< double >(z)) / 1000) * gravityAccel;
 
+
+    Eigen::Vector3f rawReading(scaledX,scaledY,scaledZ);
+    Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
+
+    float reading[] = {adjustedReading[0], adjustedReading[1], adjustedReading[2]};
+    
+
     //For magnetometer calibration
-    m_heavyAcc[0] += 0.5f*(scaledX - m_heavyAcc[0]);
-    m_heavyAcc[1] += 0.5f*(scaledY - m_heavyAcc[1]);
-    m_heavyAcc[2] += 0.5f*(scaledZ - m_heavyAcc[2]);
+    // for(uint8_t i = 0; i < 3; i++){
+    //     m_heavyAcc[i] += 0.5f*(reading[i] - m_heavyAcc[i]);    
+    // }
 
 
 
-    float reading[] = {scaledX, scaledY, scaledZ};
+    // float reading[] = {scaledX, scaledY, scaledZ};
     opendlv::proxy::AccelerometerReading accelerometerReading(reading);
     return accelerometerReading;
 }
@@ -423,10 +463,15 @@ opendlv::proxy::CompassReading PololuAltImu10Device::ReadCompass() {
     float scaledX = static_cast< double >(x) / 6842.0;
     float scaledY = static_cast< double >(y) / 6842.0;
     float scaledZ = static_cast< double >(z) / 6842.0;
-
-
+    
     float reading[] = {scaledX, scaledY, scaledZ};
     CalibrateCompass(reading);
+
+    Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);
+    
+    Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
+    adjustedReading.normalize();
+
 
     opendlv::proxy::CompassReading compassReading(reading);
     return compassReading;
@@ -452,15 +497,16 @@ void PololuAltImu10Device::CalibrateCompass(float* a_val)
     // std::cout << "Heading: " << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
 
     //Tilt compensation
-    float roll = atan2(m_heavyAcc[1],m_heavyAcc[2]);
-    float pitch = atan2(-m_heavyAcc[0], sqrt(m_heavyAcc[1]*m_heavyAcc[1]+m_heavyAcc[2]*m_heavyAcc[2]));
+    // float roll = atan2(m_heavyAcc[1],m_heavyAcc[2]);
+    // float pitch = atan2(-m_heavyAcc[0], m_heavyAcc[1]*sinf(roll)+m_heavyAcc[2]*cosf(roll));
 
-    a_val[0] = a_val[0]*cosf(pitch)+a_val[2]*sinf(pitch);
-    a_val[1] = a_val[0]*sinf(pitch)*sinf(roll) + a_val[1]*cosf(roll) - a_val[2]*sinf(roll)*cosf(pitch);
+
+
+    // a_val[0] = a_val[0]*cosf(pitch)+a_val[2]*sinf(pitch);
+    // a_val[1] = a_val[0]*sinf(pitch)*sinf(roll) + a_val[1]*cosf(roll) - a_val[2]*sinf(roll)*cosf(pitch);
+    // a_val[2] = -a_val[0]*cosf(roll)*sinf(pitch) + a_val[1]*sinf(roll) + a_val[2]*cosf(roll)*cosf(pitch);
     // std::cout << "Tilt compensation: "<< 180 * atan2(a_val[1],a_val[0]) / M_PI << " (Pitch, Roll): " << pitch << "," << roll <<std::endl;
 
-    // a_val[1] -= (magYmin + magYmax) /2 ;
-    // a_val[2] -= (magZmin + magZmax) /2 ;
 }
 
 
@@ -514,6 +560,11 @@ opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
 
 bool PololuAltImu10Device::IsInitialized() const {
     return m_initialized;
+}
+
+Eigen::Vector3f PololuAltImu10Device::Rotate(Eigen::Vector3f a_v, Eigen::Matrix3d a_m)
+{
+    return (a_m*a_v.cast<double>()).cast<float>();
 }
 
 

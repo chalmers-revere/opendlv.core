@@ -23,6 +23,10 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include <vector>
+
+
+#include <opendavinci/odcore/wrapper/Eigen.h>
 
 #include "odvdimu/GeneratedHeaders_ODVDIMU.h"
 
@@ -33,7 +37,7 @@ namespace proxy {
 
 class PololuAltImu10Device {
    public:
-    PololuAltImu10Device(std::string const &, std::string &, bool &);
+    PololuAltImu10Device(std::string const &, std::vector<double> const &, std::string &, bool &);
 
     PololuAltImu10Device(PololuAltImu10Device const &) = delete;
 
@@ -56,6 +60,7 @@ class PololuAltImu10Device {
     bool IsInitialized() const;
 
 
+
    private:
     void I2cWriteRegister(uint8_t, uint8_t);
     
@@ -75,7 +80,11 @@ class PololuAltImu10Device {
 
     void CalibrateCompass(float*);
 
+    Eigen::Vector3f Rotate(Eigen::Vector3f, Eigen::Matrix3d);
+    
     int16_t m_deviceFile;
+
+    Eigen::Matrix3d m_rotationMatrix;
 
     std::string m_calibrationFile;
 
@@ -83,7 +92,7 @@ class PololuAltImu10Device {
 
     float m_compassMinVal[3];
 
-    float m_heavyAcc[3];
+    // float m_heavyAcc[3];
 
     bool m_initialized;
 
