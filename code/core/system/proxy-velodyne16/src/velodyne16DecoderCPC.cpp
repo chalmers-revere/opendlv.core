@@ -42,7 +42,7 @@ Velodyne16DecoderCPC::Velodyne16DecoderCPC(odcore::io::conference::ContainerConf
     , m_deltaAzimuth(0.0)
     , m_distance(0.0)
     , m_velodyneContainer(c)
-    , m_startAzimuth
+    , m_startAzimuth(0.0)
     , m_distanceStringStream("")
     , m_isStartAzimuth(true) {
     //Distance values for each 16 sensors with the same azimuth are ordered based on vertical angle,

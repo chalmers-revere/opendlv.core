@@ -72,7 +72,7 @@ class Velodyne16DecoderCPC : public odcore::io::StringListener {
     odcore::io::conference::ContainerConference &m_velodyneContainer;
     float m_startAzimuth;
     const uint8_t m_ENTRIES_PER_AZIMUTH = 16;//For VLP-16, there are 16 points per azimuth
-    stringstream m_distanceStringStream; //The string stream with distance values for all points of one frame
+    std::stringstream m_distanceStringStream; //The string stream with distance values for all points of one frame
     bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
     uint8_t m_sensorOrderIndex[16];//Specify the order for each 16 points in the string with distance values
     half m_16Sensors[16];//Store the distance values of the current 16 sensors

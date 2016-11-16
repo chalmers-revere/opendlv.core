@@ -45,20 +45,22 @@ ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv)
     , m_udpPort(0)
     , m_velodyneSharedMemory(NULL)
     , m_udpreceiver(NULL)
-    , m_velodyne16decoder(NULL) {}
+    , m_velodyne16decoder(NULL)
+    , m_velodyne16decoderCPC(NULL) {}
 
 ProxyVelodyne16::~ProxyVelodyne16() {}
 
 void ProxyVelodyne16::setUp() {
+    m_udpReceiverIP = getKeyValueConfiguration().getValue< string >("proxy-velodyne16.udpReceiverIP");
+    m_udpPort = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.udpPort");
+    m_udpreceiver = UDPFactory::createUDPReceiver(m_udpReceiverIP, m_udpPort);
+
     m_CompactPointCloud = getKeyValueConfiguration().getValue< bool >("proxy-velodyne16.CompactPointCloud") == 1;
+    
     if(!m_CompactPointCloud) {
         m_memoryName = getKeyValueConfiguration().getValue< string >("proxy-velodyne16.sharedMemory.name");
         m_memorySize = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.sharedMemory.size");
         m_velodyneSharedMemory = SharedMemoryFactory::createSharedMemory(m_memoryName, m_memorySize);
-
-        m_udpReceiverIP = getKeyValueConfiguration().getValue< string >("proxy-velodyne16.udpReceiverIP");
-        m_udpPort = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.udpPort");
-        m_udpreceiver = UDPFactory::createUDPReceiver(m_udpReceiverIP, m_udpPort);
 
         m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration")));
 
@@ -71,6 +73,7 @@ void ProxyVelodyne16::setUp() {
         m_udpreceiver->setStringListener(m_velodyne16decoderCPC.get());
         // Start receiving bytes.
         m_udpreceiver->start();
+    }
 }
 
 void ProxyVelodyne16::tearDown() {
