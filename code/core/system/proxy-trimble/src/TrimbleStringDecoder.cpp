@@ -101,6 +101,7 @@ void TrimbleStringDecoder::nextString(string const &s) {
             for(auto qq : fields){
               cout << qq << ", ";
             }
+            cout << endl;
         }
 
         if (type == "GPGGA") {
