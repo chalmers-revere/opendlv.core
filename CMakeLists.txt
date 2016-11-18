@@ -271,9 +271,36 @@ ExternalProject_Add (libodvdv2v
     INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdv2v-prefix/src/libodvdv2v-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdv2v-prefix/src/libodvdv2v-build --target ${MAKE_PACKAGE})
 
 ###########################################################################
+# This "external project" simply deletes the existing libodvdimu.
+ExternalProject_Add (libodvdimu-cleanup
+    DOWNLOAD_COMMAND ""
+    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdimu
+    PATCH_COMMAND ""
+    SOURCE_DIR ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    TEST_COMMAND ""
+    INSTALL_COMMAND "")
+
+# This "external project" builds libodvdimu.
+ExternalProject_Add (libodvdimu
+    DEPENDS libodvdimu-cleanup
+    DOWNLOAD_COMMAND ""
+    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resources/odvd/ODVDIMU.odvd
+    PATCH_COMMAND ""
+    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdimu"
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
+    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
+    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
+    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
+    TEST_BEFORE_INSTALL 1
+    TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
+    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdimu-prefix/src/libodvdimu-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdimu-prefix/src/libodvdimu-build --target ${MAKE_PACKAGE})
+
+###########################################################################
 # This "external project" builds and installs the system software stack.
 ExternalProject_Add(system
-    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libfh16mapping libodvdtrimble libodvdv2v libodvdopendlvdatamodel
+    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libfh16mapping libodvdtrimble libodvdimu libodvdv2v libodvdopendlvdatamodel
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ""
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/code/core/system"

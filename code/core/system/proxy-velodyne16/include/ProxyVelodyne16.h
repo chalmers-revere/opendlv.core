@@ -24,9 +24,10 @@
 
 #include "opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
-#include "velodyne16Decoder.h"
 #include <opendavinci/odcore/io/udp/UDPFactory.h>
 #include <opendavinci/odcore/io/udp/UDPReceiver.h>
+#include "velodyne16Decoder.h"
+#include "velodyne16DecoderCPC.h"
 
 namespace opendlv {
 namespace core {
@@ -76,8 +77,9 @@ class ProxyVelodyne16 : public odcore::base::module::DataTriggeredConferenceClie
     virtual void tearDown();
     
    private:
+    bool m_CompactPointCloud;
     string m_memoryName;   //Name of the shared memory
-    uint32_t m_memorySize; //The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000->ProxyVelodyne64.sharedMemory.size = 480000 in the configuration file.
+    uint32_t m_memorySize; //The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000
 
     string m_udpReceiverIP; //"0.0.0.0" to listen to all network interfaces
     uint32_t m_udpPort;     //2368 for velodyne
@@ -85,6 +87,7 @@ class ProxyVelodyne16 : public odcore::base::module::DataTriggeredConferenceClie
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory;
     std::shared_ptr< odcore::io::udp::UDPReceiver > m_udpreceiver;
     std::shared_ptr< opendlv::core::system::proxy::Velodyne16Decoder > m_velodyne16decoder;
+    std::shared_ptr< opendlv::core::system::proxy::Velodyne16DecoderCPC > m_velodyne16decoderCPC;
 };
 }
 }

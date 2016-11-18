@@ -49,7 +49,7 @@ FIND_PACKAGE (OpenDaVINCI REQUIRED)
 find_package(ODVDV2V REQUIRED)
 
 ###############################################################################
-# Set header files from ODVDTrimble.
+# Set header files from ODVDV2V.
 INCLUDE_DIRECTORIES (SYSTEM ${ODVDV2V_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
