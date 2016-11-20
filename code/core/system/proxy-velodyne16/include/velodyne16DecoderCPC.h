@@ -61,12 +61,14 @@ class Velodyne16DecoderCPC : public odcore::io::StringListener {
     virtual void nextString(const std::string &s);
 
    private:
-    void sendCompactPointCloud(const float &oldAzimuth, const float &newAzimuth);
+    void sendCompactPointCloud();
    private:
     const uint32_t m_MAX_POINT_SIZE = 30000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
 
     uint32_t m_pointIndex;
     float m_previousAzimuth;
+    float m_currentAzimuth;
+    float m_nextAzimuth;
     float m_deltaAzimuth;
     float m_distance;
     odcore::io::conference::ContainerConference &m_velodyneContainer;
@@ -76,6 +78,9 @@ class Velodyne16DecoderCPC : public odcore::io::StringListener {
     bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
     uint8_t m_sensorOrderIndex[16];//Specify the order for each 16 points in the string with distance values
     half m_16Sensors[16];//Store the distance values of the current 16 sensors
+    bool firstPacket;
+    int64_t receiveFirstPacket;
+    int64_t sendFrame;
 };
 }
 }

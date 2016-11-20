@@ -39,12 +39,17 @@ using namespace odcore::wrapper;
 Velodyne16DecoderCPC::Velodyne16DecoderCPC(odcore::io::conference::ContainerConference &c)
     : m_pointIndex(0)
     , m_previousAzimuth(0.0)
+    , m_currentAzimuth(0.0)
+    , m_nextAzimuth(0.0)
     , m_deltaAzimuth(0.0)
     , m_distance(0.0)
     , m_velodyneContainer(c)
     , m_startAzimuth(0.0)
     , m_distanceStringStream("")
-    , m_isStartAzimuth(true) {
+    , m_isStartAzimuth(true)
+    , firstPacket(false)
+    , receiveFirstPacket(0)
+    , sendFrame(0) {
     //Distance values for each 16 sensors with the same azimuth are ordered based on vertical angle,
     //from -15 to 15 degress, with increment 2--sensor IDs: 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15
     m_sensorOrderIndex[0] = 0;
@@ -68,21 +73,31 @@ Velodyne16DecoderCPC::Velodyne16DecoderCPC(odcore::io::conference::ContainerConf
 Velodyne16DecoderCPC::~Velodyne16DecoderCPC() {}
 
 //Update the shared point cloud when a complete scan is completed.
-void Velodyne16DecoderCPC::sendCompactPointCloud(const float &oldAzimuth, const float &newAzimuth) {
-    if(newAzimuth<oldAzimuth){
-        CompactPointCloud cpc(m_startAzimuth,oldAzimuth,m_ENTRIES_PER_AZIMUTH,m_distanceStringStream.str());    
-        Container c(cpc);
-        m_velodyneContainer.send(c);
+void Velodyne16DecoderCPC::sendCompactPointCloud() {
+    TimeStamp t2;
+    sendFrame=t2.toMicroseconds();
+    int64_t processTime=sendFrame-receiveFirstPacket;
+    cout<<processTime<<endl;
+    firstPacket=false;
+    
+    CompactPointCloud cpc(m_startAzimuth,m_previousAzimuth,m_ENTRIES_PER_AZIMUTH,m_distanceStringStream.str());    
+    Container c(cpc);
+    m_velodyneContainer.send(c);
 
-        m_pointIndex = 0;
-        m_startAzimuth = newAzimuth;
-        m_isStartAzimuth=false;
-        m_distanceStringStream.str("");
-    }
+    m_pointIndex = 0;
+    m_startAzimuth = m_currentAzimuth;
+    m_isStartAzimuth=false;
+    m_distanceStringStream.str("");
 }
 
 void Velodyne16DecoderCPC::nextString(const string &payload) {
     if (payload.length() == 1206) {
+        if(!firstPacket){
+            firstPacket=true;
+            TimeStamp t1;
+            receiveFirstPacket=t1.toMicroseconds();
+        }
+        
         //Decode VLP-16 data
         uint32_t position = 0; //position specifies the starting position to read from the 1206 bytes
 
@@ -93,23 +108,29 @@ void Velodyne16DecoderCPC::nextString(const string &payload) {
             //Skip the flag: 0xFFEE(2 bytes)
             position += 2;
 
-            //Decode azimuth information: 2 bytes. Swap the two bytes, change to decimal, and divide it by 100
-            firstByte = (uint8_t)(payload.at(position));
-            secondByte = (uint8_t)(payload.at(position + 1));
-            dataValue = ntohs(firstByte * 256 + secondByte);
-            float azimuth = static_cast< float >(dataValue / 100.0);
-            if(m_isStartAzimuth){
-                m_startAzimuth=azimuth;
-                m_isStartAzimuth=false;
+            //Decode azimuth information: 2 bytes. Swap the two bytes, change to decimal, and divide it by 100. Due to azimuth interpolation, the azimuth of blocks 1-11 is already decoded in the middle of the previous block.
+            if(blockID == 0){
+                firstByte = (uint8_t)(payload.at(position));
+                secondByte = (uint8_t)(payload.at(position + 1));
+                dataValue = ntohs(firstByte * 256 + secondByte);
+                m_currentAzimuth = static_cast< float >(dataValue / 100.0);
             }
-            sendCompactPointCloud(m_previousAzimuth, azimuth); //Send a complete scan as one frame
-            m_previousAzimuth = azimuth;
+            else{
+                m_currentAzimuth = m_nextAzimuth;
+                if(m_currentAzimuth > 360.0f){
+                    m_currentAzimuth -= 360.0f;
+                }
+            }
+            if (m_currentAzimuth < m_previousAzimuth) {
+                sendCompactPointCloud(); //Send a complete scan as one frame
+            }
+            m_previousAzimuth = m_currentAzimuth;
             position += 2;
 
             //Only decode the data if the maximum number of points of the current frame has not been reached
             if (m_pointIndex < m_MAX_POINT_SIZE) {
                 //Decode distance information and intensity of each beam/channel in a block, which contains two firing sequences
-                for (int counter = 0; counter < 32; counter++) {
+                for (uint8_t counter = 0; counter < 32; counter++) {
                     //Interpolate azimuth value
                     if (counter == 16) {
                         if (blockID < 11) {
@@ -117,21 +138,23 @@ void Velodyne16DecoderCPC::nextString(const string &payload) {
                             firstByte = (uint8_t)(payload.at(position));
                             secondByte = (uint8_t)(payload.at(position + 1));
                             dataValue = ntohs(firstByte * 256 + secondByte);
-                            float nextAzimuth = static_cast< float >(dataValue / 100.0);
+                            m_nextAzimuth = static_cast< float >(dataValue / 100.0);
                             position -= 50; //reset pointer
-                            if (nextAzimuth < azimuth) {
-                                nextAzimuth += 360.0f;
+                            if (m_nextAzimuth < m_currentAzimuth) {
+                                m_nextAzimuth += 360.0f;
                             }
-                            m_deltaAzimuth = (nextAzimuth - azimuth) / 2.0f;
-                            azimuth += m_deltaAzimuth;
+                            m_deltaAzimuth = (m_nextAzimuth - m_currentAzimuth) / 2.0f;
+                            m_currentAzimuth += m_deltaAzimuth;
                         } else {
-                            azimuth += m_deltaAzimuth;
+                            m_currentAzimuth += m_deltaAzimuth;
                         }
-                        if (azimuth > 360.0f) {
-                            azimuth -= 360.0f;
+                        if (m_currentAzimuth > 360.0f) {
+                            m_currentAzimuth -= 360.0f;
+                            if (m_currentAzimuth < m_previousAzimuth) {
+                                sendCompactPointCloud(); //Send a complete scan as one frame
+                            }
                         }
-                        sendCompactPointCloud(m_previousAzimuth, azimuth); //Send a complete scan as one frame
-                        m_previousAzimuth = azimuth;
+                        m_previousAzimuth = m_currentAzimuth;
                     }
 
                     uint8_t sensorID = counter;

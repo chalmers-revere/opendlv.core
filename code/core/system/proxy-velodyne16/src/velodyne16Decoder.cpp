@@ -153,7 +153,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
             //Skip the flag: 0xFFEE(2 bytes)
             position += 2;
 
-            //Decode azimuth information: 2 bytes. Swap the two bytes, change to decimal, and divide it by 100
+            //Decode azimuth information: 2 bytes. Swap the two bytes, change to decimal, and divide it by 100. Due to azimuth interpolation, the azimuth of blocks 1-11 is already decoded in the middle of the previous block.
             if(blockID == 0){
                 firstByte = (uint8_t)(payload.at(position));
                 secondByte = (uint8_t)(payload.at(position + 1));
