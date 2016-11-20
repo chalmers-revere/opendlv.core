@@ -20,12 +20,14 @@
 #ifndef VELODYNE16DECODER_H_
 #define VELODYNE16DECODER_H_
 
+#include <cmath>
 #include <memory>
 
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include <opendavinci/odcore/io/StringListener.h>
+#include "automotivedata/generated/cartesian/Constants.h"
 
 namespace opendlv {
 namespace core {
@@ -61,8 +63,7 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     virtual void nextString(const std::string &s);
 
    private:
-    float toRadian(float);
-    void sendSharedPointCloud(const float &oldAzimuth, const float &newAzimuth);
+    void sendSharedPointCloud();
    private:
     const uint32_t m_MAX_POINT_SIZE = 30000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
     const uint32_t m_SIZE_PER_COMPONENT = sizeof(float);
@@ -72,6 +73,8 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     uint32_t m_pointIndex;
     uint32_t m_startID;
     float m_previousAzimuth;
+    float m_currentAzimuth;
+    float m_nextAzimuth;
     float m_deltaAzimuth;
     float m_distance;
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for the shared point cloud
@@ -80,6 +83,10 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     odcore::data::SharedPointCloud m_spc; //shared point cloud
     float m_vertCorrection[16];           //Vertal angle of each sensor beam
     string m_calibration;
+    bool firstPacket;
+    int64_t receiveFirstPacket;
+    int64_t sendFrame;
+    const float toRadian = static_cast<float>(M_PI) / 180.0f;
 };
 }
 }
