@@ -151,14 +151,14 @@ void ProxyFH16::setUpRecordingMappedGenericCANMessage(const string &timeStampFor
         {
             stringstream fileName;
             fileName << "CID-" << getCID() << "_"
-                     << "can_mapped_data_id-" << opendlv::proxy::reverefh16::ManualControl::ID() << "_" << timeStampForFileName << ".csv";
+                     << "can_mapped_data_id-" << opendlv::proxy::reverefh16::ManualDriver::ID() << "_" << timeStampForFileName << ".csv";
 
             // Create map of CSV transformers.
             fstream *f = new fstream(fileName.str(), ios::out);
 
-            // Log ManualControl.
-            m_mapOfCSVFiles[opendlv::proxy::reverefh16::ManualControl::ID()] = shared_ptr< fstream >(f);
-            m_mapOfCSVVisitors[opendlv::proxy::reverefh16::ManualControl::ID()] = shared_ptr< CSVFromVisitableVisitor >(new CSVFromVisitableVisitor(*f));
+            // Log ManualDriver.
+            m_mapOfCSVFiles[opendlv::proxy::reverefh16::ManualDriver::ID()] = shared_ptr< fstream >(f);
+            m_mapOfCSVVisitors[opendlv::proxy::reverefh16::ManualDriver::ID()] = shared_ptr< CSVFromVisitableVisitor >(new CSVFromVisitableVisitor(*f));
         }
 
         {
@@ -177,14 +177,14 @@ void ProxyFH16::setUpRecordingMappedGenericCANMessage(const string &timeStampFor
         {
             stringstream fileName;
             fileName << "CID-" << getCID() << "_"
-                     << "can_mapped_data_id-" << opendlv::proxy::reverefh16::Propulsion::ID() << "_" << timeStampForFileName << ".csv";
+                     << "can_mapped_data_id-" << opendlv::proxy::reverefh16::VehicleSpeed::ID() << "_" << timeStampForFileName << ".csv";
 
             // Create map of CSV transformers.
             fstream *f = new fstream(fileName.str(), ios::out);
 
-            // Log Propulsion.
-            m_mapOfCSVFiles[opendlv::proxy::reverefh16::Propulsion::ID()] = shared_ptr< fstream >(f);
-            m_mapOfCSVVisitors[opendlv::proxy::reverefh16::Propulsion::ID()] = shared_ptr< CSVFromVisitableVisitor >(new CSVFromVisitableVisitor(*f));
+            // Log VehicleSpeed.
+            m_mapOfCSVFiles[opendlv::proxy::reverefh16::VehicleSpeed::ID()] = shared_ptr< fstream >(f);
+            m_mapOfCSVVisitors[opendlv::proxy::reverefh16::VehicleSpeed::ID()] = shared_ptr< CSVFromVisitableVisitor >(new CSVFromVisitableVisitor(*f));
         }
     }
 }
@@ -211,13 +211,13 @@ void ProxyFH16::disableCANRequests() {
     m_device->write(genericCanMessage);
 
     // Disable steering.
-    opendlv::proxy::reverefh16::SteeringRequest steeringRequest;
+    opendlv::proxy::reverefh16::SteerRequest steeringRequest;
     steeringRequest.setEnableRequest(false);
     steeringRequest.setSteeringRoadWheelAngle(0.0);
     steeringRequest.setSteeringDeltaTorque(0.0);
     Container steeringRequestContainer(steeringRequest);
 
-    canmapping::opendlv::proxy::reverefh16::SteeringRequest steeringRequestMapping;
+    canmapping::opendlv::proxy::reverefh16::SteerRequest steeringRequestMapping;
     genericCanMessage = steeringRequestMapping.encode(steeringRequestContainer);
     m_device->write(genericCanMessage);
 }
@@ -342,8 +342,8 @@ void ProxyFH16::dumpCSVData(Container &c) {
     if ((m_mapOfCSVFiles.count(c.getDataType()) == 1) &&
     (m_mapOfCSVVisitors.count(c.getDataType()) == 1)) {
         // We have a CSV file and a transformation available.
-        if (c.getDataType() == opendlv::proxy::reverefh16::ManualControl::ID()) {
-            opendlv::proxy::reverefh16::ManualControl temp = c.getData< opendlv::proxy::reverefh16::ManualControl >();
+        if (c.getDataType() == opendlv::proxy::reverefh16::ManualDriver::ID()) {
+            opendlv::proxy::reverefh16::ManualDriver temp = c.getData< opendlv::proxy::reverefh16::ManualDriver >();
             MessageFromVisitableVisitor mfvv;
             temp.accept(mfvv);
             Message m = mfvv.getMessage();
@@ -358,8 +358,8 @@ void ProxyFH16::dumpCSVData(Container &c) {
             m.addField(m_receivedTS_ptr);
             m.accept(*m_mapOfCSVVisitors[c.getDataType()]);
         }
-        if (c.getDataType() == opendlv::proxy::reverefh16::Propulsion::ID()) {
-            opendlv::proxy::reverefh16::Propulsion temp = c.getData< opendlv::proxy::reverefh16::Propulsion >();
+        if (c.getDataType() == opendlv::proxy::reverefh16::VehicleSpeed::ID()) {
+            opendlv::proxy::reverefh16::VehicleSpeed temp = c.getData< opendlv::proxy::reverefh16::VehicleSpeed >();
             MessageFromVisitableVisitor mfvv;
             temp.accept(mfvv);
             Message m = mfvv.getMessage();
