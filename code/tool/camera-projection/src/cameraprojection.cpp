@@ -101,30 +101,15 @@ CameraProjection::CameraProjection(int32_t const &a_argc, char **a_argv)
       m_aMatrix(),
       m_bMatrix(),
       m_projectionMatrix(),
-      m_applyWarp(false),
       m_point(),
-      m_regionPoints(),
-      m_outputPoints(),
-      m_inputSize(),
-      m_outputSize(),
-      m_warpPointsFileName(),
-      m_leftWarpPointsFileName(),
-      m_rightWarpPointsFileName(),
+      m_cameraName(),
       m_transformationMatrixFileName(),
-      m_leftTransformationMatrixFileName(),
-      m_rightTransformationMatrisFileName(),
-      m_path(),
       m_initialized(false)
 {
   m_aMatrix = Eigen::MatrixXd(3,3);
   m_bMatrix = Eigen::MatrixXd(3,3);
   m_projectionMatrix = Eigen::MatrixXd(3,3);
 
-  m_leftWarpPointsFileName = "leftCameraWarpPoints.csv";
-  m_rightWarpPointsFileName = "rightCameraWarpPoints.csv";
-
-  m_leftTransformationMatrixFileName = "leftCameraTransformationMatrix";
-  m_rightTransformationMatrisFileName = "rightCameraTransformationMatrix";
 }
 
 CameraProjection::~CameraProjection()
@@ -133,26 +118,13 @@ CameraProjection::~CameraProjection()
 
 void CameraProjection::setUp()
 {
+  odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
+
+  m_cameraName = kv.getValue<std::string>("core-tool-camera-projection.cameraname");
+  m_transformationMatrixFileName = m_cameraName + "-pixel2word-matrix.csv";
+
   cv::namedWindow("Calibration", 1 );
 
-  uint32_t inputWidth = 1280;
-  uint32_t inputHeight = 720;
-
-  uint32_t outputWidth = inputWidth;
-  uint32_t outputHeight = inputHeight;
-
-  m_inputSize = cv::Size(inputWidth, inputHeight);
-  m_outputSize = cv::Size(outputWidth, outputHeight);
-
-  m_regionPoints.push_back(cv::Point2f(0, inputHeight));
-  m_regionPoints.push_back(cv::Point2f(inputWidth, inputHeight));
-  m_regionPoints.push_back(cv::Point2f(inputWidth, 0));
-  m_regionPoints.push_back(cv::Point2f(0,0));
-
-  m_outputPoints.push_back(cv::Point2f(0, outputHeight));
-  m_outputPoints.push_back(cv::Point2f(outputWidth, outputHeight));
-  m_outputPoints.push_back(cv::Point2f(outputWidth, 0));
-  m_outputPoints.push_back(cv::Point2f(0, 0));
   m_initialized = true;
 }
 
@@ -163,15 +135,20 @@ void CameraProjection::tearDown()
 
 void CameraProjection::nextContainer(odcore::data::Container &a_c)
 {
+  if(!m_initialized){
+    return;
+  }
   if(a_c.getDataType() == odcore::data::image::SharedImage::ID()){
     odcore::data::image::SharedImage mySharedImg =
         a_c.getData<odcore::data::image::SharedImage>();
     // std::cout<<mySharedImg.getName()<<std::endl;
-
+    if(mySharedImg.getName().compare(m_cameraName)){
+      return;
+    }
     std::shared_ptr<odcore::wrapper::SharedMemory> sharedMem(
         odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(
             mySharedImg.getName()));
-    const uint32_t nrChannels = 3;
+    const uint32_t nrChannels = mySharedImg.getBytesPerPixel();
     const uint32_t imgWidth = mySharedImg.getWidth();
     const uint32_t imgHeight = mySharedImg.getHeight();
 
@@ -193,46 +170,23 @@ void CameraProjection::nextContainer(odcore::data::Container &a_c)
           imgWidth*imgHeight*nrChannels);
     }
     sharedMem->unlock();
+    // const int32_t windowWidth = 640;
+    // const int32_t windowHeight = 480;
+    // cv::Mat display;
+    // cv::resize(m_feed, display, cv::Size(windowWidth, windowHeight), 0, 0,
+    //   cv::INTER_CUBIC);
 
-    if(m_initialized){
-      if(mySharedImg.getName() == "front-left"){
-        m_warpPointsFileName = m_leftWarpPointsFileName;
-        m_transformationMatrixFileName = m_leftTransformationMatrixFileName;
-      }
-      else if(mySharedImg.getName() == "front-right"){
-        m_warpPointsFileName = m_rightWarpPointsFileName;
-        m_transformationMatrixFileName = m_rightTransformationMatrisFileName;
-      }
-      // cv::resize(feed,feed,m_inputSize);
-       
-      if(m_applyWarp){
-        cv::Mat warped;
-        cv::resize(feed,warped, m_inputSize);
-        InversePerspectiveMapping ipm(m_inputSize, m_outputSize, m_regionPoints,
-            m_outputPoints);
-        ipm.ApplyHomography(warped, warped);
-        ipm.DrawPoints(m_regionPoints, feed);
-        cv::namedWindow("Warped");
-        cv::imshow("Warped", warped);
-      }
-      // const int32_t windowWidth = 640;
-      // const int32_t windowHeight = 480;
-      // cv::Mat display;
-      // cv::resize(m_feed, display, cv::Size(windowWidth, windowHeight), 0, 0,
-      //   cv::INTER_CUBIC);
+    putText(feed, "Rectangle width: " + std::to_string(m_recWidth),
+        cvPoint(30,30), 1, 0.8, cvScalar(0,0,254), 1, CV_AA);
+    putText(feed, "Rectangle height: " + std::to_string(m_recHeight),
+        cvPoint(30,40), 1, 0.8, cvScalar(0,0,254), 1, CV_AA);
+    putText(feed, "Position (x,y): (" + std::to_string(m_recPosX) + "," 
+        + std::to_string(m_recPosY) + ")" , cvPoint(30,50), 1, 0.8,
+        cvScalar(0,0,254), 1, CV_AA);
 
-      putText(feed, "Rectangle width: " + std::to_string(m_recWidth),
-          cvPoint(30,30), 1, 0.8, cvScalar(0,0,254), 1, CV_AA);
-      putText(feed, "Rectangle height: " + std::to_string(m_recHeight),
-          cvPoint(30,40), 1, 0.8, cvScalar(0,0,254), 1, CV_AA);
-      putText(feed, "Position (x,y): (" + std::to_string(m_recPosX) + "," 
-          + std::to_string(m_recPosY) + ")" , cvPoint(30,50), 1, 0.8,
-          cvScalar(0,0,254), 1, CV_AA);
+    cv::imshow("Calibration", feed);
 
-      cv::imshow("Calibration", feed);
-
-      cvReleaseImage(&myIplImage);
-    }
+    cvReleaseImage(&myIplImage);
     return;
   }
 }
@@ -240,122 +194,44 @@ void CameraProjection::nextContainer(odcore::data::Container &a_c)
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode CameraProjection::body(){
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() ==
   odcore::data::dmcp::ModuleStateMessage::RUNNING){
-      if(!m_applyWarp){
-        char key = (char) cv::waitKey(1);
-        switch(key){
-          case 'c':
-            std::cout << "Enter Calibration" << std::endl;
-            Calibrate();
-            break;
-          case'r':
-            std::cout << "Enter Configuration" << std::endl;
-            Config();
-            break;
-          case 'e':
-            std::cout << "Read file" << std::endl;
-            ReadMatrix();
-            break;
-          case's':
-            std::cout << "Calculating projection matrix and saving to file" 
-                << std::endl;
-            Save();
-            break;
-          case 'p':
-            std::cout << "Projecting points" << std::endl;
-            Project();
-            break;
-          case 'w':
-            m_applyWarp = !m_applyWarp;
-            if(m_applyWarp == true){
-              std::cout<<"Warp drive" << std::endl;
-            }
-            break;
-          case 'q':
-          case 27:
-            return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-          default:
-            break;
-        }
-      }
-      else{
-        char key = (char) cv::waitKey(1); //time interval for reading key input;
-        switch(key){
-          case '1':
-            m_point = 0;
-            break;
-          case '2':
-            m_point = 1;
-            break;
-          case '3':
-            m_point = 2;
-            break;
-          case '4':
-            m_point = 3;
-            break;
-          case 'i':
-            m_regionPoints.at(m_point).y -= 5;
-            break;
-          case 'k':
-            m_regionPoints.at(m_point).y += 5;
-            break;
-          case 'j':
-            m_regionPoints.at(m_point).x -= 5;
-            break;
-          case 'l':
-            m_regionPoints.at(m_point).x += 5;
-            break;
-          case 's':
-            std::cout << 
-                "Calculating projection matrix and saving to file in warp mode"
-                << std::endl;
-            Save();
-            break;
-          case 'c':
-            std::cout << "Enter Calibration in warp mode" << std::endl;
-            Calibrate();
-            break;
-          case 'p':
-            std::cout << "Projecting points in warp mode" << std::endl;
-            Project();
-            break;
-          case 'q':
-          case 27:
-            m_applyWarp = !m_applyWarp;
-          default:
-            break;
-        }
-      
+    char key = (char) cv::waitKey(1);
+    switch(key){
+      case 'c':
+        std::cout << "Enter Calibration" << std::endl;
+        Calibrate();
+        break;
+      case'r':
+        std::cout << "Enter Configuration" << std::endl;
+        Config();
+        break;
+      case 'e':
+        std::cout << "Read file" << std::endl;
+        ReadMatrix();
+        break;
+      case's':
+        std::cout << "Calculating projection matrix and saving to file" 
+            << std::endl;
+        Save();
+        break;
+      case 'p':
+        std::cout << "Projecting points" << std::endl;
+        Project();
+        break;
+      case 'q':
+      case 27:
+        return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+      default:
+        break;
     }
   }
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 
-void CameraProjection::SavePerspectivePoints(std::string a_path)
-{
-  Eigen::MatrixXd points(4,2);
-  for(int i = 0; i < 4; i ++){
-    points(i,0) = m_regionPoints.at(i).x;
-    points(i,1) = m_regionPoints.at(i).y;
-  }
-   
-  std::ofstream file(a_path + m_warpPointsFileName);
-
-  if(file.is_open())
-    file << points;
-  file.close();
- 
-}
 
 void CameraProjection::ReadMatrix()
 {
   Eigen::MatrixXd m(3,3);
-  std::ifstream indata;
-  std::string filename;
-  std::cout << "Input filename: " << std::endl;
-  std::cin >> filename;
-  std::string filepath = "/opt/opendlv/var/tools/vision/projection/"
-      + filename + ".csv";
-  indata.open(filepath, std::ifstream::in);
+  std::ifstream indata(m_transformationMatrixFileName, std::ifstream::in);
   if(indata.is_open()){
     for(uint8_t i = 0; i < 3; ++i){
       for(uint8_t j = 0; j < 3; ++j){
@@ -408,13 +284,7 @@ void CameraProjection::Calibrate()
 
   MouseParams mouseClick;
   mouseClick.iterator = 0;
-  std::string mode;
-  if(m_applyWarp){
-    mode = "Warped";
-  }
-  else{
-    mode = "Calibration";
-  }
+  std::string mode("Calibration");
   cv::setMouseCallback(mode, LogMouseClicks, (void *) &mouseClick);
   cv::waitKey(0);
   cv::setMouseCallback(mode, NULL, NULL);
@@ -442,69 +312,28 @@ void CameraProjection::Calibrate()
 
 void CameraProjection::Save()
 {
-  std::cout << "Enter path to save transformation matrices: ";
-  std::cin >> m_path;
-  std::cout << "\nEntered path: " << m_path << std::endl;
-  
-  std::string inputPathString;
-  std::cout << "Save transformation matrices?(yes/no): ";
-  std::cin >> inputPathString;
-  std::cout<<"\n";
-
-
   m_projectionMatrix =  m_aMatrix * m_bMatrix.inverse();
 
-  std::string projectionMatrixFileName;
-  if(m_applyWarp){
-    projectionMatrixFileName = m_transformationMatrixFileName + "Warped.csv";
-  } else {
-    projectionMatrixFileName = m_transformationMatrixFileName + ".csv";
+  std::cout << m_projectionMatrix << std::endl;
+  // const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision,
+  //     Eigen::DontAlignCols, ", ", "\n");
+  const static Eigen::IOFormat saveFormat(Eigen::StreamPrecision,
+      Eigen::DontAlignCols, " ", " ", "", "", "", "");
+  
+
+  std::ofstream file(m_transformationMatrixFileName);
+  if(file.is_open()){
+    file << m_projectionMatrix.format(saveFormat);
   }
+  file.close();
+  std::cout<<"Saved matrix as " + m_transformationMatrixFileName << std::endl;
 
-  if(inputPathString == "yes")
-  {
-    std::cout << m_projectionMatrix << std::endl;
-    // const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision,
-    //     Eigen::DontAlignCols, ", ", "\n");
-    const static Eigen::IOFormat saveFormat(Eigen::StreamPrecision,
-        Eigen::DontAlignCols, " ", " ", "", "", "", "");
-    
-    struct stat st;
-    if (::stat(m_path.c_str(), &st) == -1) {
-      ::system(("mkdir -p " + m_path).c_str());
-      std::cout<<"Created dir"<<std::endl;
-    }
-
-    std::ofstream file(m_path + "/" + projectionMatrixFileName );
-    if(file.is_open()){
-      file << m_projectionMatrix.format(saveFormat);
-    }
-    file.close();
-    std::cout<<"Saved matrices to: " + m_path << std::endl;
-
-  }
-
-  std::cout << "Save warp matrices also? (yes/no)?: ";
-  std::cin >> inputPathString;
-  std::cout << "\n";
-  if(inputPathString == "yes")
-  {
-    SavePerspectivePoints(m_path + "/");
-    std::cout<<"Saved points to:" + m_path << std::endl;
-
-  }
 }
 
 
 void CameraProjection::Project()
 {
-  std::string mode;
-  if(m_applyWarp){
-    mode = "Warped";
-  }
-  else{
-    mode = "Calibration";
-  }
+  std::string mode("Calibration");
   cv::setMouseCallback(mode, ProjectMouseClicks, 
       (void *) &m_projectionMatrix);
   cv::waitKey(0);
