@@ -92,6 +92,8 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
     std::shared_ptr< automotive::odcantools::CANDevice > m_device;
     std::unique_ptr< CanMessageDataStore > m_canMessageDataStore;
 
+    bool m_readOnlyMode;
+
     canmapping::CanMapping m_revereFh16CanMessageMapping;
 
     odcore::data::TimeStamp m_startOfRecording;

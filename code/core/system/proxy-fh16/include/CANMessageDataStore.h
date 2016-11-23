@@ -47,11 +47,12 @@ namespace proxy {
  */
 class CanMessageDataStore : public automotive::odcantools::MessageToCANDataStore {
    public:
-    CanMessageDataStore(std::shared_ptr< automotive::odcantools::CANDevice > canDevice);
+    CanMessageDataStore(std::shared_ptr< automotive::odcantools::CANDevice > canDevice, bool readOnly = false);
     virtual void add(odcore::data::Container &container);
 
    private:
     odcore::base::Mutex m_dataStoreMutex;
+    bool m_readOnlyMode;
     bool m_enabled;
     bool m_overridden;
     bool m_overrideToggleStatus;

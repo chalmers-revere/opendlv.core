@@ -35,9 +35,10 @@ namespace proxy {
 
 using namespace std;
 
-CanMessageDataStore::CanMessageDataStore(shared_ptr< automotive::odcantools::CANDevice > canDevice)
+CanMessageDataStore::CanMessageDataStore(shared_ptr< automotive::odcantools::CANDevice > canDevice, bool readOnly /* =false */)
     : automotive::odcantools::MessageToCANDataStore(canDevice)
     , m_dataStoreMutex()
+    , m_readOnlyMode(readOnly)
     , m_enabled(false)
     , m_overridden(false)
     , m_overrideToggleStatus(true) {
@@ -77,6 +78,10 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
     m_enabled = true;
 
     if (container.getDataType() == opendlv::proxy::ActuationRequest::ID()) {
+        if(m_readOnlyMode) {
+            return;
+        }
+        
         opendlv::proxy::ActuationRequest actuationRequest = container.getData< opendlv::proxy::ActuationRequest >();
 
         const bool isValid = actuationRequest.getIsValid();
