@@ -114,4 +114,5 @@ proxy-camera.camera.flipped = 1     # 1 = flipped image, 0 = not flipped image.
 proxy-fh16.devicenode = /dev/pcan2  # PEAK CAN device.
 proxy-fh16.record_gcm = 1           # 1 = dump generic CAN messages.
 proxy-fh16.record_mapped_data = 1   # 1 = record mapped containers.
+proxy-fh16.read-only = 1            # 1 = read-only , 0 = read/write
 
