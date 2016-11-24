@@ -66,7 +66,7 @@ services:
             - proxy-camera
         volumes:
             - ~/recordings:/opt/recordings
-        user: odv  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
+        user: odv
         network_mode: host
         ipc: host
         working_dir: "/opt/recordings"

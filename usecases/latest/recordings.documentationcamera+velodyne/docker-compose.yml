@@ -36,7 +36,7 @@ services:
             - odsupercomponent
         devices:
             - "/dev/video0:/dev/video0"
-        user: odv  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
+        user: odv
         network_mode: host
         ipc: host
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID} --freq=20"
