@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 BUILD_AS=$1
+UID_AS=$2
 
 # Adding user for building.
 groupadd $BUILD_AS
@@ -29,13 +30,13 @@ cd /opt/opendlv.core.build
 
 echo "[opendlv.core Docker builder] Complete build."
 cmake -E remove_directory .
-PATH=/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core /opt/opendlv.core.sources
-make -j4
+CCACHE_DIR=/opt/ccache PATH=/usr/lib/ccache:/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core /opt/opendlv.core.sources
+CCACHE_DIR=/opt/ccache PATH=/usr/lib/ccache:/opt/od4/bin:$PATH make -j4
 EOF
 
 chmod 755 /opt/opendlv.core.build/build.sh
-chown $BUILD_AS:$BUILD_AS /opt/opendlv.core.build/build.sh
-chown -R $BUILD_AS:$BUILD_AS /opt
+chown $UID_AS:$UID_AS /opt/opendlv.core.build/build.sh
+chown -R $UID_AS:$UID_AS /opt
 
-su -m `getent passwd 1000|cut -f1 -d":"` -c /opt/opendlv.core.build/build.sh
+su -m `getent passwd $UID_AS|cut -f1 -d":"` -c /opt/opendlv.core.build/build.sh
 

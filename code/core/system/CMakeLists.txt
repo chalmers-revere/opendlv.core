@@ -17,7 +17,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(opendlv-core-system)
+project(opendlv-core-system-health)
 
 ###########################################################################
 # Set the search path for .cmake files.
@@ -47,11 +47,18 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
 
 ###########################################################################
 # Add subfolders with sources.
+add_subdirectory(health)
 add_subdirectory(proxy-applanix)
 add_subdirectory(proxy-camera)
+add_subdirectory(proxy-camera-axis)
 add_subdirectory(proxy-fh16)
+add_subdirectory(proxy-imu)
+add_subdirectory(proxy-ledstrip)
 add_subdirectory(proxy-sick)
-add_subdirectory(proxy-velodyne)
+add_subdirectory(proxy-trimble)
+add_subdirectory(proxy-v2v)
+add_subdirectory(proxy-velodyne16)
+add_subdirectory(proxy-velodyne64)
 add_subdirectory(ps3controller)
 
 #install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../config/configuration DESTINATION . COMPONENT system)

@@ -1,5 +1,5 @@
 /**
- * proxy-fh16truck - Interface to cameras.
+ * proxy-camera - Interface to OpenCV-based cameras.
  * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
@@ -20,7 +20,13 @@
 #ifndef PROXY_PROXYCAMERA_H
 #define PROXY_PROXYCAMERA_H
 
+#include <map>
+#include <memory>
+
+#include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+
+#include "Camera.h"
 
 namespace opendlv {
 namespace core {
@@ -30,7 +36,7 @@ namespace proxy {
 using namespace std;
 
 /**
- * Interface to cameras.
+ * Interface to OpenCV-supported /dev/node based cameras.
  */
 class ProxyCamera : public odcore::base::module::TimeTriggeredConferenceClientModule {
    private:
@@ -52,6 +58,9 @@ class ProxyCamera : public odcore::base::module::TimeTriggeredConferenceClientMo
     void setUp();
     void tearDown();
     odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+
+   private:
+    unique_ptr< Camera > m_camera;
 };
 }
 }

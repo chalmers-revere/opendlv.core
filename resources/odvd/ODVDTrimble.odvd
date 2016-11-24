@@ -1,0 +1,32 @@
+/*
+ * Copyright (C) 2016 Chalmers REVERE
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+message opendlv.core.sensors.trimble.GpsReading [id = 167] {
+  double timestamp [id = 1];
+  double latitude [id = 2];
+  double longitude [id = 3];
+  double altitude [id = 4];
+  double northHeading [id = 5];
+  double speed [id = 6];
+  uint8 latitudeDirection [id = 7];
+  uint8 longitudeDirection [id = 8];
+  uint8 satelliteCount [id = 9];
+  bool hasHeading [id = 10];
+  bool hasRtk [id = 11];
+}
+

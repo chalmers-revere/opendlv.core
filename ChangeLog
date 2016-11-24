@@ -1,3 +1,10 @@
+0.5.0 - CompactPointCloud in Velodyne
+0.4.0 - Upgraded to newest OD4
+0.3.0 - Velodyne 16
+0.2.2 - Enable ccache by default
+0.2.1 - Added proxy-trimble and WGS84 coordinate broadcasting
+0.2.0 - proxy-velodyne and CAN timestamping
+0.1.0 - * proxy-fh16, ps3controller, documentationcamera based on proxy-camera (OpenCV)
 0.0.9 - Using OpenDaVINCI 4.1.0 with container sample time.
 0.0.8 - Merging PS3 controller test.
 0.0.7 - Adding proxy-camera template

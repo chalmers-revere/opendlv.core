@@ -86,9 +86,17 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
 
         const float acceleration = actuationRequest.getAcceleration();
         if (acceleration < 0.0f) {
+
             opendlv::proxy::reverefh16::BrakeRequest brakeRequest;
             brakeRequest.setEnableRequest(m_enabled);
-            brakeRequest.setBrake(acceleration);
+
+            float const max_deceleration = 2.0f;
+            if (acceleration < -max_deceleration) {
+                std::cout << "WARNING: Deceleration was limited to " << max_deceleration << ". This should never happen, and may be a safety violating behaviour!" << std::endl;
+                brakeRequest.setBrake(-max_deceleration);
+            } else {
+                brakeRequest.setBrake(acceleration);
+            }
 
             odcore::data::Container brakeRequestContainer(brakeRequest);
             canmapping::opendlv::proxy::reverefh16::BrakeRequest brakeRequestMapping;

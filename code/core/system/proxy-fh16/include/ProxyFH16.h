@@ -78,7 +78,6 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
     void setUpRecordingMappedGenericCANMessage(const std::string &timeStampForFileName);
 
    private:
-    odcore::data::Container addCANTimeStamp(odcore::data::Container &c, const odcore::data::TimeStamp &ts);
     void dumpASCData(const automotive::GenericCANMessage &gcm);
     void dumpCSVData(odcore::data::Container &c);
     void disableCANRequests();

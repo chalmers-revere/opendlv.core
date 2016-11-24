@@ -1,0 +1,35 @@
+/*
+ * Copyright (C) 2016 Chalmers REVERE
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+message opendlv.model.Direction [id = 152] {
+  float azimuth [id = 1];
+  float zenith [id = 2];
+}
+
+message opendlv.core.sensors.EchoReading [id = 166] {
+  list<opendlv.model.Direction> directions [id = 1];
+  list<double> radii [id = 2];
+  uint32 numberOfPoints [id = 3];
+}
+
+message opendlv.perception.StimulusDirectionOfMovement [id = 180] {
+  odcore::data::TimeStamp identified [id = 1];
+  opendlv.model.Direction desiredDirectionOfMovement [id = 2];
+  opendlv.model.Direction directionOfMovement [id = 3];
+}
+

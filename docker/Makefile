@@ -18,7 +18,7 @@
 ###############################################################################
 # Parameters for this Makefile.
 BASE_IMAGE=seresearch/opendavinci-ubuntu-16.04-complete
-BASE_IMAGE_VERSION=v4.1.0
+BASE_IMAGE_VERSION=v4.3.7
 
 ###############################################################################
 # Tools.
@@ -40,11 +40,12 @@ BUILD_PATH=$(BUILD_PATH_BASE)/$(DOCKER_IMAGE_NAME_PREFIX)$(shell echo $(BASE_IMA
 # Directories.
 SOURCE_TREE_PATH=$(shell dirname $(shell pwd))
 BUILD_PATH_BASE=$(SOURCE_TREE_PATH)/docker/builds
+CCACHE_PATH=$(HOME)/.ccache
 MAPPED_VOLUME_SOURCES=opendlv.core.sources
 MAPPED_VOLUME_BUILD=opendlv.core.build
 MAPPED_VOLUME_INSTALL=/opt/opendlv.core
-#RUN_BUILD_AS=$(shell whoami)
-RUN_BUILD_AS=odv # odv built the OpenDaVINCI Docker image.
+RUN_BUILD_AS=odv # OpenDaVINCI is built as odv.
+RUN_BUILD_UID_AS=$(shell getent passwd `whoami` | cut -f3 -d":")
 PACKAGES_DIR=$(BUILD_PATH)
 
 ###############################################################################
@@ -53,7 +54,7 @@ DOCKERFILE_BASEIMAGE=s%BASEIMAGE%$(BASE_IMAGE)%
 DOCKER_REPOSITORY_NAME=seresearch
 DOCKER_IMAGE_NAME=$(DOCKER_IMAGE_NAME_PREFIX)$(shell echo $(BASE_IMAGE) | cut -f2 -d"/")
 DOCKER_IMAGE_NAME_WITH_GIT_HASH=$(DOCKER_IMAGE_NAME)-$(GIT_HASH)
-DOCKER_NETWORK_NAME=nw_$(DOCKER_IMAGE_NAME_PREFIX)$(DOCKER_IMAGE_NAME_WITH_GIT_HASH)
+DOCKER_NETWORK_NAME=nw_$(DOCKER_IMAGE_NAME_WITH_GIT_HASH)
 DOCKER_IMAGE_NAME_WITH_GIT_COMMITS_IN_CURRENT_BRANCH=$(DOCKER_IMAGE_NAME_PREFIX)$(shell echo $(BASE_IMAGE) | cut -f2 -d"/")-$(GIT_HASH):$(GIT_COMMITS_IN_CURRENT_BRANCH)
 DOCKER_IMAGE_NAME_SHORT_NAME=$(DOCKER_REPOSITORY_NAME)/$(DOCKER_IMAGE_NAME)
 
@@ -94,7 +95,7 @@ define compile
 	$(CMAKE) -E make_directory $(BUILD_PATH)/opendlv.core.deb
 	$(DOCKER) network inspect $(DOCKER_NETWORK_NAME) || $(DOCKER) network create $(DOCKER_NETWORK_NAME)
 	$(DOCKER) network ls
-	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(SOURCE_TREE_PATH)/docker/completeBuild.sh:/opt/completeBuild.sh -w /opt $(BASE_IMAGE):$(BASE_IMAGE_VERSION) /opt/completeBuild.sh $(RUN_BUILD_AS)
+	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(CCACHE_PATH):/opt/ccache -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(SOURCE_TREE_PATH)/docker/completeBuild.sh:/opt/completeBuild.sh -w /opt $(BASE_IMAGE):$(BASE_IMAGE_VERSION) /opt/completeBuild.sh $(RUN_BUILD_AS) $(RUN_BUILD_UID_AS)
 	$(DOCKER) network rm $(DOCKER_NETWORK_NAME)
 	mkdir -p $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME) && for i in $$(find $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD) -type f -name "*deb" | grep -v CPack); do cp $$i $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME); done
 	touch $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD)/build.incremental
@@ -109,7 +110,7 @@ updateBuildComplete: updateDockerBaseImage
 	$(call compile)
 
 buildIncremental:
-	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(SOURCE_TREE_PATH)/docker/incrementalBuild.sh:/opt/incrementalBuild.sh -w /opt $(BASE_IMAGE):$(BASE_IMAGE_VERSION) /opt/incrementalBuild.sh $(RUN_BUILD_AS)
+	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH):/opt/$(MAPPED_VOLUME_SOURCES) -v $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD):/opt/$(MAPPED_VOLUME_BUILD) -v $(BUILD_PATH)$(MAPPED_VOLUME_INSTALL):$(MAPPED_VOLUME_INSTALL) -v $(CCACHE_PATH):/opt/ccache -v $(SOURCE_TREE_PATH)/docker/incrementalBuild.sh:/opt/incrementalBuild.sh -w /opt $(BASE_IMAGE):$(BASE_IMAGE_VERSION) /opt/incrementalBuild.sh $(RUN_BUILD_AS) $(RUN_BUILD_UID_AS)
 	mkdir -p $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME) && for i in $$(find $(BUILD_PATH)/$(MAPPED_VOLUME_BUILD) -type f -name "*deb" | grep -v CPack); do cp $$i $(PACKAGES_DIR)/$(DOCKER_IMAGE_NAME); done
 
 ###############################################################################

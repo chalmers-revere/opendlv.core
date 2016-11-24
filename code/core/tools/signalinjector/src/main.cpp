@@ -17,10 +17,10 @@
  * USA.
  */
 
-#include "signalinjector.hpp"
+#include "opendlv-core-tools-signalinjector.hpp"
 
 int32_t main(int32_t a_argc, char **a_argv)
 {
-  opendlv::tools::signalinjector::Signalinjector signalinjector(a_argc, a_argv);
+  opendlv::core::tool::Signalinjector signalinjector(a_argc, a_argv);
   return signalinjector.runModule();
 }
