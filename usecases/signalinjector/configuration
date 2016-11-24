@@ -77,9 +77,28 @@ proxy-fh16.record_gcm = 0           # 1 = dump generic CAN messages.
 proxy-fh16.record_mapped_data = 0   # 1 = record mapped containers.
 
 ###############################################################################
+# CONFIGURATION FOR ODRECORDER
+#
+odrecorder.output = file://recorder.rec
+odrecorder.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. start and stop recording)
+odrecorder.dumpSharedData = 1 # 0 = do not dump shared images and shared images, 1 = otherwise
+
+###############################################################################
+#
+# CONFIGURATION FOR PROXY
+
+proxy-trimble.ip = 10.42.42.112    # Change to Trimble IP.
+proxy-trimble.port = 9999          # Change to Trimble TCP port.
+
+proxy-fh16.devicenode = /dev/pcan2  # PEAK CAN device.
+proxy-fh16.record_gcm = 0           # 1 = dump generic CAN messages.
+proxy-fh16.record_mapped_data = 0   # 1 = record mapped containers.
+
+###############################################################################
 #
 # CONFIGURATION FOR signalinjector
 #
 tools-signalinjector.record=1
 tools-signalinjector.filenames="test_bpfh.csv,test_stfh.csv,test_tpfh.csv"
 tools-signalinjector.testnumber=44
+
