@@ -51,6 +51,7 @@ class CanMessageDataStore : public automotive::odcantools::MessageToCANDataStore
     virtual void add(odcore::data::Container &container);
 
    private:
+    void writeToCANDevice(automotive::GenericCANMessage);
     odcore::base::Mutex m_dataStoreMutex;
     bool m_readOnlyMode;
     bool m_enabled;
