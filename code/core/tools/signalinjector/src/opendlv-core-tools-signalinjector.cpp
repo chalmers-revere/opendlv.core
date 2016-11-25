@@ -118,16 +118,13 @@ void Signalinjector::tearDown()
 
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Signalinjector::body(){
-  std::cout << "Execute? [yn]:";
-  char execute;
-  std::cin >> execute;
   
   odcore::data::TimeStamp startTime;
   float breakValue;
   float steerValue;
   float throttleValue;
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() ==
-  odcore::data::dmcp::ModuleStateMessage::RUNNING && execute == 'y'){
+  odcore::data::dmcp::ModuleStateMessage::RUNNING ){
     odcore::data::TimeStamp now;
     float time = static_cast<float>((now.toMicroseconds() - startTime.toMicroseconds()))/1000000;
     // std::cout << std::get<0>(m_brake[0]) << std::endl;
@@ -170,7 +167,6 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode Signalinjector::body()
 
 
     if(m_brake.empty() || m_steering.empty() || m_throttle.empty()) {
-      execute = 'n';
       std::cout << "stop" << std::endl;
     }
   }

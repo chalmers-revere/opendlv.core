@@ -47,7 +47,7 @@ services:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
 
-	# micro service for proxy-trimble.
+       # micro service for proxy-trimble.
     proxy-trimble:
         build: .
         network_mode: "host"
@@ -55,7 +55,7 @@ services:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID}"
 
-	#odrecorder
+      #odrecorder
     odrecorder:
         build: .
         image: seresearch/opendavinci-ubuntu-16.04-complete:latest
