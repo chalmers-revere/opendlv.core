@@ -55,10 +55,7 @@ odcore::io::conference::ContainerConference &c, const string &s)
     , m_segment(NULL)
     , m_velodyneContainer(c)
     , m_spc()
-    , m_calibration(s)
-    , firstPacket(false)
-    , receiveFirstPacket(0)
-    , sendFrame(0) {
+    , m_calibration(s) {
     //Initial setup of the shared point cloud (N.B. The size and width of the shared point cloud depends on the number of points of a frame, hence they are not set up in the constructor)
     m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
     m_spc.setHeight(1); // We have just a sequence of vectors.
@@ -116,12 +113,6 @@ Velodyne16Decoder::~Velodyne16Decoder() {
 
 //Update the shared point cloud when a complete scan is completed.
 void Velodyne16Decoder::sendSharedPointCloud() {
-    TimeStamp t2;
-    sendFrame=t2.toMicroseconds();
-    int64_t processTime=sendFrame-receiveFirstPacket;
-    cout<<processTime<<endl;
-    firstPacket=false;
-    
     if (m_velodyneSharedMemory->isValid()) {
         Lock l(m_velodyneSharedMemory);
         memcpy(m_velodyneSharedMemory->getSharedMemory(), m_segment, m_SIZE);
@@ -138,11 +129,6 @@ void Velodyne16Decoder::sendSharedPointCloud() {
 
 void Velodyne16Decoder::nextString(const string &payload) {
     if (payload.length() == 1206) {
-        if(!firstPacket){
-            firstPacket=true;
-            TimeStamp t1;
-            receiveFirstPacket=t1.toMicroseconds();
-        }
         //Decode VLP-16 data
         uint32_t position = 0; //position specifies the starting position to read from the 1206 bytes
 

@@ -46,10 +46,7 @@ Velodyne16DecoderCPC::Velodyne16DecoderCPC(odcore::io::conference::ContainerConf
     , m_velodyneContainer(c)
     , m_startAzimuth(0.0)
     , m_distanceStringStream("")
-    , m_isStartAzimuth(true)
-    , firstPacket(false)
-    , receiveFirstPacket(0)
-    , sendFrame(0) {
+    , m_isStartAzimuth(true) {
     //Distance values for each 16 sensors with the same azimuth are ordered based on vertical angle,
     //from -15 to 15 degress, with increment 2--sensor IDs: 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15
     m_sensorOrderIndex[0] = 0;
@@ -73,13 +70,7 @@ Velodyne16DecoderCPC::Velodyne16DecoderCPC(odcore::io::conference::ContainerConf
 Velodyne16DecoderCPC::~Velodyne16DecoderCPC() {}
 
 //Update the shared point cloud when a complete scan is completed.
-void Velodyne16DecoderCPC::sendCompactPointCloud() {
-    TimeStamp t2;
-    sendFrame=t2.toMicroseconds();
-    int64_t processTime=sendFrame-receiveFirstPacket;
-    cout<<processTime<<endl;
-    firstPacket=false;
-    
+void Velodyne16DecoderCPC::sendCompactPointCloud() {   
     CompactPointCloud cpc(m_startAzimuth,m_previousAzimuth,m_ENTRIES_PER_AZIMUTH,m_distanceStringStream.str());    
     Container c(cpc);
     m_velodyneContainer.send(c);
@@ -92,12 +83,6 @@ void Velodyne16DecoderCPC::sendCompactPointCloud() {
 
 void Velodyne16DecoderCPC::nextString(const string &payload) {
     if (payload.length() == 1206) {
-        if(!firstPacket){
-            firstPacket=true;
-            TimeStamp t1;
-            receiveFirstPacket=t1.toMicroseconds();
-        }
-        
         //Decode VLP-16 data
         uint32_t position = 0; //position specifies the starting position to read from the 1206 bytes
 

@@ -78,9 +78,6 @@ class Velodyne16DecoderCPC : public odcore::io::StringListener {
     bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
     uint8_t m_sensorOrderIndex[16];//Specify the order for each 16 points in the string with distance values
     half m_16Sensors[16];//Store the distance values of the current 16 sensors
-    bool firstPacket;
-    int64_t receiveFirstPacket;
-    int64_t sendFrame;
 };
 }
 }

@@ -83,9 +83,6 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     odcore::data::SharedPointCloud m_spc; //shared point cloud
     float m_vertCorrection[16];           //Vertal angle of each sensor beam
     string m_calibration;
-    bool firstPacket;
-    int64_t receiveFirstPacket;
-    int64_t sendFrame;
     const float toRadian = static_cast<float>(M_PI) / 180.0f;
 };
 }
