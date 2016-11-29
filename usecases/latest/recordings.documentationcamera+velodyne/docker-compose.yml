@@ -1,5 +1,5 @@
-# docker-compose.yml - Micro-services to record one documentation camera and FH16 CAN data..
-# Copyright (C) 2016 Christian Berger
+# docker-compose.yml - Micro-services to record one documentation camera.
+# Copyright (C) 2016 Hang Yin, Christian Berger
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,6 @@ services:
     # Micro-service for odsupercomponent.
     odsupercomponent:
         build: .
-        image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         network_mode: host
         volumes:
             - .:/opt/opendlv.core.configuration
@@ -42,28 +41,26 @@ services:
         ipc: host
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID} --freq=20"
 
-
-    # micro service for proxy-fh16.
-    proxy-fh16:
+    # Micro-service for proxy-velodyne16.
+    proxy-velodyne16:
         build: .
         network_mode: "host"
         volumes:
-            - ~/recordings:/opt/recordings
-        working_dir: "/opt/recordings"
-        devices:
-        - "/dev/pcanpci2:/dev/pcan2"
+        - .:/opt/opendlv.data
+        ipc: host
+        user: odv
+        working_dir: "/opt/opendlv.data"
         depends_on:
-            - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
-
+        - odsupercomponent
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-velodyne16 --cid=${CID}"
 
     # Micro-service for odrecorderh264.
     odrecorderh264:
         build: .
-        image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         depends_on:
             - odsupercomponent
             - proxy-camera
+            - proxy-velodyne16
         volumes:
             - ~/recordings:/opt/recordings
         user: odv
