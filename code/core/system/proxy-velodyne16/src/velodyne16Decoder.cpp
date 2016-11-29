@@ -24,7 +24,6 @@
 #include <memory>
 #include <string>
 
-#include "opendavinci/GeneratedHeaders_OpenDaVINCI.h"
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
 #include "opendavinci/odcore/base/Lock.h"
 #include "opendavinci/odcore/data/Container.h"
@@ -48,6 +47,8 @@ odcore::io::conference::ContainerConference &c, const string &s)
     : m_pointIndex(0)
     , m_startID(0)
     , m_previousAzimuth(0.0)
+    , m_currentAzimuth(0.0)
+    , m_nextAzimuth(0.0)
     , m_deltaAzimuth(0.0)
     , m_distance(0.0)
     , m_velodyneSharedMemory(m)
@@ -110,25 +111,20 @@ Velodyne16Decoder::~Velodyne16Decoder() {
     free(m_segment);
 }
 
-float Velodyne16Decoder::toRadian(float angle) {
-    return angle * static_cast<float>(M_PI) / 180.0f;
-}
-
 //Update the shared point cloud when a complete scan is completed.
-void Velodyne16Decoder::sendSharedPointCloud(const float &oldAzimuth, const float &newAzimuth) {
-    if (newAzimuth < oldAzimuth) {
-        if (m_velodyneSharedMemory->isValid()) {
-            Lock l(m_velodyneSharedMemory);
-            memcpy(m_velodyneSharedMemory->getSharedMemory(), m_segment, m_SIZE);
-            //Set the size and width of the shared point cloud of the current frame
-            m_spc.setSize(m_SIZE); // Size in raw bytes.
-            m_spc.setWidth(m_pointIndex);                                                      // Number of points.
-            Container c(m_spc);
-            m_velodyneContainer.send(c);
-        }
-        m_pointIndex = 0;
-        m_startID = 0;
+void Velodyne16Decoder::sendSharedPointCloud() {
+    if (m_velodyneSharedMemory->isValid()) {
+        Lock l(m_velodyneSharedMemory);
+        memcpy(m_velodyneSharedMemory->getSharedMemory(), m_segment, m_SIZE);
+        //Set the size and width of the shared point cloud of the current frame
+        m_spc.setSize(m_SIZE); // Size in raw bytes.
+        m_spc.setWidth(m_pointIndex);                                                      // Number of points.
+        Container c(m_spc);
+        m_velodyneContainer.send(c);
+        
     }
+    m_pointIndex = 0;
+    m_startID = 0;
 }
 
 void Velodyne16Decoder::nextString(const string &payload) {
@@ -143,19 +139,29 @@ void Velodyne16Decoder::nextString(const string &payload) {
             //Skip the flag: 0xFFEE(2 bytes)
             position += 2;
 
-            //Decode azimuth information: 2 bytes. Swap the two bytes, change to decimal, and divide it by 100
-            firstByte = (uint8_t)(payload.at(position));
-            secondByte = (uint8_t)(payload.at(position + 1));
-            dataValue = ntohs(firstByte * 256 + secondByte);
-            float azimuth = static_cast< float >(dataValue / 100.0);
-            sendSharedPointCloud(m_previousAzimuth, azimuth); //Send a complete scan as one frame
-            m_previousAzimuth = azimuth;
+            //Decode azimuth information: 2 bytes. Swap the two bytes, change to decimal, and divide it by 100. Due to azimuth interpolation, the azimuth of blocks 1-11 is already decoded in the middle of the previous block.
+            if(blockID == 0){
+                firstByte = (uint8_t)(payload.at(position));
+                secondByte = (uint8_t)(payload.at(position + 1));
+                dataValue = ntohs(firstByte * 256 + secondByte);
+                m_currentAzimuth = static_cast< float >(dataValue / 100.0);
+            }
+            else{
+                m_currentAzimuth = m_nextAzimuth;
+                if(m_currentAzimuth > 360.0f){
+                    m_currentAzimuth -= 360.0f;
+                }
+            }
+            if (m_currentAzimuth < m_previousAzimuth) {
+                sendSharedPointCloud(); //Send a complete scan as one frame
+            }
+            m_previousAzimuth = m_currentAzimuth;
             position += 2;
 
             //Only decode the data if the maximum number of points of the current frame has not been reached
             if (m_pointIndex < m_MAX_POINT_SIZE) {
                 //Decode distance information and intensity of each beam/channel in a block, which contains two firing sequences
-                for (int counter = 0; counter < 32; counter++) {
+                for (uint8_t counter = 0; counter < 32; counter++) {
                     //Interpolate azimuth value
                     if (counter == 16) {
                         if (blockID < 11) {
@@ -163,21 +169,23 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             firstByte = (uint8_t)(payload.at(position));
                             secondByte = (uint8_t)(payload.at(position + 1));
                             dataValue = ntohs(firstByte * 256 + secondByte);
-                            float nextAzimuth = static_cast< float >(dataValue / 100.0);
+                            m_nextAzimuth = static_cast< float >(dataValue / 100.0);
                             position -= 50; //reset pointer
-                            if (nextAzimuth < azimuth) {
-                                nextAzimuth += 360.0f;
+                            if (m_nextAzimuth < m_currentAzimuth) {
+                                m_nextAzimuth += 360.0f;
                             }
-                            m_deltaAzimuth = (nextAzimuth - azimuth) / 2.0f;
-                            azimuth += m_deltaAzimuth;
+                            m_deltaAzimuth = (m_nextAzimuth - m_currentAzimuth) / 2.0f;
+                            m_currentAzimuth += m_deltaAzimuth;
                         } else {
-                            azimuth += m_deltaAzimuth;
+                            m_currentAzimuth += m_deltaAzimuth;
                         }
-                        if (azimuth > 360.0f) {
-                            azimuth -= 360.0f;
+                        if (m_currentAzimuth > 360.0f) {
+                            m_currentAzimuth -= 360.0f;
+                            if (m_currentAzimuth < m_previousAzimuth) {
+                                sendSharedPointCloud(); //Send a complete scan as one frame
+                            }
                         }
-                        sendSharedPointCloud(m_previousAzimuth, azimuth); //Send a complete scan as one frame
-                        m_previousAzimuth = azimuth;
+                        m_previousAzimuth = m_currentAzimuth;
                     }
 
                     uint8_t sensorID = counter;
@@ -194,10 +202,10 @@ void Velodyne16Decoder::nextString(const string &payload) {
                     if (m_distance > 1.0f) {
                         static float xyDistance, xData, yData, zData, intensity;
                         //Compute x, y, z cooridnate
-                        xyDistance = m_distance * cos(toRadian(m_vertCorrection[sensorID]));
-                        xData = xyDistance * sin(toRadian(azimuth));
-                        yData = xyDistance * cos(toRadian(azimuth));
-                        zData = m_distance * sin(toRadian(m_vertCorrection[sensorID]));
+                        xyDistance = m_distance * cos(m_vertCorrection[sensorID] * toRadian);
+                        xData = xyDistance * sin(m_currentAzimuth * toRadian);
+                        yData = xyDistance * cos(m_currentAzimuth * toRadian);
+                        zData = m_distance * sin(m_vertCorrection[sensorID] * toRadian);
                         //Get intensity/reflectivity: 1 byte
                         uint8_t intensityInt = (uint8_t)(payload.at(position + 2));
                         intensity = (float)intensityInt;
