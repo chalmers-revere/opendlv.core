@@ -149,7 +149,7 @@ void Velodyne16DecoderCPC::nextString(const string &payload) {
                     //Decode distance: 2 bytes. Swap the bytes, change to decimal, and divide it by 500
                     firstByte = (uint8_t)(payload.at(position));
                     secondByte = (uint8_t)(payload.at(position + 1));
-                    m_16Sensors[sensorID] = ntohs(firstByte * 256 + secondByte);
+                    m_16Sensors[sensorID] = ntohs(firstByte * 256 + secondByte)/5;
                                 
                     if(sensorID==15){
                         for(uint8_t index=0;index<16;index++){
