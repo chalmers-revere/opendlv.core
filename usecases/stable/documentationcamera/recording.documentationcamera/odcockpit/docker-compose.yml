@@ -21,7 +21,6 @@ services:
     # Micro-service for odcockpit to monitor a running recording session.
     odcockpit:
         build: .
-        image: seresearch/opendavinci-ubuntu-16.04-complete:latest
         environment:
             - DISPLAY=$DISPLAY
         volumes:
