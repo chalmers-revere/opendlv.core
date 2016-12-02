@@ -88,7 +88,7 @@ void Velodyne16DecoderCPC::nextString(const string &payload) {
 
         //The payload of a VLP-16 packet consists of 12 blocks with 100 bytes each. Decode each block separately.
         static uint8_t firstByte, secondByte;
-        static uint32_t dataValue;
+        static uint16_t dataValue;
         for (uint8_t blockID = 0; blockID < 12; blockID++) {
             //Skip the flag: 0xFFEE(2 bytes)
             position += 2;
@@ -149,9 +149,7 @@ void Velodyne16DecoderCPC::nextString(const string &payload) {
                     //Decode distance: 2 bytes. Swap the bytes, change to decimal, and divide it by 500
                     firstByte = (uint8_t)(payload.at(position));
                     secondByte = (uint8_t)(payload.at(position + 1));
-                    dataValue = ntohs(firstByte * 256 + secondByte);
-                    m_distance = dataValue / 500.0; //*2mm-->/1000 for meter
-                    m_16Sensors[sensorID]=static_cast<half>(m_distance);
+                    m_16Sensors[sensorID] = ntohs(firstByte * 256 + secondByte)/5;
                                 
                     if(sensorID==15){
                         for(uint8_t index=0;index<16;index++){
