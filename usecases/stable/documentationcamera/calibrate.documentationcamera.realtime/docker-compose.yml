@@ -29,8 +29,6 @@ services:
     # Micro-service for proxy-camera.
     proxy-camera:
         build: .
-#        group_add:
-#            - video
         depends_on:
             - odsupercomponent
         cap_add:
