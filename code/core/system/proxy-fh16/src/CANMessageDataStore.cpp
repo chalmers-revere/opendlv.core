@@ -131,7 +131,7 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
     }
 }
 
-    void CanMessageDataStore::writeToCANDevice(automotive::GenericCANMessage genericCanMessage)
+    void CanMessageDataStore::writeToCANDevice(const automotive::GenericCANMessage& genericCanMessage)
     {
         if(! m_readOnlyMode) {
             m_canDevice->write(genericCanMessage);
