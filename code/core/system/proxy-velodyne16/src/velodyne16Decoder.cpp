@@ -43,7 +43,7 @@ using namespace odcore::data;
 using namespace odcore::wrapper;
 
 Velodyne16Decoder::Velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
-odcore::io::conference::ContainerConference &c, const string &s)
+odcore::io::conference::ContainerConference &c, const string &s, bool withCPC)
     : m_pointIndex(0)
     , m_startID(0)
     , m_previousAzimuth(0.0)
@@ -55,7 +55,12 @@ odcore::io::conference::ContainerConference &c, const string &s)
     , m_segment(NULL)
     , m_velodyneContainer(c)
     , m_spc()
-    , m_calibration(s) {
+    , m_calibration(s)
+    , m_withSPC(true)
+    , m_withCPC(withCPC)
+    , m_startAzimuth(0.0)
+    , m_distanceStringStream("")
+    , m_isStartAzimuth(true) {
     //Initial setup of the shared point cloud (N.B. The size and width of the shared point cloud depends on the number of points of a frame, hence they are not set up in the constructor)
     m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
     m_spc.setHeight(1); // We have just a sequence of vectors.
@@ -107,24 +112,83 @@ odcore::io::conference::ContainerConference &c, const string &s)
     }
 }
 
-Velodyne16Decoder::~Velodyne16Decoder() {
-    free(m_segment);
+Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference &c)
+    : m_pointIndex(0)
+    , m_startID(0)
+    , m_previousAzimuth(0.0)
+    , m_currentAzimuth(0.0)
+    , m_nextAzimuth(0.0)
+    , m_deltaAzimuth(0.0)
+    , m_distance(0.0)
+    , m_velodyneSharedMemory()
+    , m_segment(NULL)
+    , m_velodyneContainer(c)
+    , m_spc()
+    , m_calibration("")
+    , m_withSPC(false)
+    , m_withCPC(true)
+    , m_startAzimuth(0.0)
+    , m_distanceStringStream("")
+    , m_isStartAzimuth(true) {
+    
+    //Distance values for each 16 sensors with the same azimuth are ordered based on vertical angle,
+    //from -15 to 15 degress, with increment 2--sensor IDs: 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15
+    m_sensorOrderIndex[0] = 0;
+    m_sensorOrderIndex[1] = 2;
+    m_sensorOrderIndex[2] = 4;
+    m_sensorOrderIndex[3] = 6;
+    m_sensorOrderIndex[4] = 8;
+    m_sensorOrderIndex[5] = 10;
+    m_sensorOrderIndex[6] = 12;
+    m_sensorOrderIndex[7] = 14;
+    m_sensorOrderIndex[8] = 1;
+    m_sensorOrderIndex[9] = 3;
+    m_sensorOrderIndex[10] = 5;
+    m_sensorOrderIndex[11] = 7;
+    m_sensorOrderIndex[12] = 9;
+    m_sensorOrderIndex[13] = 11;
+    m_sensorOrderIndex[14] = 13;
+    m_sensorOrderIndex[15] = 15;
+    
+    for (uint8_t sensorIndex = 0; sensorIndex < 16; sensorIndex++) {
+        m_16Sensors[sensorIndex] = 0;
+    }
 }
 
-//Update the shared point cloud when a complete scan is completed.
-void Velodyne16Decoder::sendSharedPointCloud() {
-    if (m_velodyneSharedMemory->isValid()) {
-        Lock l(m_velodyneSharedMemory);
-        memcpy(m_velodyneSharedMemory->getSharedMemory(), m_segment, m_SIZE);
-        //Set the size and width of the shared point cloud of the current frame
-        m_spc.setSize(m_SIZE); // Size in raw bytes.
-        m_spc.setWidth(m_pointIndex);                                                      // Number of points.
-        Container c(m_spc);
-        m_velodyneContainer.send(c);
-        
+Velodyne16Decoder::~Velodyne16Decoder() {
+    if(m_withSPC){
+        free(m_segment);
     }
-    m_pointIndex = 0;
-    m_startID = 0;
+}
+
+//Update the shared or compact point cloud when a complete scan is completed.
+void Velodyne16Decoder::sendPointCloud() {  
+    //Send shared point cloud
+    if(m_withSPC){
+        if (m_velodyneSharedMemory->isValid()) {
+            Lock l(m_velodyneSharedMemory);
+            memcpy(m_velodyneSharedMemory->getSharedMemory(), m_segment, m_SIZE);
+            //Set the size and width of the shared point cloud of the current frame
+            m_spc.setSize(m_SIZE); // Size in raw bytes.
+            m_spc.setWidth(m_pointIndex);                                                      // Number of points.
+            Container c(m_spc);
+            m_velodyneContainer.send(c);
+            
+        }
+        m_pointIndex = 0;
+        m_startID = 0;
+    }
+    //Send compact point cloud
+    if(m_withCPC){
+        CompactPointCloud cpc(m_startAzimuth,m_previousAzimuth,m_ENTRIES_PER_AZIMUTH,m_distanceStringStream.str());    
+        Container c(cpc);
+        m_velodyneContainer.send(c);
+
+        m_pointIndex = 0;
+        m_startAzimuth = m_currentAzimuth;
+        m_isStartAzimuth=false;
+        m_distanceStringStream.str("");
+    }
 }
 
 void Velodyne16Decoder::nextString(const string &payload) {
@@ -153,7 +217,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
                 }
             }
             if (m_currentAzimuth < m_previousAzimuth) {
-                sendSharedPointCloud(); //Send a complete scan as one frame
+                sendPointCloud(); //Send a complete scan as one frame
             }
             m_previousAzimuth = m_currentAzimuth;
             position += 2;
@@ -182,7 +246,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
                         if (m_currentAzimuth > 360.0f) {
                             m_currentAzimuth -= 360.0f;
                             if (m_currentAzimuth < m_previousAzimuth) {
-                                sendSharedPointCloud(); //Send a complete scan as one frame
+                                sendPointCloud(); //Send a complete scan as one frame
                             }
                         }
                         m_previousAzimuth = m_currentAzimuth;
@@ -195,30 +259,44 @@ void Velodyne16Decoder::nextString(const string &payload) {
                     //Decode distance: 2 bytes. Swap the bytes, change to decimal, and divide it by 500
                     firstByte = (uint8_t)(payload.at(position));
                     secondByte = (uint8_t)(payload.at(position + 1));
-                    dataValue = ntohs(firstByte * 256 + secondByte);
-                    m_distance = dataValue / 500.0; //*2mm-->/1000 for meter
+                    
+                    if(m_withSPC){
+                        dataValue = ntohs(firstByte * 256 + secondByte);
+                        m_distance = dataValue / 500.0; //*2mm-->/1000 for meter
 
-                    //Discard distances shorter than 1m
-                    if (m_distance > 1.0f) {
-                        static float xyDistance, xData, yData, zData, intensity;
-                        //Compute x, y, z cooridnate
-                        xyDistance = m_distance * cos(m_vertCorrection[sensorID] * toRadian);
-                        xData = xyDistance * sin(m_currentAzimuth * toRadian);
-                        yData = xyDistance * cos(m_currentAzimuth * toRadian);
-                        zData = m_distance * sin(m_vertCorrection[sensorID] * toRadian);
-                        //Get intensity/reflectivity: 1 byte
-                        uint8_t intensityInt = (uint8_t)(payload.at(position + 2));
-                        intensity = (float)intensityInt;
+                        //Discard distances shorter than 1m
+                        if (m_distance > 1.0f) {
+                            static float xyDistance, xData, yData, zData, intensity;
+                            //Compute x, y, z cooridnate
+                            xyDistance = m_distance * cos(m_vertCorrection[sensorID] * toRadian);
+                            xData = xyDistance * sin(m_currentAzimuth * toRadian);
+                            yData = xyDistance * cos(m_currentAzimuth * toRadian);
+                            zData = m_distance * sin(m_vertCorrection[sensorID] * toRadian);
+                            //Get intensity/reflectivity: 1 byte
+                            uint8_t intensityInt = (uint8_t)(payload.at(position + 2));
+                            intensity = (float)intensityInt;
 
-                        //Store coordinate information of each point to the malloc memory
-                        m_segment[m_startID] = xData;
-                        m_segment[m_startID + 1] = yData;
-                        m_segment[m_startID + 2] = zData;
-                        m_segment[m_startID + 3] = intensity;
+                            //Store coordinate information of each point to the malloc memory
+                            m_segment[m_startID] = xData;
+                            m_segment[m_startID + 1] = yData;
+                            m_segment[m_startID + 2] = zData;
+                            m_segment[m_startID + 3] = intensity;
 
-                        m_pointIndex++;
-                        m_startID += m_NUMBER_OF_COMPONENTS_PER_POINT;
+                            m_pointIndex++;
+                            m_startID += m_NUMBER_OF_COMPONENTS_PER_POINT;
+                        }
                     }
+                    
+                    if(m_withCPC){
+                        m_16Sensors[sensorID] = ntohs(firstByte * 256 + secondByte)/5;   
+                        if(sensorID==15){
+                            for(uint8_t index=0;index<16;index++){
+                                m_distanceStringStream.write((char*)(&m_16Sensors[m_sensorOrderIndex[index]]),2);
+                            }
+                        }
+                        m_pointIndex++;
+                    }
+                    
                     position += 3;
 
                     if (m_pointIndex >= m_MAX_POINT_SIZE) {

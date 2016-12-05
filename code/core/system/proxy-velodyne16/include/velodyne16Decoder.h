@@ -24,6 +24,7 @@
 #include <memory>
 
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
+#include "opendavinci/generated/odcore/data/CompactPointCloud.h"
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include <opendavinci/odcore/io/StringListener.h>
@@ -56,14 +57,15 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     /**
          * Constructor.
          */
-    Velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &);
+    Velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &, bool);
+    Velodyne16Decoder(odcore::io::conference::ContainerConference &);
 
     virtual ~Velodyne16Decoder();
 
     virtual void nextString(const std::string &s);
 
    private:
-    void sendSharedPointCloud();
+    void sendPointCloud();
    private:
     const uint32_t m_MAX_POINT_SIZE = 30000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
     const uint32_t m_SIZE_PER_COMPONENT = sizeof(float);
@@ -84,6 +86,16 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     float m_vertCorrection[16];           //Vertal angle of each sensor beam
     string m_calibration;
     const float toRadian = static_cast<float>(M_PI) / 180.0f;
+    bool m_withSPC;
+    bool m_withCPC;
+        
+    //For compact point cloud:
+    float m_startAzimuth;
+    const uint8_t m_ENTRIES_PER_AZIMUTH = 16;//For VLP-16, there are 16 points per azimuth
+    std::stringstream m_distanceStringStream; //The string stream with distance values for all points of one frame
+    bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
+    uint8_t m_sensorOrderIndex[16];//Specify the order for each 16 points in the string with distance values
+    uint16_t m_16Sensors[16];//Store the distance values (in cm) of the current 16 sensors
 };
 }
 }
