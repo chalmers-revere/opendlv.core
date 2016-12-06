@@ -65,6 +65,7 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     virtual void nextString(const std::string &s);
 
    private:
+    void initializeArraysCPC();
     void sendPointCloud();
    private:
     const uint32_t m_MAX_POINT_SIZE = 30000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
@@ -72,7 +73,8 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     const uint8_t m_NUMBER_OF_COMPONENTS_PER_POINT = 4;                                           // How many components do we have per vector?
     const uint32_t m_SIZE = m_MAX_POINT_SIZE * m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT; // What is the total size of the shared memory?
 
-    uint32_t m_pointIndex;
+    uint32_t m_pointIndexSPC; //current number of points of the current frame for shared point cloud 
+    uint32_t m_pointIndexCPC; //current number of points of the current frame for compact point cloud
     uint32_t m_startID;
     float m_previousAzimuth;
     float m_currentAzimuth;
@@ -84,10 +86,10 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     odcore::io::conference::ContainerConference &m_velodyneContainer;
     odcore::data::SharedPointCloud m_spc; //shared point cloud
     float m_vertCorrection[16];           //Vertal angle of each sensor beam
-    string m_calibration;
-    const float toRadian = static_cast<float>(M_PI) / 180.0f;
-    bool m_withSPC;
-    bool m_withCPC;
+    string m_calibration;  //name of the calibration file for VLP-16
+    const float toRadian = static_cast<float>(M_PI) / 180.0f;  //degree to radian
+    bool m_withSPC;  //if SPC is expected
+    bool m_withCPC;  //if CPC is expected
         
     //For compact point cloud:
     float m_startAzimuth;
