@@ -83,7 +83,7 @@ class packetToByte : public odcore::io::conference::ContainerListener {
    public:
     packetToByte(std::shared_ptr< odcore::wrapper::SharedMemory > m1, std::shared_ptr< odcore::wrapper::SharedMemory > m2)
         : m_mcc(m2)
-        , m_velodyne16decoder(m1, m_mcc, "../VLP-16.xml",false) //The calibration file VLP-16.xml is automatically copied to the parent folder of the test suite binary
+        , m_velodyne16decoder(m1, m_mcc, "../VLP-16.xml", false) //The calibration file VLP-16.xml is automatically copied to the parent folder of the test suite binary
     {}
 
     ~packetToByte() {}
