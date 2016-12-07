@@ -27,7 +27,6 @@
 #include <opendavinci/odcore/io/udp/UDPFactory.h>
 #include <opendavinci/odcore/io/udp/UDPReceiver.h>
 #include "velodyne16Decoder.h"
-#include "velodyne16DecoderCPC.h"
 
 namespace opendlv {
 namespace core {
@@ -77,7 +76,7 @@ class ProxyVelodyne16 : public odcore::base::module::DataTriggeredConferenceClie
     virtual void tearDown();
     
    private:
-    bool m_CompactPointCloud;
+    uint32_t m_pointCloudOption;  //0: shared point cloud (SPC) only; 1: compact point cloud (CPC) only; 2: both SPC and CPC
     string m_memoryName;   //Name of the shared memory
     uint32_t m_memorySize; //The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000
 
@@ -87,7 +86,6 @@ class ProxyVelodyne16 : public odcore::base::module::DataTriggeredConferenceClie
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory;
     std::shared_ptr< odcore::io::udp::UDPReceiver > m_udpreceiver;
     std::shared_ptr< opendlv::core::system::proxy::Velodyne16Decoder > m_velodyne16decoder;
-    std::shared_ptr< opendlv::core::system::proxy::Velodyne16DecoderCPC > m_velodyne16decoderCPC;
 };
 }
 }
