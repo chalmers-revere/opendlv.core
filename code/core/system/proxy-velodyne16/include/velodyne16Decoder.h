@@ -57,7 +57,10 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     /**
          * Constructor.
          */
-    Velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &, bool);
+    //Use this constructor if the VLP-16 live feed is decoded and sent out as shared point cloud. The last boolean parameter tells if compact point cloud is sent out as well
+    Velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &, const bool);
+
+    //Use this constructor if the VLP-16 live feed is decoded and sent out as compact point cloud only.  
     Velodyne16Decoder(odcore::io::conference::ContainerConference &);
 
     virtual ~Velodyne16Decoder();

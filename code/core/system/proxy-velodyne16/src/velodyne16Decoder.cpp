@@ -68,7 +68,7 @@ void Velodyne16Decoder::initializeArraysCPC(){
 }
 
 Velodyne16Decoder::Velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
-odcore::io::conference::ContainerConference &c, const string &s, bool withCPC)
+odcore::io::conference::ContainerConference &c, const string &s, const bool withCPC)
     : m_pointIndexSPC(0)
     , m_pointIndexCPC(0)
     , m_startID(0)
