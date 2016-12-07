@@ -20,6 +20,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 
 #include "ProxyVelodyne16.h"
 #include "opendavinci/odcore/base/KeyValueConfiguration.h"
@@ -72,8 +73,7 @@ void ProxyVelodyne16::setUp() {
         m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(getConference()));
     }
     else{
-        std::cout<<"Invalid point cloud option! 0: shared point cloud (SPC) only; 1: compact point cloud (CPC) only; 2: both SPC and CPC"<<std::endl;
-        return;
+        throw std::invalid_argument( "Invalid point cloud option! 0: shared point cloud (SPC) only; 1: compact point cloud (CPC) only; 2: both SPC and CPC" );
     }
     
     m_udpreceiver->setStringListener(m_velodyne16decoder.get());
