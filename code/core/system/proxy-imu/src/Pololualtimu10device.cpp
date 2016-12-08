@@ -46,6 +46,8 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
     , m_rotationMatrix()
     , m_calibrationFile(a_calibrationFile)
     , m_lockCalibration(a_lockCalibration)
+    , m_accelerometerMaxVal{0,0,0}
+    , m_accelerometerMinVal{0,0,0}
     , m_magnetometerMaxVal{0,0,0}
     , m_magnetometerMinVal{0,0,0}
     // , m_heavyAcc{0,0,0}
@@ -81,6 +83,48 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
     initLIS3();
     initLPS25();
 
+    if(loadCalibrationFile()) {
+        initCalibration();
+        //Initial values for calibration
+        accessLIS3();
+        uint8_t buffer[] = {lis3RegAddr::OUT_X_L | 0x80};
+
+        uint8_t status = write(m_deviceFile, buffer, 1);
+        if (status != 1) {
+            std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Magnetometer)" << std::endl;
+        }
+
+        uint8_t outBuffer[6];
+        status = read(m_deviceFile, outBuffer, 6);
+        if (status != 6) {
+            std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Magnetometer)" << std::endl;
+        }
+
+        uint8_t xlm = outBuffer[0];
+        uint8_t xhm = outBuffer[1];
+        uint8_t ylm = outBuffer[2];
+        uint8_t yhm = outBuffer[3];
+        uint8_t zlm = outBuffer[4];
+        uint8_t zhm = outBuffer[5];
+
+        int16_t x = (int16_t)(xhm << 8 | xlm);
+        int16_t y = (int16_t)(yhm << 8 | ylm);
+        int16_t z = (int16_t)(zhm << 8 | zlm);
+
+        //F
+        //FS=±4 gauss  --> 6842 LSB/gauss
+        float scaledX = static_cast< double >(x) / 6842.0;
+        float scaledY = static_cast< double >(y) / 6842.0;
+        float scaledZ = static_cast< double >(z) / 6842.0;
+
+        m_magnetometerMinVal[0] = scaledX;
+        m_magnetometerMinVal[1] = scaledY;
+        m_magnetometerMinVal[2] = scaledZ;
+        m_magnetometerMaxVal[0] = scaledX;
+        m_magnetometerMaxVal[1] = scaledY;
+        m_magnetometerMaxVal[2] = scaledZ;
+    }
+
     double roll = a_mountRotation[0];
     double pitch = a_mountRotation[1];
     double yaw = a_mountRotation[2];
@@ -109,6 +153,101 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
 
 
 PololuAltImu10Device::~PololuAltImu10Device() {
+}
+
+void Pololualtimu10Device::initCalibration()
+{
+    //Initial values for calibration
+
+    //Acceleration
+    {
+        accessLSM6();
+        uint8_t buffer[1];
+        buffer[0] = lsm6RegAddr::OUTX_L_XL;
+
+        uint8_t status = write(m_deviceFile, buffer, 1);
+        if (status != 1) {
+            std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Accelerometer)" << std::endl;
+            return nullptr;
+        }
+
+        uint8_t outBuffer[6];
+        status = read(m_deviceFile, outBuffer, 6);
+        if (status != 6) {
+            std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Accelerometer)" << std::endl;
+        }
+
+        uint8_t xla = outBuffer[0];
+        uint8_t xha = outBuffer[1];
+        uint8_t yla = outBuffer[2];
+        uint8_t yha = outBuffer[3];
+        uint8_t zla = outBuffer[4];
+        uint8_t zha = outBuffer[5];
+
+        int16_t x = xha;
+        x = (x << 8) | xla;
+
+        int16_t y = yha;
+        y = (y << 8) | yla;
+
+        int16_t z = zha;
+        z = (z << 8) | zla;
+
+        //FS = ±2 --> 0.061 mg/LSB -->
+        static double gravityAccel = -9.82;
+        float scaledX = ((0.061 * static_cast< double >(x)) / 1000) * gravityAccel;
+        float scaledY = ((0.061 * static_cast< double >(y)) / 1000) * gravityAccel;
+        float scaledZ = ((0.061 * static_cast< double >(z)) / 1000) * gravityAccel;
+
+        m_accelerometerMinVal[0] = scaledX;
+        m_accelerometerMinVal[1] = scaledY;
+        m_accelerometerMinVal[2] = scaledZ;
+        m_accelerometerMaxVal[0] = scaledX;
+        m_accelerometerMaxVal[1] = scaledY;
+        m_accelerometerMaxVal[2] = scaledZ;
+    }
+
+    //Magnetometer
+    {
+        accessLIS3();
+        uint8_t buffer[] = {lis3RegAddr::OUT_X_L | 0x80};
+
+        uint8_t status = write(m_deviceFile, buffer, 1);
+        if (status != 1) {
+            std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Magnetometer)" << std::endl;
+        }
+
+        uint8_t outBuffer[6];
+        status = read(m_deviceFile, outBuffer, 6);
+        if (status != 6) {
+            std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Magnetometer)" << std::endl;
+        }
+
+        uint8_t xlm = outBuffer[0];
+        uint8_t xhm = outBuffer[1];
+        uint8_t ylm = outBuffer[2];
+        uint8_t yhm = outBuffer[3];
+        uint8_t zlm = outBuffer[4];
+        uint8_t zhm = outBuffer[5];
+
+        int16_t x = (int16_t)(xhm << 8 | xlm);
+        int16_t y = (int16_t)(yhm << 8 | ylm);
+        int16_t z = (int16_t)(zhm << 8 | zlm);
+
+        //F
+        //FS=±4 gauss  --> 6842 LSB/gauss
+        float scaledX = static_cast< double >(x) / 6842.0;
+        float scaledY = static_cast< double >(y) / 6842.0;
+        float scaledZ = static_cast< double >(z) / 6842.0;
+
+        m_magnetometerMinVal[0] = scaledX;
+        m_magnetometerMinVal[1] = scaledY;
+        m_magnetometerMinVal[2] = scaledZ;
+        m_magnetometerMaxVal[0] = scaledX;
+        m_magnetometerMaxVal[1] = scaledY;
+        m_magnetometerMaxVal[2] = scaledZ;
+    }
+
 }
 
 bool PololuAltImu10Device::loadCalibrationFile() {
@@ -250,47 +389,6 @@ void PololuAltImu10Device::initLIS3() {
     // OMZ = 11 (ultra-high-performance mode for Z)
     I2cWriteRegister(lis3RegAddr::CTRL_REG4, 0x0C);
 
-    //Initial values for calibration
-    if(loadCalibrationFile()) {
-        accessLIS3();
-        uint8_t buffer[] = {lis3RegAddr::OUT_X_L | 0x80};
-
-        uint8_t status = write(m_deviceFile, buffer, 1);
-        if (status != 1) {
-            std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Magnetometer)" << std::endl;
-        }
-
-        uint8_t outBuffer[6];
-        status = read(m_deviceFile, outBuffer, 6);
-        if (status != 6) {
-            std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Magnetometer)" << std::endl;
-        }
-
-        uint8_t xlm = outBuffer[0];
-        uint8_t xhm = outBuffer[1];
-        uint8_t ylm = outBuffer[2];
-        uint8_t yhm = outBuffer[3];
-        uint8_t zlm = outBuffer[4];
-        uint8_t zhm = outBuffer[5];
-
-        int16_t x = (int16_t)(xhm << 8 | xlm);
-        int16_t y = (int16_t)(yhm << 8 | ylm);
-        int16_t z = (int16_t)(zhm << 8 | zlm);
-
-        //F
-        //FS=±4 gauss  --> 6842 LSB/gauss
-        float scaledX = static_cast< double >(x) / 6842.0;
-        float scaledY = static_cast< double >(y) / 6842.0;
-        float scaledZ = static_cast< double >(z) / 6842.0;
-
-        m_magnetometerMinVal[0] = scaledX;
-        m_magnetometerMinVal[1] = scaledY;
-        m_magnetometerMinVal[2] = scaledZ;
-        m_magnetometerMaxVal[0] = scaledX;
-        m_magnetometerMaxVal[1] = scaledY;
-        m_magnetometerMaxVal[2] = scaledZ;
-    }
-
 }
 
 void PololuAltImu10Device::initLPS25() {
@@ -348,9 +446,7 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     z = (z << 8) | zla;
 
     //FS = ±2 --> 0.061 mg/LSB -->
-    static double gravityAccel = -9.81;
-    //Hardcoded caliberation
-    //TODO: better calibration
+    static double gravityAccel = -9.82;
     float scaledX = ((0.061 * static_cast< double >(x)) / 1000) * gravityAccel;
     float scaledY = ((0.061 * static_cast< double >(y)) / 1000) * gravityAccel;
     float scaledZ = ((0.061 * static_cast< double >(z)) / 1000) * gravityAccel;
@@ -360,16 +456,7 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
 
     float reading[] = {adjustedReading[0], adjustedReading[1], adjustedReading[2]};
-    
 
-    //For magnetometer calibration
-    // for(uint8_t i = 0; i < 3; i++){
-    //     m_heavyAcc[i] += 0.5f*(reading[i] - m_heavyAcc[i]);    
-    // }
-
-
-
-    // float reading[] = {scaledX, scaledY, scaledZ};
     opendlv::proxy::AccelerometerReading accelerometerReading(reading);
     return accelerometerReading;
 }

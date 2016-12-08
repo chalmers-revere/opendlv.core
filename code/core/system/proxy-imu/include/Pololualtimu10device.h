@@ -61,6 +61,8 @@ class PololuAltImu10Device {
 
    private:
     void I2cWriteRegister(uint8_t, uint8_t);
+
+    void initCalibration();
     
     bool loadCalibrationFile();
 
@@ -91,6 +93,10 @@ class PololuAltImu10Device {
     std::string m_calibrationFile;
 
     bool const m_lockCalibration;
+
+    float m_accelerometerMaxVal[3];
+
+    float m_accelerometerMinVal[3];
 
     float m_magnetometerMaxVal[3];
 
