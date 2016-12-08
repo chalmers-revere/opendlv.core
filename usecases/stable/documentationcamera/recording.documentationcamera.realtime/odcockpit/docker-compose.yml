@@ -1,5 +1,5 @@
-# Dockerfile - Dockerfile to build opendlv.core Docker image.
-# Copyright (C) 2016 Hang Yin
+# docker-compose.yml - Micro-services to monitor one documentation camera.
+# Copyright (C) 2016 Hang Yin, Christian Berger
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,7 +15,19 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# Date: 2016-09-01
+version: '2'
 
-FROM seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
+services:
+    # Micro-service for odcockpit to monitor a running recording session.
+    odcockpit:
+        build: .
+        environment:
+            - DISPLAY=$DISPLAY
+        volumes:
+            - /tmp/.X11-unix:/tmp/.X11-unix
+            - ~/recordings:/opt/recordings
+        user: odv
+        network_mode: host
+        ipc: host
+        command: "/opt/od4/bin/odcockpit --cid=${CID}"
 

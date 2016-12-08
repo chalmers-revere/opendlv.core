@@ -49,13 +49,13 @@ services:
     # Micro-service for proxy-camera.
     proxy-camera:
         build: .
-#        group_add:
-#            - video
+        group_add:
+            - video
         depends_on:
             - odsupercomponent
         devices:
             - "/dev/video0:/dev/video0"
-        user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
+        user: odv
         network_mode: host
         ipc: host
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID} --freq=20"
@@ -69,7 +69,7 @@ services:
             - proxy-camera
         volumes:
             - ~/recordings:/opt/recordings
-        user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
+        user: odv
         network_mode: host
         ipc: host
         working_dir: "/opt/recordings"

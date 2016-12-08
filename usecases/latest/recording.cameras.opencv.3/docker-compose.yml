@@ -10,12 +10,6 @@ version: '2'
 
 #In addition, run "xhost +" to grant access to your Xserver before running docker-compose up.
 ############################
-#To be updated: Root user is required to access video devices. This is why root user is used for proxy1, proxy2, and proxy3. The OpenDaVINCI base image "seresearch/opendavinci-ubuntu-16.04-complete" defines odv as a normal user. It is possible to run proxy1, proxy2, and proxy3 with odv as the user by adding odv to the video user group during docker run:
-
-#docker run -ti --rm --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --ipc=host --user=odv --group-add video --device=/dev/video0:/dev/video0 seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest /opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111  --id=1 --freq=20
-
-#However, currently "--group-add" is not supported by docker-compose yet. This docker-compose file will be updated with "--group-add" when docker-compose starts to include this feature in future releases.
-############################
 #Run the following to replay the recordings (or follow the instructions of another use case replay.videos):
 #docker run -ti --rm --net=host -v $HOME/recordings:/opt/recordings seresearch/opendavinci-ubuntu-16.04-complete:latest /opt/od4/bin/odsupercomponent --cid=111 --verbose=1  --configuration=/opt/recordings/configuration
 
@@ -35,8 +29,10 @@ services:
     #camera 1
     proxy1:
         build: .
+        group_add:
+            - video
         ipc: host
-        user: root
+        user: odv
         devices:
         - "/dev/video0:/dev/video0"
         links:
@@ -46,8 +42,10 @@ services:
     #camera 2
     proxy2:
         build: .
+        group_add:
+            - video
         ipc: host
-        user: root
+        user: odv
         devices:
         - "/dev/video1:/dev/video1"
         links:
@@ -58,8 +56,10 @@ services:
     #camera 3
     proxy3:
         build: .
+        group_add:
+            - video
         ipc: host
-        user: root
+        user: odv
         devices:
         - "/dev/video2:/dev/video2"
         links:
@@ -76,7 +76,7 @@ services:
         - ~/recordings:/opt/recordings
         working_dir: "/opt/recordings"
         ipc: host
-        user: root
+        user: odv
         links:
             - odsupercomponent
             - proxy1
