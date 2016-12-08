@@ -23,6 +23,7 @@ services:
     odsupercomponent:
         build: .
         network_mode: "host"
+        user: odv
         volumes:
         - .:/opt/opendlv.data
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
@@ -33,6 +34,7 @@ services:
         devices:
         - "/dev/i2c-2:/dev/i2c-2"
         network_mode: "host"
+        user: odv
         volumes:
             - .:/opt/opendlv.core.configuration
         depends_on:
