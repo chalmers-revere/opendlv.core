@@ -18,11 +18,6 @@
 #
 # GLOBAL CONFIGURATION
 #
-#global.car = Car.objx
-#global.scenario = Track.scnx
-global.car = file:///opt/opendlv.data/Car.objx
-global.scenario = file:///opt/opendlv.data/Track.scnx
-global.showGrid = 0
 
 # The following attributes define the buffer sizes for recording and
 # replaying. You need to adjust these parameters depending on the
@@ -32,7 +27,16 @@ global.buffer.memorySegmentSize = 2800000 # Size of a memory segment in bytes.
 global.buffer.numberOfMemorySegments = 20 # Number of memory segments.
 
 # The following key describes the list of modules expected to participate in this --cid session.
-global.session.expectedModules = HelloWorldExample,HelloWorldExample:2
+global.session.expectedModules = odrecorderh264,proxy-camera
+
+
+###############################################################################
+###############################################################################
+#
+# CONFIGURATION FOR ODCOCKPIT
+#
+#odcockpit.plugins = configurationviewer,healthstatusviewer,livefeed,logmessage,sessionviewer,sharedimageviewer # List of modules to show in odcockpit; leave blank to show all.
+odcockpit.directoriesForSharedLibaries = /opt # List of directories to search for libodvd*.so files.
 
 
 ###############################################################################
@@ -67,14 +71,51 @@ odsupercomponent.pulsetimeack.yield = 5000 # (in microseconds)
 # List of modules (without blanks) that will not get a pulse message from odsupercomponent.
 odsupercomponent.pulsetimeack.exclude = odcockpit
 
+
 ###############################################################################
 ###############################################################################
 #
-# CONFIGURATION FOR VELODYNE16
+# CONFIGURATION FOR HEALTH
 #
-proxy-velodyne16.pointCloudOption = 2 #0: shared point cloud (SPC) only; 1: compact point cloud (CPC) only; 2: both SPC and CPC
+health.script = ./checkHealth.sh
+health.sleep = 60 # Sleep between health checks in seconds
+
+
+###############################################################################
+###############################################################################
+#
+# CONFIGURATION FOR ODRECORDERH264
+#
+#odrecorderh264.output = file://recorder.rec # If this parameter is not present, odrecorderh264 will autogenerate a filename.
+odrecorderh264.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. start and stop recording)
+odrecorderh264.dumpSharedData = 0 # 0 = do not dump shared images and shared images, 1 = otherwise
+odrecorderh264.lossless = 1 # Set to 1 to enable h264 lossless encoding.
+odrecorderh264.portbaseforchildprocesses = 29000 # Every spawned child processes is connecting to the parent process via TCP using the base port plus its increasing ID.
+
+
+###############################################################################
+###############################################################################
+#
+# CONFIGURATION FOR PROXY
+#
+proxy-camera.camera.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera.camera.name = DocumentationCamera0
+proxy-camera.camera.type = OpenCV   # OpenCV or UEYE.
+proxy-camera.camera.id = 0          # Select here the proper ID for OpenCV.
+proxy-camera.camera.width = 640     # 752-UEYE, 640-OpenCV.
+proxy-camera.camera.height = 480
+proxy-camera.camera.bpp = 3         # 3 = openCV, 1 = UEYE (untested).
+proxy-camera.camera.flipped = 1     # 1 = flipped image, 0 = not flipped image.
+
+###############################################################################
+################################################################################
+##
+## CONFIGURATION FOR VELODYNE16
+##
+#
+proxy-velodyne16.pointCloudOption = 0 #0: shared point cloud (SPC) only; 1: compact point cloud (CPC) only; 2: both SPC and CPC
 proxy-velodyne16.sharedMemory.name = velodyne16SM
-#The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000->proxy-velodyne16.sharedMemory.size = 480000 
+##The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000->proxy-velodyne16.sharedMemory.size = 480000 
 proxy-velodyne16.sharedMemory.size = 480000
 proxy-velodyne16.udpReceiverIP = 0.0.0.0
 proxy-velodyne16.udpPort = 2368
@@ -87,5 +128,4 @@ proxy-velodyne16.calibration = VLP-16.xml
 #
 
 PcapReplay.readpcap = sampleLong.pcap
-PcapReplay.bufferSize = 4000
-
+PcapReplay.bufferSize = 4000    
