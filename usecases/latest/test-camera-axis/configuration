@@ -77,10 +77,8 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 # CONFIGURATION FOR PROXY
 #
-proxy-camera-axis.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera-axis.name = AxisCamera0
 
-proxy-camera-axis:0.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera-axis:0.debug = 1               # 1 = show recording (requires X11), 0 = otherwise.
 proxy-camera-axis:0.name = front-left
 proxy-camera-axis:0.address = 10.42.42.90
 proxy-camera-axis:0.username = root
@@ -89,7 +87,7 @@ proxy-camera-axis:0.width = 1280
 proxy-camera-axis:0.height = 720
 proxy-camera-axis:0.calibrationfile = /opt/opendlv.core.configuration/file.yml  # This file must be accessible from within the Docker container.
 
-proxy-camera-axis:1.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera-axis:1.debug = 1               # 1 = show recording (requires X11), 0 = otherwise.
 proxy-camera-axis:1.name = front-right
 proxy-camera-axis:1.address = 10.42.42.91
 proxy-camera-axis:1.username = root

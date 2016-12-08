@@ -20,6 +20,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 
 #include "ProxyVelodyne16.h"
 #include "opendavinci/odcore/base/KeyValueConfiguration.h"
@@ -38,6 +39,7 @@ using namespace odcore::io::udp;
 
 ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv)
     : DataTriggeredConferenceClientModule(argc, argv, "proxy-velodyne16")
+    , m_pointCloudOption(0)
     , m_memoryName()
     , m_memorySize(0)
     , m_udpReceiverIP()
@@ -49,16 +51,31 @@ ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv)
 ProxyVelodyne16::~ProxyVelodyne16() {}
 
 void ProxyVelodyne16::setUp() {
-    m_memoryName = getKeyValueConfiguration().getValue< string >("proxy-velodyne16.sharedMemory.name");
-    m_memorySize = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.sharedMemory.size");
-    m_velodyneSharedMemory = SharedMemoryFactory::createSharedMemory(m_memoryName, m_memorySize);
-
     m_udpReceiverIP = getKeyValueConfiguration().getValue< string >("proxy-velodyne16.udpReceiverIP");
     m_udpPort = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.udpPort");
     m_udpreceiver = UDPFactory::createUDPReceiver(m_udpReceiverIP, m_udpPort);
 
-    m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration")));
-
+    m_pointCloudOption = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.pointCloudOption");
+    std::cout<<"Point cloud option:"<<m_pointCloudOption<<std::endl;
+    
+    if(m_pointCloudOption==0 || m_pointCloudOption==2){
+        m_memoryName = getKeyValueConfiguration().getValue< string >("proxy-velodyne16.sharedMemory.name");
+        m_memorySize = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.sharedMemory.size");
+        m_velodyneSharedMemory = SharedMemoryFactory::createSharedMemory(m_memoryName, m_memorySize);
+        if(m_pointCloudOption==0){
+            m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration"),false));
+        }
+        else{
+            m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration"),true));
+        }
+    }
+    else if(m_pointCloudOption==1){
+        m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(getConference()));
+    }
+    else{
+        throw std::invalid_argument( "Invalid point cloud option! 0: shared point cloud (SPC) only; 1: compact point cloud (CPC) only; 2: both SPC and CPC" );
+    }
+    
     m_udpreceiver->setStringListener(m_velodyne16decoder.get());
     // Start receiving bytes.
     m_udpreceiver->start();
