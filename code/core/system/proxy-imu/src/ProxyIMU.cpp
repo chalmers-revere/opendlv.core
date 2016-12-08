@@ -91,9 +91,13 @@ void ProxyIMU::setUp() {
     double yaw = kv.getValue<double>("proxy-imu.mount.yaw")*M_PI/180.0;
     std::vector<double> const mountRotation({roll, pitch, yaw});
     std::string const type = kv.getValue<std::string>("proxy-imu.type");
-    std::string calibrationFile = "";
+    
     bool const lockCalibration = (kv.getValue< int32_t >("proxy-imu.lockcalibration") == 1);
     m_debug = (kv.getValue< int32_t >("proxy-imu.debug") == 1);
+    
+
+
+    std::string calibrationFile = "";
     try {
         calibrationFile = kv.getValue<std::string>("proxy-imu.calibrationfile");
     }
@@ -102,12 +106,14 @@ void ProxyIMU::setUp() {
     }
 
     if (type.compare("pololu.altimu10") == 0) {
-        std::string const deviceNode =
-        kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
-
-        m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, mountRotation, calibrationFile, lockCalibration, m_debug));
+        std::string const deviceNode = kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
+        std::string const addressType = kv.getValue<std::string>("proxy-imu.pololu.altimu10.addresstype");
+        if(addressType.compare("high") || addressType.compare("low")) {
+            m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, addressType, mountRotation, calibrationFile, lockCalibration, m_debug));
+        } else {
+            std::cerr << "[proxy-imu] Address type invalid. Must be either high xor low." << std::endl; 
+        }
     }
-
     if (m_device.get() == nullptr) {
         std::cerr << "[proxy-imu] No valid device driver defined."
                   << std::endl;

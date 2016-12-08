@@ -37,7 +37,7 @@ namespace proxy {
 
 class PololuAltImu10Device {
    public:
-    PololuAltImu10Device(std::string const &, std::vector<double> const &, std::string &, bool const &, bool &);
+    PololuAltImu10Device(std::string const &, std::string const &, std::vector<double> const &, std::string &, bool const &, bool &);
 
     PololuAltImu10Device(PololuAltImu10Device const &) = delete;
 
@@ -58,8 +58,6 @@ class PololuAltImu10Device {
     opendlv::proxy::GyroscopeReading ReadGyroscope();
 
     bool IsInitialized() const;
-
-
 
    private:
     void I2cWriteRegister(uint8_t, uint8_t);
@@ -84,6 +82,10 @@ class PololuAltImu10Device {
 
     int16_t m_deviceFile;
 
+    std::string m_addressType;
+
+    uint8_t m_instrumentAdress[3];
+
     Eigen::Matrix3d m_rotationMatrix;
 
     std::string m_calibrationFile;
@@ -93,8 +95,6 @@ class PololuAltImu10Device {
     float m_magnetometerMaxVal[3];
 
     float m_magnetometerMinVal[3];
-
-    // float m_heavyAcc[3];
 
     bool m_initialized;
 

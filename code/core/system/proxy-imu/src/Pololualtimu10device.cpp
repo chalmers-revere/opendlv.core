@@ -39,8 +39,10 @@ namespace proxy {
  * Constructor for PololuAltImuV5 device interfacing through I2C.
  *
  */
-PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::vector<double> const &a_mountRotation, std::string &a_calibrationFile, bool const &a_lockCalibration, bool &a_debug)
+PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::string const &a_adressType, std::vector<double> const &a_mountRotation, std::string &a_calibrationFile, bool const &a_lockCalibration, bool &a_debug)
     : m_deviceFile()
+    , m_addressType()
+    , m_instrumentAdress{0,0,0}
     , m_rotationMatrix()
     , m_calibrationFile(a_calibrationFile)
     , m_lockCalibration(a_lockCalibration)
@@ -59,6 +61,22 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
     std::cout << "[Pololu Altimu] I2C bus " << a_deviceName << " opened successfully."
               << std::endl;
 
+    if(a_adressType.compare("high")) {
+        m_addressType = a_adressType;
+        m_instrumentAdress[0] = 0x1e;
+        m_instrumentAdress[1] = 0x5d;
+        m_instrumentAdress[2] = 0x6b;
+
+    } else if(a_adressType.compare("low")){
+        m_addressType = a_adressType;
+        m_instrumentAdress[0] = 0x1d;
+        m_instrumentAdress[1] = 0x5c;
+        m_instrumentAdress[2] = 0x6a;
+    } else {
+        std::cerr << "[Pololu Altimu] Address type invalid. Must be either high xor low." << std::endl; 
+    }
+
+
     initLSM6();
     initLIS3();
     initLPS25();
@@ -70,7 +88,6 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
     Eigen::Matrix3d rX;
     Eigen::Matrix3d rY;
     Eigen::Matrix3d rZ;
-
     rX <<
         1,  0,  0,
         0,  std::cos(roll), -std::sin(roll),
@@ -85,7 +102,7 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
         0,  0,  1;
     m_rotationMatrix = rX*rY*rZ;
     if(m_debug){
-        std::cout << "Rotation matrix: \n" << m_rotationMatrix << std::endl;
+        std::cout << "[Pololu Altimu] Rotation matrix: \n" << m_rotationMatrix << std::endl;
     }
     m_initialized = true;
 }
@@ -165,27 +182,27 @@ void PololuAltImu10Device::saveCalibrationFile() {
 }
 
 void PololuAltImu10Device::accessLSM6() {
-    uint8_t address = 0x6b;
+    uint8_t address = m_instrumentAdress[2];
     if (ioctl(m_deviceFile, I2C_SLAVE, address) < 0) {
-        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LSM6 / Accel /Gyro)"
+        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LSM6 - Accelerometer and Gyroscope)"
                   << std::endl;
         return;
     }
 }
 
 void PololuAltImu10Device::accessLIS3() {
-    uint8_t address = 0x1E;
+    uint8_t address = m_instrumentAdress[0];
     if (ioctl(m_deviceFile, I2C_SLAVE, address) < 0) {
-        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LIS3 / Magnetometer)"
+        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LIS3 - Magnetometer)"
                   << std::endl;
         return;
     }
 }
 
 void PololuAltImu10Device::accessLPS25() {
-    uint8_t address = 0x5d;
+    uint8_t address = m_instrumentAdress[1];
     if (ioctl(m_deviceFile, I2C_SLAVE, address) < 0) {
-        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LPS25 / Pressure)"
+        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LPS25 - Pressure)"
                   << std::endl;
         return;
     }
@@ -485,10 +502,11 @@ void PololuAltImu10Device::CalibrateMagnetometer(float* a_val)
                 m_magnetometerMinVal[i] = a_val[i];
             }
         }
-        //Hard iron calibration
-        a_val[i] -= (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i]) / 2.0f ;
-        //Soft iron calibration
-        // a_val[i]  = (a_val[i] - m_magnetometerMinVal[i]) / (m_magnetometerMaxVal[i] - m_magnetometerMinVal[i]) * 2 - 1;
+
+        //Hard iron calibration centering the value around 0 and somewhat within range of [-1,1]
+        float offset = (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i]) / 2.0f ;
+        float scale = 1.0f/(m_magnetometerMaxVal[i]+offset);
+        a_val[i] = (a_val[i]-offset)/(scale);
     }
     // std::cout << "Calibrated values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
     // std::cout << "Heading: " << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
