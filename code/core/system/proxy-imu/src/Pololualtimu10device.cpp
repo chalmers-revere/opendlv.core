@@ -505,7 +505,7 @@ void PololuAltImu10Device::CalibrateMagnetometer(float* a_val)
 
         //Hard iron calibration centering the value around 0 and somewhat within range of [-1,1]
         float offset = (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i]) / 2.0f ;
-        float scale = 1.0f/(m_magnetometerMaxVal[i]+offset);
+        float scale = 1.0f/(m_magnetometerMaxVal[i]-offset);
         a_val[i] = (a_val[i]-offset)/(scale);
     }
     // std::cout << "Calibrated values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
