@@ -232,6 +232,14 @@ bool PololuAltImu10Device::loadCalibrationFile() {
                 for(uint8_t i = 0; i < 3; i++) { 
                     m_magnetometerMinVal[i] = std::stof(strList[i+1]);
                 }
+            } else if(strList[0].compare("m_accelerometerMaxVal") == 0) {
+                for(uint8_t i = 0; i < 3; i++) { 
+                    m_accelerometerMaxVal[i] = std::stof(strList[i+1]);
+                }
+            } else if(strList[0].compare("m_accelerometerMinVal") == 0) {
+                for(uint8_t i = 0; i < 3; i++) { 
+                    m_accelerometerMinVal[i] = std::stof(strList[i+1]);
+                }
             }
         }
 
@@ -239,7 +247,9 @@ bool PololuAltImu10Device::loadCalibrationFile() {
         if(m_debug) {
             std::cout << "\nLoaded:\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] 
             << "," << m_magnetometerMaxVal[2] << ")\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] 
-            << "," << m_magnetometerMinVal[2] <<")";
+            << "," << m_magnetometerMinVal[2] <<")\nm_accelerometerMaxVal(" << m_accelerometerMaxVal[0] << "," << m_accelerometerMaxVal[1] 
+            << "," << m_accelerometerMaxVal[2] << ")\nm_accelerometerMaxVal(" << m_accelerometerMinVal[0] << "," << m_accelerometerMinVal[1] 
+            << "," << m_accelerometerMinVal[2] << ")" << std::endl;
         }
         std::cout << std::endl;
         file.close();
@@ -267,11 +277,23 @@ void PololuAltImu10Device::saveCalibrationFile() {
             file << " " << m_magnetometerMinVal[i];
         }
         file << std::endl;
+        file << "m_accelerometerMaxVal";
+        for(uint8_t i = 0; i < 3; i++) {
+            file << " " << m_accelerometerMaxVal[i];
+        }
+        file << std::endl;
+        file << "m_accelerometerMinVal";
+        for(uint8_t i = 0; i < 3; i++) {
+            file << " " << m_accelerometerMinVal[i];
+        }
+        file << std::endl;
         std::cout << "[Pololu Altimu] Saved the calibration settings.";
         if(m_debug) {
             std::cout << "\nSaved:\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] 
-            << "," << m_magnetometerMaxVal[2] << "),\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] 
-            << "," << m_magnetometerMinVal[2] <<")";
+            << "," << m_magnetometerMaxVal[2] << ")\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] 
+            << "," << m_magnetometerMinVal[2] <<")\nm_accelerometerMaxVal(" << m_accelerometerMaxVal[0] << "," << m_accelerometerMaxVal[1] 
+            << "," << m_accelerometerMaxVal[2] << ")\nm_accelerometerMaxVal(" << m_accelerometerMinVal[0] << "," << m_accelerometerMinVal[1] 
+            << "," << m_accelerometerMinVal[2] << ")" << std::endl;
         }
         std::cout << std::endl;
     } else {
@@ -539,8 +561,6 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
 
 void PololuAltImu10Device::CalibrateMagnetometer(float* a_val)
 {
-
-
     // std::cout << "Raw values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
     for(uint8_t i = 0; i < 3; i++) {
         if(!m_lockCalibration){
@@ -572,6 +592,22 @@ void PololuAltImu10Device::CalibrateMagnetometer(float* a_val)
 
 }
 
+void PololuAltImu10Device::CalibrateAccelerometer (float* a_val) {
+    for(uint8_t i = 0; i < 3; i++) {
+        if(!m_lockCalibration){
+            if(a_val[i] > m_accelerometerMaxVal[i] ) {
+                m_accelerometerMaxVal[i] = a_val[i];
+            } else if(a_val[i] < m_accelerometerMinVal[i]) {
+                m_accelerometerMinVal[i] = a_val[i];
+            }
+        }
+
+        //Hard iron calibration centering the value around 0 and somewhat within range of [-1,1]
+        float offset = (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i]) / 2.0f ;
+        float scale = 9.82f/m_accelerometerMaxVal[i];
+        a_val[i] = (a_val[i]-offset);
+    }
+}
 
 opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
     accessLSM6();
