@@ -85,44 +85,6 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
 
     if(loadCalibrationFile()) {
         initCalibration();
-        //Initial values for calibration
-        accessLIS3();
-        uint8_t buffer[] = {lis3RegAddr::OUT_X_L | 0x80};
-
-        uint8_t status = write(m_deviceFile, buffer, 1);
-        if (status != 1) {
-            std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Magnetometer)" << std::endl;
-        }
-
-        uint8_t outBuffer[6];
-        status = read(m_deviceFile, outBuffer, 6);
-        if (status != 6) {
-            std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Magnetometer)" << std::endl;
-        }
-
-        uint8_t xlm = outBuffer[0];
-        uint8_t xhm = outBuffer[1];
-        uint8_t ylm = outBuffer[2];
-        uint8_t yhm = outBuffer[3];
-        uint8_t zlm = outBuffer[4];
-        uint8_t zhm = outBuffer[5];
-
-        int16_t x = (int16_t)(xhm << 8 | xlm);
-        int16_t y = (int16_t)(yhm << 8 | ylm);
-        int16_t z = (int16_t)(zhm << 8 | zlm);
-
-        //F
-        //FS=±4 gauss  --> 6842 LSB/gauss
-        float scaledX = static_cast< double >(x) / 6842.0;
-        float scaledY = static_cast< double >(y) / 6842.0;
-        float scaledZ = static_cast< double >(z) / 6842.0;
-
-        m_magnetometerMinVal[0] = scaledX;
-        m_magnetometerMinVal[1] = scaledY;
-        m_magnetometerMinVal[2] = scaledZ;
-        m_magnetometerMaxVal[0] = scaledX;
-        m_magnetometerMaxVal[1] = scaledY;
-        m_magnetometerMaxVal[2] = scaledZ;
     }
 
     double roll = a_mountRotation[0];
@@ -155,7 +117,7 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
 PololuAltImu10Device::~PololuAltImu10Device() {
 }
 
-void Pololualtimu10Device::initCalibration()
+void PololuAltImu10Device::initCalibration()
 {
     //Initial values for calibration
 
@@ -168,7 +130,6 @@ void Pololualtimu10Device::initCalibration()
         uint8_t status = write(m_deviceFile, buffer, 1);
         if (status != 1) {
             std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Accelerometer)" << std::endl;
-            return nullptr;
         }
 
         uint8_t outBuffer[6];
