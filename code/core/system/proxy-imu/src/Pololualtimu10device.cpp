@@ -71,7 +71,7 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
 
     } else if(a_adressType.compare("low")){
         m_addressType = a_adressType;
-        m_instrumentAdress[0] = 0x1d;
+        m_instrumentAdress[0] = 0x1c;
         m_instrumentAdress[1] = 0x5c;
         m_instrumentAdress[2] = 0x6a;
     } else {
@@ -603,9 +603,9 @@ void PololuAltImu10Device::CalibrateAccelerometer (float* a_val) {
         }
 
         //Hard iron calibration centering the value around 0 and somewhat within range of [-1,1]
-        float offset = (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i]) / 2.0f ;
-        float scale = 9.82f/m_accelerometerMaxVal[i];
-        a_val[i] = (a_val[i]-offset);
+        float offset = (m_accelerometerMinVal[i] + m_accelerometerMaxVal[i]) / 2.0f ;
+        float scale = 9.82f/(m_accelerometerMaxVal[i]-offset);
+        a_val[i] = (a_val[i]-offset)/scale;
     }
 }
 

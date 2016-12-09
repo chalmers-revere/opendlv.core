@@ -80,6 +80,8 @@ class PololuAltImu10Device {
 
     void CalibrateMagnetometer(float*);
 
+    void CalibrateAccelerometer(float*);
+
     Eigen::Vector3f Rotate(Eigen::Vector3f, Eigen::Matrix3d);
 
     int16_t m_deviceFile;
