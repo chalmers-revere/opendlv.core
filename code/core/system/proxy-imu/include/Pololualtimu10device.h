@@ -37,7 +37,7 @@ namespace proxy {
 
 class PololuAltImu10Device {
    public:
-    PololuAltImu10Device(std::string const &, std::string const &, std::vector<double> const &, std::string &, bool const &, bool &);
+    PololuAltImu10Device(std::string const &, std::string const &, std::vector<double> const &, uint32_t const &, std::string &, bool const &, bool &);
 
     PololuAltImu10Device(PololuAltImu10Device const &) = delete;
 
@@ -47,13 +47,23 @@ class PololuAltImu10Device {
 
     void saveCalibrationFile();
 
+    std::vector<float> GetAcceleration();
+
     opendlv::proxy::AccelerometerReading ReadAccelerometer();
+
+    float GetAltitude();
 
     opendlv::proxy::AltimeterReading ReadAltimeter();
 
+    float GetTemperature();
+
     opendlv::proxy::TemperatureReading ReadTemperature();
 
+    std::vector<float> GetMagneticField();
+
     opendlv::proxy::MagnetometerReading ReadMagnetometer();
+
+    std::vector<float> GetAngularVelocity();
 
     opendlv::proxy::GyroscopeReading ReadGyroscope();
 
@@ -78,9 +88,9 @@ class PololuAltImu10Device {
 
     void initLPS25();
 
-    void CalibrateMagnetometer(float*);
+    void CalibrateMagnetometer(std::vector<float>*);
 
-    void CalibrateAccelerometer(float*);
+    void CalibrateAccelerometer(std::vector<float>*);
 
     Eigen::Vector3f Rotate(Eigen::Vector3f, Eigen::Matrix3d);
 
@@ -103,6 +113,10 @@ class PololuAltImu10Device {
     float m_magnetometerMaxVal[3];
 
     float m_magnetometerMinVal[3];
+
+    float m_gyroscopeAvgVal[3];
+
+    uint32_t const m_calibrationNumberOfSamples;
 
     bool m_initialized;
 
