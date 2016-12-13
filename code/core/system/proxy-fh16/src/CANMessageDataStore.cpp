@@ -35,7 +35,7 @@ namespace proxy {
 
 using namespace std;
 
-CanMessageDataStore::CanMessageDataStore(shared_ptr< automotive::odcantools::CANDevice > canDevice, bool readOnly /* =false */)
+CanMessageDataStore::CanMessageDataStore(shared_ptr< automotive::odcantools::CANDevice > canDevice, bool readOnly = true)
     : automotive::odcantools::MessageToCANDataStore(canDevice)
     , m_dataStoreMutex()
     , m_readOnlyMode(readOnly)
