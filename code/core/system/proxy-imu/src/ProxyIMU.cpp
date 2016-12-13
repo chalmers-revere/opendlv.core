@@ -94,7 +94,7 @@ void ProxyIMU::setUp() {
     uint32_t const calibrationNumberOfSamples = kv.getValue<uint32_t>("proxy-imu.calibration_number_of_samples");
     bool const lockCalibration = (kv.getValue< int32_t >("proxy-imu.lockcalibration") == 1);
     m_debug = (kv.getValue< int32_t >("proxy-imu.debug") == 1);
-    std::string const calibrationFile = kv.getValue<std::string>("proxy-imu.calibrationfile");
+    std::string const calibrationFile = kv.getValue<std::string>("proxy-imu.calibration_file");
 
     if (type.compare("pololu.altimu10") == 0) {
         std::string const deviceNode = kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
