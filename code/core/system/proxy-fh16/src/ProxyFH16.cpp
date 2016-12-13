@@ -54,6 +54,7 @@ ProxyFH16::ProxyFH16(const int &argc, char **argv)
     , m_recorderMappedCanMessages()
     , m_device()
     , m_canMessageDataStore()
+    , m_readOnlyMode(false)
     , m_revereFh16CanMessageMapping()
     , m_startOfRecording()
     , m_ASCfile()
@@ -63,6 +64,13 @@ ProxyFH16::ProxyFH16(const int &argc, char **argv)
 ProxyFH16::~ProxyFH16() {}
 
 void ProxyFH16::setUp() {
+    bool read=false;
+    uint32_t temp = getKeyValueConfiguration().getOptionalValue< uint32_t >("proxy-fh16.read-only",read);
+    if (read && temp==1){
+        m_readOnlyMode=true;
+        cout << "[" << getName() << "] READ-ONLY mode engaged! No data will be sent to the vehicle." << endl;
+    }
+    
     const string DEVICE_NODE = getKeyValueConfiguration().getValue< string >("proxy-fh16.devicenode");
 
     // Try to open CAN device and register this instance as receiver for GenericCANMessages.
@@ -95,7 +103,7 @@ void ProxyFH16::setUp() {
 
         // Create a data sink that automatically receives all Containers and
         // selectively relays them based on the Container type to the CAN device.
-        m_canMessageDataStore = unique_ptr< CanMessageDataStore >(new CanMessageDataStore(m_device));
+        m_canMessageDataStore = unique_ptr< CanMessageDataStore >(new CanMessageDataStore(m_device,m_readOnlyMode));
         addDataStoreFor(*m_canMessageDataStore);
 
         // Start the wrapped CAN device to receive CAN messages concurrently.

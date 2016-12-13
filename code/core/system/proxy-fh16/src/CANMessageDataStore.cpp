@@ -35,9 +35,10 @@ namespace proxy {
 
 using namespace std;
 
-CanMessageDataStore::CanMessageDataStore(shared_ptr< automotive::odcantools::CANDevice > canDevice)
+CanMessageDataStore::CanMessageDataStore(shared_ptr< automotive::odcantools::CANDevice > canDevice, bool readOnly = true)
     : automotive::odcantools::MessageToCANDataStore(canDevice)
     , m_dataStoreMutex()
+    , m_readOnlyMode(readOnly)
     , m_enabled(false)
     , m_overridden(false)
     , m_overrideToggleStatus(true) {
@@ -101,7 +102,7 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
             odcore::data::Container brakeRequestContainer(brakeRequest);
             canmapping::opendlv::proxy::reverefh16::BrakeRequest brakeRequestMapping;
             automotive::GenericCANMessage genericCanMessage = brakeRequestMapping.encode(brakeRequestContainer);
-            m_canDevice->write(genericCanMessage);
+            writeToCANDevice(genericCanMessage);
         } else {
             opendlv::proxy::reverefh16::AccelerationRequest accelerationRequest;
             accelerationRequest.setEnableRequest(m_enabled);
@@ -112,7 +113,7 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
             odcore::data::Container accelerationRequestContainer(accelerationRequest);
             canmapping::opendlv::proxy::reverefh16::AccelerationRequest accelerationRequestMapping;
             automotive::GenericCANMessage genericCanMessage = accelerationRequestMapping.encode(accelerationRequestContainer);
-            m_canDevice->write(genericCanMessage);
+            writeToCANDevice(genericCanMessage);
         }
 
         const float steering = actuationRequest.getSteering();
@@ -126,10 +127,16 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
 
         canmapping::opendlv::proxy::reverefh16::SteeringRequest steeringRequestMapping;
         automotive::GenericCANMessage genericCanMessage = steeringRequestMapping.encode(steeringRequestContainer);
-        m_canDevice->write(genericCanMessage);
+        writeToCANDevice(genericCanMessage);
     }
 }
 
+    void CanMessageDataStore::writeToCANDevice(const automotive::GenericCANMessage& genericCanMessage)
+    {
+        if(! m_readOnlyMode) {
+            m_canDevice->write(genericCanMessage);
+        }
+    }
 } // proxy
 } // system
 } // core
