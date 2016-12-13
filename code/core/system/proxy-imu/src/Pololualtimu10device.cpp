@@ -145,7 +145,7 @@ void PololuAltImu10Device::initCalibration() {
     std::cout << "[Pololu Altimu] Begin sampling for offset calibration of gyroscope." << std::endl;
     for(uint32_t i = 0; i < m_calibrationNumberOfSamples; i++) {
         std::vector<float> gyroscopeSampleReading = GetAngularVelocity();
-        for(uint8_t j = 0; j < gyroscopeSamples.size(); j++) {
+        for(uint8_t j = 0; j < gyroscopeSampleReading.size(); j++) {
             gyroscopeSamples(i,j) = gyroscopeSampleReading.at(j);                  
         }
     } 
