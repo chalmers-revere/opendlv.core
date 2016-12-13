@@ -19,9 +19,9 @@
 
 #include <fcntl.h>
 #include <linux/i2c-dev.h>
-#include <math.h>
 #include <sys/ioctl.h>
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
 
@@ -38,7 +38,7 @@ namespace proxy {
  * Constructor for PololuAltImuV5 device interfacing through I2C.
  *
  */
-PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::string const &a_adressType, std::vector<double> const &a_mountRotation, std::string &a_calibrationFile, uint32_t const &a_calibrationNumberOfSamples, bool const &a_lockCalibration, bool &a_debug)
+PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::string const &a_adressType, std::vector<double> const &a_mountRotation, uint32_t const &a_calibrationNumberOfSamples, std::string const &a_calibrationFile, bool const &a_lockCalibration, bool &a_debug)
     : m_deviceFile()
     , m_addressType()
     , m_instrumentAdress{0,0,0}
@@ -117,8 +117,7 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
 PololuAltImu10Device::~PololuAltImu10Device() {
 }
 
-void PololuAltImu10Device::initCalibration()
-{
+void PololuAltImu10Device::initCalibration() {
     //Initial values for calibration
 
     //Acceleration
@@ -146,13 +145,14 @@ void PololuAltImu10Device::initCalibration()
     std::cout << "[Pololu Altimu] Begin sampling for offset calibration of gyroscope." << std::endl;
     for(uint32_t i = 0; i < m_calibrationNumberOfSamples; i++) {
         std::vector<float> gyroscopeSampleReading = GetAngularVelocity();
-        for(uint8_t j = 0; j < gyroscopeSamples.size(), j++) {
+        for(uint8_t j = 0; j < gyroscopeSamples.size(); j++) {
             gyroscopeSamples(i,j) = gyroscopeSampleReading.at(j);                  
         }
     } 
     std::cout << "[Pololu Altimu] Done sampling for offset calibration of gyroscope." << std::endl;
-    
-
+    m_gyroscopeAvgVal[0] = gyroscopeSamples.col(0).mean();
+    m_gyroscopeAvgVal[1] = gyroscopeSamples.col(1).mean();
+    m_gyroscopeAvgVal[2] = gyroscopeSamples.col(2).mean();
 }
 
 bool PololuAltImu10Device::loadCalibrationFile() {
@@ -184,18 +184,23 @@ bool PololuAltImu10Device::loadCalibrationFile() {
                 for(uint8_t i = 0; i < 3; i++) { 
                     m_accelerometerMinVal[i] = std::stof(strList[i+1]);
                 }
+            } else if(strList[0].compare("m_gyroscopeAvgVal") == 0) {
+                for(uint8_t i = 0; i < 3; i++) { 
+                    m_gyroscopeAvgVal[i] = std::stof(strList[i+1]);
+                }
             }
         }
 
-        std::cout << "[Pololu Altimu] Loaded the calibration settings.";
+        std::cout << "[Pololu Altimu] Loaded the calibration settings." << std::endl;
         if(m_debug) {
-            std::cout << "\nLoaded:\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] 
-            << "," << m_magnetometerMaxVal[2] << ")\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] 
-            << "," << m_magnetometerMinVal[2] <<")\nm_accelerometerMaxVal(" << m_accelerometerMaxVal[0] << "," << m_accelerometerMaxVal[1] 
-            << "," << m_accelerometerMaxVal[2] << ")\nm_accelerometerMaxVal(" << m_accelerometerMinVal[0] << "," << m_accelerometerMinVal[1] 
-            << "," << m_accelerometerMinVal[2] << ")" << std::endl;
+            std::cout << "\nLoaded:"
+            << "\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] << "," << m_magnetometerMaxVal[2] << ")"
+            << "\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] << "," << m_magnetometerMinVal[2] << ")"
+            << "\nm_accelerometerMaxVal(" << m_accelerometerMaxVal[0] << "," << m_accelerometerMaxVal[1] << "," << m_accelerometerMaxVal[2] << ")"
+            << "\nm_accelerometerMinVal(" << m_accelerometerMinVal[0] << "," << m_accelerometerMinVal[1] << "," << m_accelerometerMinVal[2] << ")" 
+            << "\nm_gyroscopeAvgVal(" << m_gyroscopeAvgVal[0] << "," << m_gyroscopeAvgVal[1] << "," << m_gyroscopeAvgVal[2] << ")" 
+            << std::endl;
         }
-        std::cout << std::endl;
         file.close();
         return 0;
     } else {
@@ -231,15 +236,21 @@ void PololuAltImu10Device::saveCalibrationFile() {
             file << " " << m_accelerometerMinVal[i];
         }
         file << std::endl;
-        std::cout << "[Pololu Altimu] Saved the calibration settings.";
-        if(m_debug) {
-            std::cout << "\nSaved:\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] 
-            << "," << m_magnetometerMaxVal[2] << ")\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] 
-            << "," << m_magnetometerMinVal[2] <<")\nm_accelerometerMaxVal(" << m_accelerometerMaxVal[0] << "," << m_accelerometerMaxVal[1] 
-            << "," << m_accelerometerMaxVal[2] << ")\nm_accelerometerMaxVal(" << m_accelerometerMinVal[0] << "," << m_accelerometerMinVal[1] 
-            << "," << m_accelerometerMinVal[2] << ")" << std::endl;
+        file << "m_gyroscopeAvgVal";
+        for(uint8_t i = 0; i < 3; i++) {
+            file << " " << m_gyroscopeAvgVal[i];
         }
-        std::cout << std::endl;
+        file << std::endl;
+        std::cout << "[Pololu Altimu] Saved the calibration settings." << std::endl;
+        if(m_debug) {
+            std::cout << "\nSaved:"
+            << "\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] << "," << m_magnetometerMaxVal[2] << ")"
+            << "\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] << "," << m_magnetometerMinVal[2] << ")"
+            << "\nm_accelerometerMaxVal(" << m_accelerometerMaxVal[0] << "," << m_accelerometerMaxVal[1] << "," << m_accelerometerMaxVal[2] << ")"
+            << "\nm_accelerometerMinVal(" << m_accelerometerMinVal[0] << "," << m_accelerometerMinVal[1] << "," << m_accelerometerMinVal[2] << ")" 
+            << "\nm_gyroscopeAvgVal(" << m_gyroscopeAvgVal[0] << "," << m_gyroscopeAvgVal[1] << "," << m_gyroscopeAvgVal[2] << ")" 
+            << std::endl;
+        }
     } else {
         std::cout << "[Pololu Altimu] Could not save the calibration settings." << std::endl;
     }
@@ -511,10 +522,8 @@ std::vector<float> PololuAltImu10Device::GetMagneticField() {
     float scaledX = static_cast< double >(x) / 6842.0;
     float scaledY = static_cast< double >(y) / 6842.0;
     float scaledZ = static_cast< double >(z) / 6842.0;
-    
     return std::vector<float>{scaledX,scaledY,scaledZ};
 }
-
 
 opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     std::vector<float> reading = GetMagneticField();
@@ -529,22 +538,21 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     return magnetometerReading;
 }
 
-void PololuAltImu10Device::CalibrateMagnetometer(std::vector<float>* a_val)
-{
+void PololuAltImu10Device::CalibrateMagnetometer(std::vector<float>* a_val) {
     // std::cout << "Raw values: "<< (*a_val)[0] << "," << (*a_val)[1]<< "," <<(*a_val)[2] <<  std::endl;
     for(uint8_t i = 0; i < 3; i++) {
         if(!m_lockCalibration){
-            if((*a_val)[i] > m_magnetometerMaxVal[i] ) {
-                m_magnetometerMaxVal[i] = (*a_val)[i];
-            } else if((*a_val)[i] < m_magnetometerMinVal[i]) {
-                m_magnetometerMinVal[i] = (*a_val)[i];
+            if((*a_val).at(i) > m_magnetometerMaxVal[i]) {
+                m_magnetometerMaxVal[i] = (*a_val).at(i);
+            } else if((*a_val).at(i) < m_magnetometerMinVal[i]) {
+                m_magnetometerMinVal[i] = (*a_val).at(i);
             }
         }
 
         //Hard iron calibration centering the value around 0 and somewhat within range of [-1,1]
-        float offset = (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i]) / 2.0f ;
+        float offset = (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i])/ 2.0f ;
         float scale = 1.0f/(m_magnetometerMaxVal[i]-offset);
-        (*a_val)[i] = ((*a_val)[i]-offset)/(scale);
+        (*a_val)[i] = ((*a_val).at(i)-offset)/(scale);
     }
     // std::cout << "Calibrated values: "<< (*a_val)[0] << "," << (*a_val)[1]<< "," <<(*a_val)[2] <<  std::endl;
     // std::cout << "Heading: " << 180 * atan2((*a_val)[1],(*a_val)[0]) / M_PI << std::endl;
@@ -597,29 +605,34 @@ std::vector<float> PololuAltImu10Device::GetAngularVelocity() {
     //a.z = ~a.z + 1;
 
     //FS = ±245 --> 8.75 mdps/LSB
-    static double PI = 3.14159265359;
-    //Calibration also needed.
-    float scaledX = (((8.75 * static_cast< double >(x)) / 1000) / 180) * PI;
-    float scaledY = (((8.75 * static_cast< double >(y)) / 1000) / 180) * PI;
-    float scaledZ = (((8.75 * static_cast< double >(z)) / 1000) / 180) * PI;
+    float scaledX = (((8.75 * static_cast< double >(x)) / 1000) / 180) * M_PI;
+    float scaledY = (((8.75 * static_cast< double >(y)) / 1000) / 180) * M_PI;
+    float scaledZ = (((8.75 * static_cast< double >(z)) / 1000) / 180) * M_PI;
     return std::vector<float> {scaledX,scaledY,scaledZ}; 
 }
 
 
 opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
-
     std::vector<float> reading = GetAngularVelocity();
-    float readingArray[] = {reading[0],reading[1],reading[2]};
+    CalibrateGyroscope(&reading);
+    Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);
+    Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
+    float readingArray[] = {adjustedReading[0], adjustedReading[1], adjustedReading[2]};
     opendlv::proxy::GyroscopeReading gyroscopeReading(readingArray);
     return gyroscopeReading;
+}
+
+void PololuAltImu10Device::CalibrateGyroscope(std::vector<float>* a_val) {
+    for(uint8_t i = 0; i < 3; i++) {
+        (*a_val).at(i) -= m_gyroscopeAvgVal[i];
+    }
 }
 
 bool PololuAltImu10Device::IsInitialized() const {
     return m_initialized;
 }
 
-Eigen::Vector3f PololuAltImu10Device::Rotate(Eigen::Vector3f a_v, Eigen::Matrix3d a_m)
-{
+Eigen::Vector3f PololuAltImu10Device::Rotate(Eigen::Vector3f a_v, Eigen::Matrix3d a_m) {
     return (a_m*a_v.cast<double>()).cast<float>();
 }
 
