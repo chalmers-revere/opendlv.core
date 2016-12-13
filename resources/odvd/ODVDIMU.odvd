@@ -29,7 +29,7 @@ message opendlv.proxy.MagnetometerReading [id = 163] {
 }
 
 message opendlv.proxy.GyroscopeReading [id = 168] {
-  float rotationVelocity[3] [id = 1];
+  float angularVelocity[3] [id = 1];
 }
 
 message opendlv.proxy.TemperatureReading [id=190] {

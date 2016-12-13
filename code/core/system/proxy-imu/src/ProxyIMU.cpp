@@ -91,14 +91,14 @@ void ProxyIMU::setUp() {
     double yaw = kv.getValue<double>("proxy-imu.mount.yaw")*M_PI/180.0;
     std::vector<double> const mountRotation({roll, pitch, yaw});
     std::string const type = kv.getValue<std::string>("proxy-imu.type");
-    uint32_t const calibrationNumberOfSamples = kv.getValue<uint32_t>("proxy-imu.calibrationNumberOfSamples");
+    uint32_t const calibrationNumberOfSamples = kv.getValue<uint32_t>("proxy-imu.calibration_number_of_samples");
     bool const lockCalibration = (kv.getValue< int32_t >("proxy-imu.lockcalibration") == 1);
     m_debug = (kv.getValue< int32_t >("proxy-imu.debug") == 1);
     std::string const calibrationFile = kv.getValue<std::string>("proxy-imu.calibrationfile");
 
     if (type.compare("pololu.altimu10") == 0) {
         std::string const deviceNode = kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
-        std::string const addressType = kv.getValue<std::string>("proxy-imu.pololu.altimu10.addresstype");
+        std::string const addressType = kv.getValue<std::string>("proxy-imu.pololu.altimu10.address_type");
         if(addressType.compare("high") || addressType.compare("low")) {
             m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, addressType, mountRotation, calibrationNumberOfSamples, calibrationFile, lockCalibration, m_debug));
         } else {
