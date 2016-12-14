@@ -116,16 +116,16 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
         }
 
         const float steering = actuationRequest.getSteering();
-        opendlv::proxy::reverefh16::SteeringRequest steeringRequest;
-        steeringRequest.setEnableRequest(m_enabled);
-        steeringRequest.setSteeringRoadWheelAngle(steering);
+        opendlv::proxy::reverefh16::SteerRequest steerRequest;
+        steerRequest.setEnableRequest(m_enabled);
+        steerRequest.setSteeringRoadWheelAngle(steering);
 
         // Must be 33.535 to disable deltatorque.
-        steeringRequest.setSteeringDeltaTorque(33.535);
-        odcore::data::Container steeringRequestContainer(steeringRequest);
+        steerRequest.setSteeringDeltaTorque(33.535);
+        odcore::data::Container steerRequestContainer(steerRequest);
 
-        canmapping::opendlv::proxy::reverefh16::SteeringRequest steeringRequestMapping;
-        automotive::GenericCANMessage genericCanMessage = steeringRequestMapping.encode(steeringRequestContainer);
+        canmapping::opendlv::proxy::reverefh16::SteerRequest steerRequestMapping;
+        automotive::GenericCANMessage genericCanMessage = steerRequestMapping.encode(steerRequestContainer);
         m_canDevice->write(genericCanMessage);
     }
 }
