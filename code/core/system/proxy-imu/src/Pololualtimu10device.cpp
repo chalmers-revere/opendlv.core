@@ -413,7 +413,7 @@ void PololuAltImu10Device::CalibrateAccelerometer (std::vector<float>* a_val) {
         //Hard iron calibration centering the value around 0 and somewhat within range of [-1,1]
         float offset = (m_accelerometerMinVal[i] + m_accelerometerMaxVal[i]) / 2.0f ;
         float scale = 9.82f/(m_accelerometerMaxVal[i]-offset);
-        (*a_val)[i] = ((*a_val)[i]-offset)/scale;
+        (*a_val)[i] = ((*a_val)[i]-offset)*scale;
     }
 }
 
@@ -552,7 +552,7 @@ void PololuAltImu10Device::CalibrateMagnetometer(std::vector<float>* a_val) {
         //Hard iron calibration centering the value around 0 and somewhat within range of [-1,1]
         float offset = (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i])/ 2.0f ;
         float scale = 1.0f/(m_magnetometerMaxVal[i]-offset);
-        (*a_val)[i] = ((*a_val).at(i)-offset)/(scale);
+        (*a_val)[i] = ((*a_val).at(i)-offset)*(scale);
     }
     // std::cout << "Calibrated values: "<< (*a_val)[0] << "," << (*a_val)[1]<< "," <<(*a_val)[2] <<  std::endl;
     // std::cout << "Heading: " << 180 * atan2((*a_val)[1],(*a_val)[0]) / M_PI << std::endl;
