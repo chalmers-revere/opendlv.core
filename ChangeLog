@@ -1,3 +1,4 @@
+0.8.0 - Supporting new messages from CAN dbc file
 0.7.1 - Updates to proxy-velodyne16 to handle SPC and CPC; new release 0.7.1
 0.7.0 - Changing CompactPointCloud from half_float to uint16_t
 0.6.0 - Improved CompactPointCloud handling in Velodyne 16, upgraded use-cases to docker-compose 1.9.0
