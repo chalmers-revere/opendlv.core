@@ -85,7 +85,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
 
 void ProxyIMU::setUp() {
     odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
-
+    std::string const sourceName = kv.getValue<std::string>("proxy-imu.source_name");
     double roll = kv.getValue<double>("proxy-imu.mount.roll")*M_PI/180.0;
     double pitch = kv.getValue<double>("proxy-imu.mount.pitch")*M_PI/180.0;
     double yaw = kv.getValue<double>("proxy-imu.mount.yaw")*M_PI/180.0;
@@ -100,7 +100,7 @@ void ProxyIMU::setUp() {
         std::string const deviceNode = kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
         std::string const addressType = kv.getValue<std::string>("proxy-imu.pololu.altimu10.address_type");
         if(addressType.compare("high") || addressType.compare("low")) {
-            m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, addressType, mountRotation, calibrationNumberOfSamples, calibrationFile, lockCalibration, m_debug));
+            m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(sourceName, deviceNode, addressType, mountRotation, calibrationNumberOfSamples, calibrationFile, lockCalibration, m_debug));
         } else {
             std::cerr << "[proxy-imu] Address type invalid. Must be either high xor low." << std::endl; 
         }

@@ -38,8 +38,9 @@ namespace proxy {
  * Constructor for PololuAltImuV5 device interfacing through I2C.
  *
  */
-PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::string const &a_adressType, std::vector<double> const &a_mountRotation, uint32_t const &a_calibrationNumberOfSamples, std::string const &a_calibrationFile, bool const &a_lockCalibration, bool &a_debug)
-    : m_deviceFile()
+PololuAltImu10Device::PololuAltImu10Device(std::string const &a_sourceName, std::string const &a_deviceName, std::string const &a_adressType, std::vector<double> const &a_mountRotation, uint32_t const &a_calibrationNumberOfSamples, std::string const &a_calibrationFile, bool const &a_lockCalibration, bool &a_debug)
+    : m_sourceName(a_sourceName)
+    , m_deviceFile()
     , m_addressType()
     , m_instrumentAdress{0,0,0}
     , m_rotationMatrix()
@@ -397,7 +398,7 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     Eigen::Vector3f rawReading(reading[0], reading[1], reading[2]);
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
     float readingArray[] = {adjustedReading[0],adjustedReading[1],adjustedReading[2]};
-    opendlv::proxy::AccelerometerReading accelerometerReading(readingArray);
+    opendlv::proxy::AccelerometerReading accelerometerReading(m_sourceName, readingArray);
     return accelerometerReading;
 }
 
@@ -456,7 +457,7 @@ float PololuAltImu10Device::GetAltitude() {
 
 opendlv::proxy::AltimeterReading PololuAltImu10Device::ReadAltimeter() {
     float altitude = GetAltitude();
-    opendlv::proxy::AltimeterReading altimeterReading(altitude);
+    opendlv::proxy::AltimeterReading altimeterReading(m_sourceName, altitude);
     return altimeterReading;
 }
 
@@ -487,7 +488,7 @@ float PololuAltImu10Device::GetTemperature() {
 
 opendlv::proxy::TemperatureReading PololuAltImu10Device::ReadTemperature() {
     float temperature = GetTemperature();
-    opendlv::proxy::TemperatureReading temperatureReading(temperature);
+    opendlv::proxy::TemperatureReading temperatureReading(m_sourceName, temperature);
     return temperatureReading;
 }
 
@@ -534,7 +535,7 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
 
     float readingArray[] = {adjustedReading[0],adjustedReading[1],adjustedReading[2]};
-    opendlv::proxy::MagnetometerReading magnetometerReading(readingArray);
+    opendlv::proxy::MagnetometerReading magnetometerReading(m_sourceName, readingArray);
     return magnetometerReading;
 }
 
@@ -618,7 +619,7 @@ opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
     Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
     float readingArray[] = {adjustedReading[0], adjustedReading[1], adjustedReading[2]};
-    opendlv::proxy::GyroscopeReading gyroscopeReading(readingArray);
+    opendlv::proxy::GyroscopeReading gyroscopeReading(m_sourceName, readingArray);
     return gyroscopeReading;
 }
 
