@@ -20,8 +20,8 @@
 #
 #global.car = Car.objx
 #global.scenario = Track.scnx
-global.car = file:///opt/opendlv.data/Car.objx
-global.scenario = file:///opt/opendlv.data/Track.scnx
+global.car = file://./Car.objx
+global.scenario = file://./Track.scnx
 global.showGrid = 0
 
 # The following attributes define the buffer sizes for recording and
@@ -70,23 +70,22 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 ###############################################################################
 ###############################################################################
 #
-# CONFIGURATION FOR ODCOCKPIT
+# CONFIGURATION FOR VELODYNE16
 #
-odcockpit.directoriesForSharedLibaries = /opt
+proxy-velodyne16.pointCloudOption = 1  #This parameter must be 1 because only CPC allows remote monitoring, not SPC
+proxy-velodyne16.sharedMemory.name = velodyne16SM
+#The total size of the shared memory: MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float), where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed), NUMBER_OF_COMPONENTS_PER_POIN=4 (x, y, z, intensity) Recommended values: MAX_POINT_SIZE=30000->proxy-velodyne16.sharedMemory.size = 480000 
+proxy-velodyne16.sharedMemory.size = 480000
+proxy-velodyne16.udpReceiverIP = 0.0.0.0
+proxy-velodyne16.udpPort = 2368
+proxy-velodyne16.calibration = VLP-16.xml
 
 ###############################################################################
 ###############################################################################
 #
-# CONFIGURATION FOR ODPLAYER
+# CONFIGURATION FOR PCAPREPLAY (only needed in conjunction with PcapReplay for replaying pcap recordings)
 #
-odplayer.input = file://recorder.rec
-odplayer.autoRewind = 0 # 0 = no rewind in the case of EOF, 1 = rewind.
-odplayer.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. play, pause, rewind, step_forward)
-odplayer.timeScale = 1.0 # A time scale factor of 1.0 means real time, a factor of 0 means as fast as possible. The smaller the time scale factor is the faster runs the replay.
 
-odplayerh264.input = file://recorder.rec
-odplayerh264.autoRewind = 0 # 0 = no rewind in the case of EOF, 1 = rewind.
-odplayerh264.remoteControl = 0 # 0 = no remote control, 1 = allowing remote control (i.e. play, pause, rewind, step_forward)
-odplayerh264.timeScale = 1.0 # A time scale factor of 1.0 means real time, a factor of 0 means as fast as possible. The smaller the time scale factor is the faster runs the replay.
-odplayerh264.portbaseforchildprocesses = 28000 # Every spawned child processes is connecting to the parent process via TCP using the base port plus its increasing ID.
+PcapReplay.readpcap = sampleLong.pcap
+PcapReplay.bufferSize = 4000
 
