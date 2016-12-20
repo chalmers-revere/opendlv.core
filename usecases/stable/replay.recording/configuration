@@ -18,8 +18,6 @@
 #
 # GLOBAL CONFIGURATION
 #
-#global.car = Car.objx
-#global.scenario = Track.scnx
 global.car = file:///opt/opendlv.data/Car.objx
 global.scenario = file:///opt/opendlv.data/Track.scnx
 global.showGrid = 0
