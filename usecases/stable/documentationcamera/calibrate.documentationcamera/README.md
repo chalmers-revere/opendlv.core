@@ -2,15 +2,25 @@
 
 This folder provides the instructions for viewing the live image video of a V4L camera. This can be used for adjusting the mounting of a camera in the car and needs to be run on a system with a screen. The following micro-services are included: odsupercomponent, health, proxy-camera. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. health checks the status of device nodes. proxy-camera activates the camera and displays a pop-up window with the live image.
     
-### Check for Camera Devices
+## Setup Camera Device
 
 Camera devices are listed in `/dev`. To check whether the camera is successfully attached, do
 
     $ ls /dev/video*
     
-which should give you the list of attached cameras.
+which should give you the list of attached cameras. If the attached camera is not `/dev/video0`, modify the left side of the device mapping of `proxy-camera` in `docker-compose.yml`. For example if your camera device is `/dev/video2`, change the mapping from 
+
+    devices:
+        - /dev/video0:/dev/video0
+        
+to
+
+    devices:
+        - /dev/video2:/dev/video0
+        
+The right side of the mapping shall not be changed.
     
-### Start the usecase
+## Start the usecase
 
 To start the usecase, run
     
@@ -20,17 +30,17 @@ This should open a new window that displays the live video image from the camera
 
     $ docker-compose stop && docker-compose rm
 
-### Troubleshooting
+## Troubleshooting
 
-#### Flipped Camera Image
+### Flipped Camera Image
 
 It is assumed that the camera is mounted upside down, the video images are flipped before displaying. To disable flipping, set `proxy-camera.camera.flipped` in `configuration` to `0`.
 
-#### odsupercomponent
+### odsupercomponent
 
 If the `odsupercomponent` service fails to start, try altering the `CID` in the file `.env`.
 
-#### Camera Image
+### Camera Image
 
 If there are problems, try
 
