@@ -1,5 +1,5 @@
-# Dockerfile - Dockerfile to run OpenDLV software.
-# Copyright (C) 2016 Christian Berger
+# Dockerfile - Dockerfile to build opendlv.core Docker image.
+# Copyright (C) 2016 Hang Yin
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
