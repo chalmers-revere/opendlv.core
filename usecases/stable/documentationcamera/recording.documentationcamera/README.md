@@ -1,6 +1,6 @@
 # Recording Video
 
-This folder provides the instructions for viewing the live image video of a V4L camera. This can be used for adjusting the mounting of a camera in the car and needs to be run on a system with a screen. The following micro-services are included: odsupercomponent, health, proxy-camera and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. health checks the status of device nodes. proxy-camera provides the camera image and odrecorderh264 writes the camera images to disk. This usecase can be run on headless systems.
+This folder provides the instructions for making video recordings from a V4L camera. The following micro-services are included: odsupercomponent, health, proxy-camera and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. health checks the status of device nodes. proxy-camera provides the camera image and odrecorderh264 writes the camera images to disk. This usecase can be run on headless systems.
 
 The recording files are stored at `~/recordings`. A recording consists of a `.rec`, a `.rec.mem` and a `.rec-DocumentationCamera0.h264` file. The filename format is `CID-xxx-odrecorderh264_yyy.zzz`, where `xxx` is the CID number from `.env`, `yyy` is the timestamp and `zzz` is the extension.
 
@@ -38,7 +38,7 @@ To stop recording, hit `Ctrl+C` in the terminal window. To leave the system in a
 
 ### Flipped Camera Image
 
-It is assumed that the camera is mounted upside down, the video images are flipped before displaying. To disable flipping, set `proxy-camera.camera.flipped` in `configuration` to `0`.
+It is assumed that the camera is mounted upside down, thus the video images are flipped before displaying. To disable flipping, set `proxy-camera.camera.flipped` in `configuration` to `0`.
 
 ### odsupercomponent
 

@@ -34,7 +34,7 @@ This should open a new window that displays the live video image from the camera
 
 ### Flipped Camera Image
 
-It is assumed that the camera is mounted upside down, the video images are flipped before displaying. To disable flipping, set `proxy-camera.camera.flipped` in `configuration` to `0`.
+It is assumed that the camera is mounted upside down, thus the video images are flipped before displaying. To disable flipping, set `proxy-camera.camera.flipped` in `configuration` to `0`.
 
 ### odsupercomponent
 
