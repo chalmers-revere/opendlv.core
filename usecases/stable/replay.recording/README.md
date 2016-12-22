@@ -2,7 +2,7 @@ This folder provides the instructions for replaying recordings from different se
 
 This folder contains:
 
--a docker-compose file that includes two micro-services, odsupercomponent and odcockpit. odsupercomponent is used for software component lifecycle management in OpenDaVINCI
+- a docker-compose file that includes two micro-services, odsupercomponent and odcockpit. odsupercomponent is used for software component lifecycle management in OpenDaVINCI
 - a Dockerfile specifying the Docker image to be used
 - a configuration file for odsupercomponent
 - an environment file .env which defines an environment variable CID that is referred to by the docker-compose file
