@@ -297,10 +297,39 @@ ExternalProject_Add (libodvdimu
     TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
     INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdimu-prefix/src/libodvdimu-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdimu-prefix/src/libodvdimu-build --target ${MAKE_PACKAGE})
 
+
+###########################################################################
+# This "external project" simply deletes the existing libodvdanglesensor.
+ExternalProject_Add (libodvdanglesensor-cleanup
+    DOWNLOAD_COMMAND ""
+    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdanglesensor
+    PATCH_COMMAND ""
+    SOURCE_DIR ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    TEST_COMMAND ""
+    INSTALL_COMMAND "")
+
+# This "external project" builds libodvdanglesensor.
+ExternalProject_Add (libodvdanglesensor
+    DEPENDS libodvdanglesensor-cleanup
+    DOWNLOAD_COMMAND ""
+    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resources/odvd/ODVDAnglesensor.odvd
+    PATCH_COMMAND ""
+    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdanglesensor"
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
+    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
+    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
+    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
+    TEST_BEFORE_INSTALL 1
+    TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
+    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdanglesensor-prefix/src/libodvdanglesensor-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdanglesensor-prefix/src/libodvdanglesensor-build --target ${MAKE_PACKAGE})
+
+
 ###########################################################################
 # This "external project" builds and installs the system software stack.
 ExternalProject_Add(system
-    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libfh16mapping libodvdtrimble libodvdimu libodvdv2v libodvdopendlvdatamodel
+    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libfh16mapping libodvdtrimble libodvdimu libodvdanglesensor libodvdv2v libodvdopendlvdatamodel
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ""
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/code/core/system"
