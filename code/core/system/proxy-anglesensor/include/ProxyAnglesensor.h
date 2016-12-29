@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <vector>
+#include <deque>
 
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/data/Container.h>
@@ -51,14 +52,27 @@ class ProxyAnglesensor : public odcore::base::module::TimeTriggeredConferenceCli
 
     void tearDown();
 
-    std::vector<uint16_t> GetRawReadings();
+    void Calibrate();
 
-    std::vector<uint16_t> m_pins;
+    bool LoadCalibration();
+
+    void SaveCalibration();
+
+    uint16_t GetRawReading();
+
+    uint16_t m_pin;
   
     float m_scaleValue;
 
+    std::deque<uint16_t> m_rawReadingMinMax;
+
+    std::deque<float> m_anglesMinMax;
+
+    std::string m_calibrationFile;
+
     bool m_debug;
 };
+
 }
 }
 }

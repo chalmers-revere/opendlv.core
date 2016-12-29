@@ -22,11 +22,14 @@
 #include <ctype.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
 #include <opendavinci/odcore/data/Container.h>
+#include <opendavinci/odcore/data/TimeStamp.h>
 #include <opendavinci/odcore/strings/StringToolbox.h>
+
 
 #include "odvdanglesensor/GeneratedHeaders_ODVDAnglesensor.h"
 // #include <odvdanglesensor/GeneratedHeaders_ODVDAnglesensor.h>
@@ -41,15 +44,12 @@ namespace proxy {
 ProxyAnglesensor::ProxyAnglesensor(int32_t const &a_argc, char **a_argv)
     : TimeTriggeredConferenceClientModule(
       a_argc, a_argv, "proxy-anglesensor")
-    , m_pins()
+    , m_pin()
     , m_scaleValue()
+    , m_rawReadingMinMax()
+    , m_anglesMinMax()
+    , m_calibrationFile()
     , m_debug() {
-
-    std::string path = std::string("/sys/devices/platform/bone_capemgr/slots");
-    std::ofstream exportFile(path, std::ofstream::out);
-    exportFile << "BB-ADC";
-    exportFile.close();
-    std::cout << "[ProxyAnglesensor] Successfully wrote to /sys/devices/platform/bone_capemgr/slots" << std::endl;
 }
 
 ProxyAnglesensor::~ProxyAnglesensor() {
@@ -57,7 +57,8 @@ ProxyAnglesensor::~ProxyAnglesensor() {
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyAnglesensor::body() {
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-        GetRawReadings();
+        GetRawReading();
+        // angle = rawReading2Angle(rawReading);
     }
 
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
@@ -67,78 +68,123 @@ void ProxyAnglesensor::setUp() {
     odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
 
     m_scaleValue = kv.getValue<float>("proxy-anglesensor.reading2voltage");
-    std::string pinString = kv.getValue<std::string>("proxy-anglesensor.pins");
-    std::vector<std::string> pinStringVector = odcore::strings::StringToolbox::split(pinString, ',');
-    for(std::string pin : pinStringVector) {
-        m_pins.push_back(std::stoi(pin));
+    std::string pinString = kv.getValue<std::string>("proxy-anglesensor.pin");
+    m_pin = std::stoi(pinString);
+    
+    const std::string anglesMinMaxString = kv.getValue<std::string>("proxy-anglesensor.anglesminmax");
+    std::vector<std::string> anglesMinMax = odcore::strings::StringToolbox::split(anglesMinMaxString, ',');
+    for (uint8_t i = 0; i < 2; i++) {
+        m_anglesMinMax.push_back(std::stof(anglesMinMax.at(i)));
     }
-    m_debug = (kv.getValue< int32_t >("proxy-anglesensor.debug") == 1);
-        
-    /*
-    }
-    double roll = kv.getValue<double>("proxy-imu.mount.roll")*M_PI/180.0;
-    double pitch = kv.getValue<double>("proxy-imu.mount.pitch")*M_PI/180.0;
-    double yaw = kv.getValue<double>("proxy-imu.mount.yaw")*M_PI/180.0;
-    std::vector<double> const mountRotation({roll, pitch, yaw});
-    std::string const type = kv.getValue<std::string>("proxy-imu.type");
-    std::string calibrationFile = "";
-    bool const lockCalibration = (kv.getValue< int32_t >("proxy-imu.lockcalibration") == 1);
-    try {
-        calibrationFile = kv.getValue<std::string>("proxy-imu.calibrationfile");
-    }
-    catch(...) {
-        calibrationFile = "";
+    if (m_anglesMinMax.at(1) < m_anglesMinMax.at(0)) {
+        m_anglesMinMax.push_back(m_anglesMinMax.at(0));
+        m_anglesMinMax.pop_front();
     }
 
-    if (type.compare("pololu.altimu10") == 0) {
-        std::string const deviceNode =
-        kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
 
-        m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, mountRotation, calibrationFile, lockCalibration, m_debug));
-    }
+    const bool setUpCalibration = (kv.getValue<int32_t>("proxy-anglesensor.setUpCalibration") == 1);
+    m_calibrationFile = kv.getValue<std::string>("proxy-anglesensor.calibrationfile");
 
-    if (m_device.get() == nullptr) {
-        std::cerr << "[proxy-imu] No valid device driver defined."
-                  << std::endl;
+    m_debug = (kv.getValue<int32_t>("proxy-anglesensor.debug") == 1);
+
+    if(setUpCalibration || LoadCalibration()) {
+        Calibrate();
     }
-    */
 }
 
 void ProxyAnglesensor::tearDown() {
+    SaveCalibration();
 }
 
-std::vector<uint16_t> ProxyAnglesensor::GetRawReadings()
-{
-    std::vector<uint16_t> rawReadings;
-
-    std::string path = std::string("/sys/bus/iio/devices/iio:device0/"); 
-    for (uint16_t pin : m_pins) {
-
-
-        std::string filename = path + "in_voltage" + std::to_string(pin) + "_raw";
-
-        std::ifstream file(filename, std::ifstream::in);
-        std::string line;
-        if(file.is_open()){
-            std::getline(file, line);
-            uint16_t value = std::stoi(line);
-            rawReadings.push_back(value);
-        } else {
-            std::cerr << "[ProxyAnglesensor] Could not read from analogue input. (pin: " << pin << ", filename: " << filename << ")" << std::endl;
+void ProxyAnglesensor::Calibrate() {
+    std::cout << "[Proxy Anglesensor] Starting calibration. Finding min and max values of analogue input. Try to turn the angle sensors to min and max angles.";
+    uint16_t min = GetRawReading();
+    uint16_t max = GetRawReading();
+    const uint32_t calibrationIterations = 200;
+    for (uint32_t i = 0; i < calibrationIterations; i++) {
+        uint rawReading = GetRawReading();
+        if(rawReading < min) {
+            min = rawReading;
+        } else if (rawReading > max) {
+            max = rawReading;
         }
-
-        file.close();
+        std::cout << "[Proxy Anglesensor] (" << i << "/" << calibrationIterations <<") [min,max]: [" << min << "," << max << "]" << std::endl;
     }
-    if(m_debug){
-        std::cout << "[ProxyAnglesensor]";
-        std::vector<uint16_t>::iterator it = rawReadings.begin();
-        for (uint16_t pin : m_pins) {
-            std::cout << " Pin " << pin << ": " << *it;
-            it++;
+    m_rawReadingMinMax.push_back(min);
+    m_rawReadingMinMax.push_back(max);
+}
+
+bool ProxyAnglesensor::LoadCalibration() {
+    if(m_calibrationFile.empty()) {
+        return true;
+    }
+    std::ifstream file(m_calibrationFile, std::ifstream::in);
+    if(file.is_open()){
+        std::string line;
+        while(std::getline(file, line)) {
+            std::vector<std::string> strList = odcore::strings::StringToolbox::split(line, ' ');
+            for(uint8_t i = 0; i < strList.size(); i++) { 
+                std::cout << strList[i] << ",";
+            }
+            std::cout << std::endl;
+            if(strList[0].compare("m_rawReadingMinMax") == 0) {
+                for(uint8_t i = 0; i < 2; i++) { 
+                    m_rawReadingMinMax.at(i) = std::stof(strList[i+1]);
+                }
+            }
+        }
+        std::cout << "[Pololu Anglesensor] Loaded the calibration settings.";
+        if(m_debug) {
+            std::cout << "\nLoaded:\nm_rawReadingMinMax(" << m_rawReadingMinMax.at(0) << "," << m_rawReadingMinMax.at(1) << ")";
         }
         std::cout << std::endl;
+        file.close();
+        return false;
+    } else {
+        std::cout << "[Pololu Anglesensor] Could not load the calibration settings. Starting on fresh settings." << std::endl;
+        file.close();
+        return true;
     }
-    return rawReadings;
+}
+
+void ProxyAnglesensor::SaveCalibration() {
+    if(m_calibrationFile.empty()) {
+        return;
+    }
+    std::ofstream file(m_calibrationFile, std::ifstream::out);
+    if(file.is_open()){
+        file << "m_rawReadingMinMax";
+        for(uint8_t i = 0; i < 2; i++) {
+            file << " " << m_rawReadingMinMax.at(i);
+        }
+        file << std::endl;
+        std::cout << "[Pololu Anglesensor] Saved the calibration settings.";
+        if(m_debug) {
+            std::cout << "\nLoaded:\nm_rawReadingMinMax(" << m_rawReadingMinMax.at(0) << "," << m_rawReadingMinMax.at(1) << ")";
+        }
+        std::cout << std::endl;
+    } else {
+        std::cout << "[Pololu Anglesensor] Could not save the calibration settings." << std::endl;
+    }
+    file.flush();
+    file.close();
+}
+
+uint16_t ProxyAnglesensor::GetRawReading()
+{
+    std::string filename = "/sys/bus/iio/devices/iio:device0/in_voltage" + std::to_string(m_pin) + "_raw";
+
+    std::ifstream file(filename, std::ifstream::in);
+    std::string line;
+    if(file.is_open()){
+        std::getline(file, line);
+        uint16_t rawReadings = std::stoi(line);
+        file.close();
+        return rawReadings;
+    } else {
+        std::cerr << "[Proxy Anglesensor] Could not read from analogue input. (pin: " << m_pin << ", filename: " << filename << ")" << std::endl;
+    }
+    return std::numeric_limits<int>::quiet_NaN();
 }
 
 

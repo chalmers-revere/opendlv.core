@@ -74,5 +74,8 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 
 proxy-anglesensor.reading2voltage = 1
-proxy-anglesensor.pins = 0,1,2,3
+proxy-anglesensor.pin = 0
+proxy-anglesensor.anglesminmax = -1,1
+proxy-anglesensor.setUpCalibration = 1
+proxy-anglesensor.calibrationfile = anglesensor0calibration.txt
 proxy-anglesensor.debug = 1
