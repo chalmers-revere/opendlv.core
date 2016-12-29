@@ -57,7 +57,7 @@ ProxyAnglesensor::~ProxyAnglesensor() {
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyAnglesensor::body() {
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-
+        GetRawReadings();
     }
 
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
