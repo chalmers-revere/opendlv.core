@@ -30,13 +30,12 @@ services:
     # micro service for proxy-anglesensor.
     proxy-anglesensor:
         build: .
-        devices:
-        # - "/dev/i2c-2:/dev/i2c-2"
-            - /sys/devices/platform/bone_capemgr/slots:/sys/devices/platform/bone_capemgr/slots
-            - /sys/bus/iio/devices/iio:device0/in_voltage0_raw:/sys/bus/iio/devices/iio:device0/in_voltage0_raw
+        user: root
         network_mode: "host"
         volumes:
             - .:/opt/opendlv.core.configuration
+            - /sys/:/sys/
+        privileged: true
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-anglesensor --cid=${CID} --freq=2"

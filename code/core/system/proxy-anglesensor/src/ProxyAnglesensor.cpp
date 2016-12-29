@@ -49,6 +49,7 @@ ProxyAnglesensor::ProxyAnglesensor(int32_t const &a_argc, char **a_argv)
     std::ofstream exportFile(path, std::ofstream::out);
     exportFile << "BB-ADC";
     exportFile.close();
+    std::cout << "[ProxyAnglesensor] Successfully wrote to /sys/devices/platform/bone_capemgr/slots" << std::endl;
 }
 
 ProxyAnglesensor::~ProxyAnglesensor() {
