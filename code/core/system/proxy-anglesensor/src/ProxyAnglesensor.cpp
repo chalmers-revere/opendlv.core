@@ -120,7 +120,7 @@ void ProxyAnglesensor::Calibrate() {
             max = rawReading;
         }
         std::cout << "[Proxy Anglesensor] (" << i << "/" << calibrationIterations <<") [min,max]: [" << min << "," << max << "]" << std::endl;
-        i++
+        i++;
     }
     m_rawReadingMinMax.push_back(min);
     m_rawReadingMinMax.push_back(max);
