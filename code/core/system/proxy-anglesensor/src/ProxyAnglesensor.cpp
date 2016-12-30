@@ -56,6 +56,13 @@ ProxyAnglesensor::~ProxyAnglesensor() {
 }
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyAnglesensor::body() {
+    if(setUpCalibration || LoadCalibration()) {
+        Calibrate();
+    }
+    m_convertConstants.push_back((m_rawReadingMinMax.at(0)+m_rawReadingMinMax.at(1))/2.0f);
+    m_convertConstants.push_back(m_anglesMinMax.at(1)+(m_anglesMinMax.at(0)+m_anglesMinMax.at(1))/2.0f);
+    m_convertConstants.push_back((m_anglesMinMax.at(0)+m_anglesMinMax.at(1))/2.0f);
+    
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
         uint16_t rawReading = GetRawReading();
         float angle = Analogue2Radians(rawReading);
@@ -93,13 +100,6 @@ void ProxyAnglesensor::setUp() {
     m_calibrationFile = kv.getValue<std::string>("proxy-anglesensor.calibrationfile");
 
     m_debug = (kv.getValue<int32_t>("proxy-anglesensor.debug") == 1);
-
-    if(setUpCalibration || LoadCalibration()) {
-        Calibrate();
-    }
-    m_convertConstants.push_back((m_rawReadingMinMax.at(0)+m_rawReadingMinMax.at(1))/2.0f);
-    m_convertConstants.push_back(m_anglesMinMax.at(1)+(m_anglesMinMax.at(0)+m_anglesMinMax.at(1))/2.0f);
-    m_convertConstants.push_back((m_anglesMinMax.at(0)+m_anglesMinMax.at(1))/2.0f);
 }
 
 void ProxyAnglesensor::tearDown() {
