@@ -56,6 +56,8 @@ ProxyAnglesensor::~ProxyAnglesensor() {
 }
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyAnglesensor::body() {
+    odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
+    const bool setUpCalibration = (kv.getValue<int32_t>("proxy-anglesensor.setUpCalibration") == 1);
     if(setUpCalibration || LoadCalibration()) {
         Calibrate();
     }
@@ -96,7 +98,6 @@ void ProxyAnglesensor::setUp() {
     }
 
 
-    const bool setUpCalibration = (kv.getValue<int32_t>("proxy-anglesensor.setUpCalibration") == 1);
     m_calibrationFile = kv.getValue<std::string>("proxy-anglesensor.calibrationfile");
 
     m_debug = (kv.getValue<int32_t>("proxy-anglesensor.debug") == 1);
