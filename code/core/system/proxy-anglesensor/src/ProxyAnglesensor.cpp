@@ -107,18 +107,20 @@ void ProxyAnglesensor::tearDown() {
 }
 
 void ProxyAnglesensor::Calibrate() {
-    std::cout << "[Proxy Anglesensor] Starting calibration. Finding min and max values of analogue input. Try to turn the angle sensors to min and max angles.";
+    std::cout << "[Proxy Anglesensor] Starting calibration. Finding min and max values of analogue input. Try to turn the angle sensors to min and max angles."<< std::endl;
     uint16_t min = GetRawReading();
     uint16_t max = GetRawReading();
     const uint32_t calibrationIterations = 400;
-    for (uint32_t i = 0; (i < calibrationIterations) && (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING); i++) {
-        uint rawReading = GetRawReading();
+    uint32_t i = 0;
+    while((i < calibrationIterations) && (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING)) {
+        uint16_t rawReading = GetRawReading();
         if(rawReading < min) {
             min = rawReading;
         } else if (rawReading > max) {
             max = rawReading;
         }
         std::cout << "[Proxy Anglesensor] (" << i << "/" << calibrationIterations <<") [min,max]: [" << min << "," << max << "]" << std::endl;
+        i++
     }
     m_rawReadingMinMax.push_back(min);
     m_rawReadingMinMax.push_back(max);
@@ -170,7 +172,7 @@ void ProxyAnglesensor::SaveCalibration() {
         file << std::endl;
         std::cout << "[Pololu Anglesensor] Saved the calibration settings.";
         if(m_debug) {
-            std::cout << "\nLoaded:\nm_rawReadingMinMax(" << m_rawReadingMinMax.at(0) << "," << m_rawReadingMinMax.at(1) << ")";
+            std::cout << "\nSaved:\nm_rawReadingMinMax(" << m_rawReadingMinMax.at(0) << "," << m_rawReadingMinMax.at(1) << ")";
         }
         std::cout << std::endl;
     } else {
