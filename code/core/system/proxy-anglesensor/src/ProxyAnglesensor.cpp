@@ -45,7 +45,7 @@ ProxyAnglesensor::ProxyAnglesensor(int32_t const &a_argc, char **a_argv)
     : TimeTriggeredConferenceClientModule(
       a_argc, a_argv, "proxy-anglesensor")
     , m_pin()
-    , m_scaleValue()
+    , m_convertConstants()
     , m_rawReadingMinMax()
     , m_anglesMinMax()
     , m_calibrationFile()
@@ -57,8 +57,16 @@ ProxyAnglesensor::~ProxyAnglesensor() {
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyAnglesensor::body() {
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-        GetRawReading();
-        // angle = rawReading2Angle(rawReading);
+        uint16_t rawReading = GetRawReading();
+        float angle = Analogue2Radians(rawReading);
+        
+        opendlv::proxy::AnglesensorReading reading(angle);
+        odcore::data::Container readingContainer(reading);
+        getConference().send(readingContainer);
+
+        if(m_debug) {
+            std::cout << "[Proxy Anglesensor]" << reading.toString() << std::endl;
+        }
     }
 
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
@@ -67,14 +75,13 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyAnglesensor::body
 void ProxyAnglesensor::setUp() {
     odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
 
-    m_scaleValue = kv.getValue<float>("proxy-anglesensor.reading2voltage");
     std::string pinString = kv.getValue<std::string>("proxy-anglesensor.pin");
     m_pin = std::stoi(pinString);
     
     const std::string anglesMinMaxString = kv.getValue<std::string>("proxy-anglesensor.anglesminmax");
     std::vector<std::string> anglesMinMax = odcore::strings::StringToolbox::split(anglesMinMaxString, ',');
     for (uint8_t i = 0; i < 2; i++) {
-        m_anglesMinMax.push_back(std::stof(anglesMinMax.at(i)));
+        m_anglesMinMax.push_back(std::stof(anglesMinMax.at(i))*static_cast<float>(M_PI)/180.0f);
     }
     if (m_anglesMinMax.at(1) < m_anglesMinMax.at(0)) {
         m_anglesMinMax.push_back(m_anglesMinMax.at(0));
@@ -90,6 +97,9 @@ void ProxyAnglesensor::setUp() {
     if(setUpCalibration || LoadCalibration()) {
         Calibrate();
     }
+    m_convertConstants.push_back((m_rawReadingMinMax.at(0)+m_rawReadingMinMax.at(1))/2.0f);
+    m_convertConstants.push_back(m_anglesMinMax.at(1)+(m_anglesMinMax.at(0)+m_anglesMinMax.at(1))/2.0f);
+    m_convertConstants.push_back((m_anglesMinMax.at(0)+m_anglesMinMax.at(1))/2.0f);
 }
 
 void ProxyAnglesensor::tearDown() {
@@ -100,8 +110,8 @@ void ProxyAnglesensor::Calibrate() {
     std::cout << "[Proxy Anglesensor] Starting calibration. Finding min and max values of analogue input. Try to turn the angle sensors to min and max angles.";
     uint16_t min = GetRawReading();
     uint16_t max = GetRawReading();
-    const uint32_t calibrationIterations = 200;
-    for (uint32_t i = 0; i < calibrationIterations; i++) {
+    const uint32_t calibrationIterations = 400;
+    for (uint32_t i = 0; (i < calibrationIterations) && (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING); i++) {
         uint rawReading = GetRawReading();
         if(rawReading < min) {
             min = rawReading;
@@ -170,8 +180,7 @@ void ProxyAnglesensor::SaveCalibration() {
     file.close();
 }
 
-uint16_t ProxyAnglesensor::GetRawReading()
-{
+uint16_t ProxyAnglesensor::GetRawReading() {
     std::string filename = "/sys/bus/iio/devices/iio:device0/in_voltage" + std::to_string(m_pin) + "_raw";
 
     std::ifstream file(filename, std::ifstream::in);
@@ -185,6 +194,11 @@ uint16_t ProxyAnglesensor::GetRawReading()
         std::cerr << "[Proxy Anglesensor] Could not read from analogue input. (pin: " << m_pin << ", filename: " << filename << ")" << std::endl;
     }
     return std::numeric_limits<int>::quiet_NaN();
+}
+
+float ProxyAnglesensor::Analogue2Radians(uint16_t &a_val) {
+    float val = (a_val - m_convertConstants.at(0))*m_convertConstants.at(1) + m_convertConstants.at(2);
+    return val;
 }
 
 

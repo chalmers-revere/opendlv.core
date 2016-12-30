@@ -60,9 +60,11 @@ class ProxyAnglesensor : public odcore::base::module::TimeTriggeredConferenceCli
 
     uint16_t GetRawReading();
 
+    float Analogue2Radians(uint16_t &);
+
     uint16_t m_pin;
   
-    float m_scaleValue;
+    std::vector<float> m_convertConstants;
 
     std::deque<uint16_t> m_rawReadingMinMax;
 

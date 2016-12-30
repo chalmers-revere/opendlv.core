@@ -17,7 +17,6 @@
  */
 
 message opendlv.proxy.AnglesensorReading [id = 188] {
-  uint8 sensorID [id = 1];
-  float angle [id = 2];
+  float angle [id = 1];
 }
 
