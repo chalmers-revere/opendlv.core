@@ -136,13 +136,13 @@ bool ProxyAnglesensor::LoadCalibration() {
         std::string line;
         while(std::getline(file, line)) {
             std::vector<std::string> strList = odcore::strings::StringToolbox::split(line, ' ');
-            for(uint8_t i = 0; i < strList.size(); i++) { 
-                std::cout << strList[i] << ",";
-            }
+            // for(uint8_t i = 0; i < strList.size(); i++) { 
+            //     std::cout << strList[i] << ",";
+            // }
             std::cout << std::endl;
             if(strList[0].compare("m_rawReadingMinMax") == 0) {
                 for(uint8_t i = 0; i < 2; i++) { 
-                    m_rawReadingMinMax.at(i) = std::stof(strList[i+1]);
+                    m_rawReadingMinMax.push_back(std::stof(strList[i+1]));
                 }
             }
         }
