@@ -62,7 +62,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyAnglesensor::body
         Calibrate();
     }
     m_convertConstants.push_back((m_rawReadingMinMax.at(0)+m_rawReadingMinMax.at(1))/2.0f);
-    m_convertConstants.push_back(m_anglesMinMax.at(1)+(m_anglesMinMax.at(0)+m_anglesMinMax.at(1))/2.0f);
+    m_convertConstants.push_back((m_anglesMinMax.at(1)-(m_anglesMinMax.at(0)+m_anglesMinMax.at(1))/2.0f)/(m_rawReadingMinMax.at(1)-(m_rawReadingMinMax.at(0)+m_rawReadingMinMax.at(1))/2.0f));
     m_convertConstants.push_back((m_anglesMinMax.at(0)+m_anglesMinMax.at(1))/2.0f);
     
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
