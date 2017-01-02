@@ -37,7 +37,7 @@ namespace proxy {
 
 class PololuAltImu10Device {
    public:
-    PololuAltImu10Device(std::string const &, std::vector<double> const &, std::string &, bool const &, bool &);
+    PololuAltImu10Device(std::string const &, std::string const &, std::string const &, std::vector<double> const &, uint32_t const &, std::string const &, bool const &, bool &);
 
     PololuAltImu10Device(PololuAltImu10Device const &) = delete;
 
@@ -47,22 +47,32 @@ class PololuAltImu10Device {
 
     void saveCalibrationFile();
 
+    std::vector<float> GetAcceleration();
+
     opendlv::proxy::AccelerometerReading ReadAccelerometer();
+
+    float GetAltitude();
 
     opendlv::proxy::AltimeterReading ReadAltimeter();
 
+    float GetTemperature();
+
     opendlv::proxy::TemperatureReading ReadTemperature();
 
+    std::vector<float> GetMagneticField();
+
     opendlv::proxy::MagnetometerReading ReadMagnetometer();
+
+    std::vector<float> GetAngularVelocity();
 
     opendlv::proxy::GyroscopeReading ReadGyroscope();
 
     bool IsInitialized() const;
 
-
-
    private:
     void I2cWriteRegister(uint8_t, uint8_t);
+
+    void initCalibration();
     
     bool loadCalibrationFile();
 
@@ -78,11 +88,21 @@ class PololuAltImu10Device {
 
     void initLPS25();
 
-    void CalibrateMagnetometer(float*);
+    void CalibrateMagnetometer(std::vector<float>*);
+
+    void CalibrateAccelerometer(std::vector<float>*);
+
+    void CalibrateGyroscope(std::vector<float>*);
 
     Eigen::Vector3f Rotate(Eigen::Vector3f, Eigen::Matrix3d);
 
+    std::string const m_sourceName;
+
     int16_t m_deviceFile;
+
+    std::string m_addressType;
+
+    uint8_t m_instrumentAdress[3];
 
     Eigen::Matrix3d m_rotationMatrix;
 
@@ -90,11 +110,17 @@ class PololuAltImu10Device {
 
     bool const m_lockCalibration;
 
+    float m_accelerometerMaxVal[3];
+
+    float m_accelerometerMinVal[3];
+
     float m_magnetometerMaxVal[3];
 
     float m_magnetometerMinVal[3];
 
-    // float m_heavyAcc[3];
+    float m_gyroscopeAvgVal[3];
+
+    uint32_t const m_calibrationNumberOfSamples;
 
     bool m_initialized;
 

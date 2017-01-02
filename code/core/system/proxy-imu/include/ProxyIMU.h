@@ -53,6 +53,7 @@ class ProxyIMU : public odcore::base::module::TimeTriggeredConferenceClientModul
     void tearDown();
 
     std::unique_ptr< PololuAltImu10Device > m_device;
+    
     bool m_debug;
 };
 }

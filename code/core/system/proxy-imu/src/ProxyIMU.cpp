@@ -85,29 +85,26 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
 
 void ProxyIMU::setUp() {
     odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
-
+    std::string const sourceName = kv.getValue<std::string>("proxy-imu.source_name");
     double roll = kv.getValue<double>("proxy-imu.mount.roll")*M_PI/180.0;
     double pitch = kv.getValue<double>("proxy-imu.mount.pitch")*M_PI/180.0;
     double yaw = kv.getValue<double>("proxy-imu.mount.yaw")*M_PI/180.0;
     std::vector<double> const mountRotation({roll, pitch, yaw});
     std::string const type = kv.getValue<std::string>("proxy-imu.type");
-    std::string calibrationFile = "";
+    uint32_t const calibrationNumberOfSamples = kv.getValue<uint32_t>("proxy-imu.calibration_number_of_samples");
     bool const lockCalibration = (kv.getValue< int32_t >("proxy-imu.lockcalibration") == 1);
     m_debug = (kv.getValue< int32_t >("proxy-imu.debug") == 1);
-    try {
-        calibrationFile = kv.getValue<std::string>("proxy-imu.calibrationfile");
-    }
-    catch(...) {
-        calibrationFile = "";
-    }
+    std::string const calibrationFile = kv.getValue<std::string>("proxy-imu.calibration_file");
 
     if (type.compare("pololu.altimu10") == 0) {
-        std::string const deviceNode =
-        kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
-
-        m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, mountRotation, calibrationFile, lockCalibration, m_debug));
+        std::string const deviceNode = kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
+        std::string const addressType = kv.getValue<std::string>("proxy-imu.pololu.altimu10.address_type");
+        if(addressType.compare("high") || addressType.compare("low")) {
+            m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(sourceName, deviceNode, addressType, mountRotation, calibrationNumberOfSamples, calibrationFile, lockCalibration, m_debug));
+        } else {
+            std::cerr << "[proxy-imu] Address type invalid. Must be either high xor low." << std::endl; 
+        }
     }
-
     if (m_device.get() == nullptr) {
         std::cerr << "[proxy-imu] No valid device driver defined."
                   << std::endl;
