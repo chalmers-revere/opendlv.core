@@ -103,7 +103,7 @@ void ProxyIMU::setUp() {
         } else {
             std::cerr << "[proxy-imu] Address type invalid. Must be either high xor low." << std::endl; 
         }
-        std::cout << "[proxy-imu] Successfully initiated."
+        std::cout << "[proxy-imu] Successfully initiated.";
     }
     if (m_device.get() == nullptr) {
         std::cerr << "[proxy-imu] No valid device driver defined."
