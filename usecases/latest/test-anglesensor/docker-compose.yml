@@ -30,12 +30,10 @@ services:
     # micro service for proxy-anglesensor.
     proxy-anglesensor:
         build: .
-        user: root
         network_mode: "host"
         volumes:
             - .:/opt/opendlv.core.configuration
             - /sys/:/sys/
-        privileged: true
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-anglesensor --cid=${CID} --freq=2"
