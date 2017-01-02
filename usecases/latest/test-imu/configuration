@@ -78,10 +78,10 @@ proxy-imu:0.pololu.altimu10.device_node = /dev/i2c-2
 proxy-imu:0.pololu.altimu10.address_type = high
 proxy-imu:0.calibration_file = /opt/opendlv.core.configuration/calibration-high.txt
 proxy-imu:0.lockcalibration = 0
-proxy-imu:0.calibration_number_of_samples = 100000
+proxy-imu:0.calibration_number_of_samples = 10000
 proxy-imu:0.mount.roll = 0.0
 proxy-imu:0.mount.pitch = 0.0
-proxy-imu:0.mount.yaw = 180.0
+proxy-imu:0.mount.yaw = 0.0
 proxy-imu:0.debug = 1
 
 
@@ -90,8 +90,8 @@ proxy-imu:1.pololu.altimu10.device_node = /dev/i2c-2
 proxy-imu:1.pololu.altimu10.address_type = low
 proxy-imu:1.calibration_file = /opt/opendlv.core.configuration/calibration-low.txt
 proxy-imu:1.lockcalibration = 0
-proxy-imu:1.calibration_number_of_samples = 100000
+proxy-imu:1.calibration_number_of_samples = 10000
 proxy-imu:1.mount.roll = 0.0
 proxy-imu:1.mount.pitch = 0.0
-proxy-imu:1.mount.yaw = 180.0
+proxy-imu:1.mount.yaw = 0.0
 proxy-imu:1.debug = 1
