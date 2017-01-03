@@ -18,10 +18,9 @@
 #
 # GLOBAL CONFIGURATION
 #
-#global.car = Car.objx
-#global.scenario = Track.scnx
-global.car = file://./Car.objx
-global.scenario = file://./Track.scnx
+#The setting of the following two parameters assumes that the receiver runs odcockpit in the use case remoteMonitorCPC next to this use case. If the reciever runs odcockpit in a non-Dockerized environment, then global.car = file://./Car.objx and global.scenario = file://./Track.scnx, and make sure that Car.objx and Track.scnx are in the same folder as the odcokpit binary file
+global.car = file:///opt/opendlv.data/Car.objx
+global.scenario = file:///opt/opendlv.data/Track.scnx
 global.showGrid = 0
 
 # The following attributes define the buffer sizes for recording and
