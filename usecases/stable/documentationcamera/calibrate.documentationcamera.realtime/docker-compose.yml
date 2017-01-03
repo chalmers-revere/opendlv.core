@@ -25,6 +25,24 @@ services:
         volumes:
             - .:/opt/opendlv.core.configuration
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.core.configuration/configuration"
+        
+    # Micro-service for health.
+    # The host's /dev and /proc directories are mapped into the Docker container
+    # to check for expected properties like device nodes. The privileged flag
+    # allows the unrestricted access.
+    health:
+        build: .
+        depends_on:
+            - odsupercomponent
+        network_mode: host
+        restart: always
+        privileged: true
+        volumes:
+            - .:/opt/opendlv.core.configuration
+            - /dev:/from.host/dev
+            - /proc:/from.host/proc
+        working_dir: "/opt/opendlv.core.configuration"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-health --cid=${CID} --freq=1"
 
     # Micro-service for proxy-camera.
     proxy-camera:
