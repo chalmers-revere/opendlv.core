@@ -1,54 +1,14 @@
-This folder provides the instructions for recording VLP-16 lidar data. A docker-compose file is provided to start all micro-services to decode VLP-16 packets and record VLP-16 data. It includes three services: odsupercomponent, opendlv-core-system-proxy-velodyne16 (or proxy-velodyne16 for short), and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. proxy-velodyne16 listens to VLP-16 packets and decodes them in real time. odrecorderh264 is used for recording. This tutorial assumes that git, Docker, and Docker Compose are installed. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/
+This folder provides the instructions for recording VLP-16 lidar data. A docker-compose file is provided to start all micro-services to decode VLP-16 packets and record VLP-16 data. It includes three services: odsupercomponent, opendlv-core-system-proxy-velodyne16 (or proxy-velodyne16 for short), and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. proxy-velodyne16 listens to VLP-16 packets and decodes them in real time. odrecorderh264 is used for recording. This tutorial assumes that git, Docker, and Docker Compose are installed. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/. In addition, the Docker image of opendlv.core is necessary for running this use case.
 
-### Pull the OpenDaVINCI Docker base image
+VLP-16 sends out data as UDP packets via an Ethernet cable. Currently VLP-16 is configured to have a static IP address via DHCP: 10.42.42.150. Ping this IP address to check if VLP-16 is connected to the network. Run `nmap 10.42.42.0/24` if necessary to check the IP addresses of all devices in the network. The network configuration of VLP-16 can be changed by following the data sheet provided together with VLP-16.
 
-Run the following to obtain the latest OpenDaVINCI Docker base image:
+The VLP-16 decoder supports two types of point clouds: shared point cloud (SPC) and compact point cloud (CPC). SPC contains the xyz coordinate of each point and its intensity value. CPC is a compressed version of SPC, squeezing one VLP-16 frame into one UDP packet. CPC does not include intensity values and it is less accurate than SPC, however, the disk consumption of CPC is much lower. In the configuration file in this use case folder, proxy-velodyne16.pointCloudOption specifies which point cloud is enabled: 0: SPC only, 1: CPC only, 2: both SPC and CPC. This use case folder also contains:
 
-    $ docker pull seresearch/opendavinci-ubuntu-16.04:latest
-
-### Prepare proxy-velodyne16
-
-proxy-velodyne16 is included in the opendlv.core repository (https://github.com/chalmers-revere/opendlv.core). Clone the opendlv.core source:
-
-    $ git clone https://github.com/chalmers-revere/opendlv.core
-    
-    $ git pull
-    
-Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest:
-
-    $ make buildComplete
-    
-    $ make createDockerImage
-    
-The proxy-velodyne16 binary opendlv-core-system-proxy-velodyne16 will be found at opendlv.core/docker/builds/opendlv-core-on-opendavinci-ubuntu-16.04-complete-feature.velodyne/opt/opendlv.core/bin.
-
-
-### Network setup
-
-In order to receive packets from VLP-16, the IP address has to be manually set and the firewall must be disabled. In Ubuntu where proxy-velodyne16 has been tested, the firewall can be disabled by:
-
-    $ sudo ufw disable
-
-The IP address should be set as 192.168.1.xx, where xx is any integer from 1 to 254, except 201 which is reserved for VLP-16. The subnet mask should be set as 255.255.255.0. Note that if proxy-velodyne16 runs in a virtual machine, the network adapter of the virtual machine has to be bridged. For instance, if proxy-velodyne16 runs on Ubuntu via VirtualBox while the VLP-16 is connected to the port "en5: Thunderbolt Ethernet" of the host machine, then both "Bridged Adapter" and "en5: Thunderbolt Ethernet" should be selected for the network configuration of VirtualBox.
-
-Note that this network setup will disable the access to the Internet. Since proxy-velodyne16 is based on OpenDaVINCI which requires UDP multicast to execute different software modules, the local loopback device **lo** needs to be configured to allow UDP multicast sessions:
-
-    $ sudo ifconfig lo multicast
-    
-    $ sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev lo
- 
-Alternatively, by visiting 192.168.1.201 in a web browser, one can modify the configuration of VLP-16. The MAC address of VLP-16 can be found and DHCP can be enabled. Then it is possible to use VLP-16 without changing IP address.
- 
-### Use proxy-velodyne16 with Docker Compose
-
-In addition to the docker-compose file docker-compose.yml and the README file, this folder also contains:
-
-- a configuration file used by odsupercomponent
 - a Dockerfile specifying the Docker images to be used
 - an environment file .env which defines an environment variable CID that is referred to by the docker-compose file
-- a VLP-16 calibration file VLP-16.xml required by the VLP-16 decoder
+- a VLP-16 calibration file VLP-16.xml required by the VLP-16 decoder while SPC is enabled
 
-Here CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111.  In this folder, run Docker Compose:
+Here CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 111, thus in docker-compose.yml "${CID}" resolves to 111. In this folder, run Docker Compose:
     
     $ docker-compose up --build
 
@@ -60,7 +20,12 @@ Remove the stopped containers:
 
     $ docker-compose rm
     
-After the recording, the recording files are stored at ~/recordings, including a .rec file which stores all OpenDaVINCI containers, and a .rec.mem file which stores the recording data. The recording file format is CID-xxx-odrecorderh264_yyy, where xxx is the cid number and yyy is the timestamp.
+After the recording, the recording files are stored at ~/recordings, including
+
+- a .rec file which stores all OpenDaVINCI containers, including CPC if CPC is enabled
+- a .rec.mem file which stores SPC if SPC is enabled. This file is empty if SPC is not enabled
+
+The recording file format is CID-xxx-odrecorderh264_yyy, where xxx is the cid number and yyy is the timestamp.
     
 Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes all micro-services run with cid 123 instead of 111:
 
