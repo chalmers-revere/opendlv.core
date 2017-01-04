@@ -1,5 +1,6 @@
-/*
- * Copyright (C) 2016 Chalmers REVERE
+/**
+ * proxy-anglesensor - Interface to angle sensor.
+ * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,22 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-message opendlv.proxy.AccelerometerReading [id = 161] {
-  float acceleration[3] [id = 1];
-}
 
-message opendlv.proxy.AltimeterReading [id = 162] {
-  float altitude [id = 1];
-}
+#include "ProxyAnglesensor.h"
 
-message opendlv.proxy.MagnetometerReading [id = 163] {
-  float magneticField[3] [id = 1];
-}
-
-message opendlv.proxy.GyroscopeReading [id = 168] {
-  float angularVelocity[3] [id = 1];
-}
-
-message opendlv.proxy.TemperatureReading [id=190] {
-  float temperature [id = 1];
+int32_t main(int32_t argc, char **argv) {
+    opendlv::core::system::proxy::ProxyAnglesensor angelsensor(argc, argv);
+    return angelsensor.runModule();
 }

@@ -17,10 +17,12 @@
  * USA.
  */
 
-#ifndef PROXY_PROXYIMU_H
-#define PROXY_PROXYIMU_H
+#ifndef PROXY_PROXYANGLESENSOR_H
+#define PROXY_PROXYANGLESENSOR_H
 
 #include <memory>
+#include <vector>
+#include <deque>
 
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/data/Container.h>
@@ -30,20 +32,18 @@ namespace core {
 namespace system {
 namespace proxy {
 
-class PololuAltImu10Device;
-
 /**
- * This class provides interface to an IMU through I2C.
+ * This class provides interface to an angle sensor through analogue voltage input reading.
  */
-class ProxyIMU : public odcore::base::module::TimeTriggeredConferenceClientModule {
+class ProxyAnglesensor : public odcore::base::module::TimeTriggeredConferenceClientModule {
    public:
-    ProxyIMU(int32_t const &, char **);
+    ProxyAnglesensor(int32_t const &, char **);
 
-    ProxyIMU(ProxyIMU const &) = delete;
+    ProxyAnglesensor(ProxyAnglesensor const &) = delete;
 
-    ProxyIMU &operator=(ProxyIMU const &) = delete;
+    ProxyAnglesensor &operator=(ProxyAnglesensor const &) = delete;
 
-    virtual ~ProxyIMU();
+    virtual ~ProxyAnglesensor();
 
     odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
@@ -52,10 +52,29 @@ class ProxyIMU : public odcore::base::module::TimeTriggeredConferenceClientModul
 
     void tearDown();
 
-    std::unique_ptr< PololuAltImu10Device > m_device;
-    
+    void Calibrate();
+
+    bool LoadCalibration();
+
+    void SaveCalibration();
+
+    uint16_t GetRawReading();
+
+    float Analogue2Radians(uint16_t &);
+
+    uint16_t m_pin;
+  
+    std::vector<float> m_convertConstants;
+
+    std::deque<uint16_t> m_rawReadingMinMax;
+
+    std::deque<float> m_anglesMinMax;
+
+    std::string m_calibrationFile;
+
     bool m_debug;
 };
+
 }
 }
 }
