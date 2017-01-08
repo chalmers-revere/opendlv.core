@@ -131,7 +131,6 @@ void ProxyFH16::setUp() {
 
         // Start the wrapped CAN device to receive CAN messages concurrently.
         m_device->start();
-        m_initialised = true;
     } else {
         cerr << "[" << getName() << "]: "
              << "Failed to open CAN device '" << DEVICE_NODE << "'." << endl;
