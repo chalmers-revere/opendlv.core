@@ -36,19 +36,12 @@ BS_:
 BU_: Chalmers VehicleGateWay
 
 
-BO_ 272 Trailer: 8 VehicleGateWay
+BO_ 264 Driveline: 5 Vector__XXX
+ SG_ EngineTorque : 16|16@1+ (1,0) [0|0] "Nm" Vector__XXX
+ SG_ EngineSpeed : 0|16@1+ (0.125,0) [0|0] "rpm" Vector__XXX
+ SG_ CurrentGear : 32|8@1+ (1,-125) [-125|130] "" Vector__XXX
 
-BO_ 265 EnergyLevels: 3 VehicleGateWay
- SG_ BatterySOC : 16|8@1+ (0.5,0) [0|0] "Percent" Vector__XXX
- SG_ FuelLevel : 0|10@1+ (1,0) [0|350] "l" Vector__XXX
-
-BO_ 264 Driveline: 5 VehicleGateWay
- SG_ EngineTorque : 16|16@1+ (1,0) [0|4000] "Nm" Vector__XXX
- SG_ EngineSpeed : 0|16@1+ (0.125,0) [0|8191.875] "rpm" Vector__XXX
- SG_ CurrentGear : 32|8@1+ (1,-125) [-4|12] "GearValue" Vector__XXX
-
-BO_ 262 ManualDriver: 5 VehicleGateWay
- SG_ Doors : 32|3@1+ (1,0) [0|0] "" Vector__XXX
+BO_ 262 ManualDriver: 4 VehicleGateWay
  SG_ TorsionBarTorque : 16|16@1+ (0.0009765625,-32) [-32|31.9990234375] "Nm" Vector__XXX
  SG_ BrakePedalPosition : 8|8@1+ (0.4,0) [0|102] "Percent" Vector__XXX
  SG_ AccelerationPedalPosition : 0|8@1+ (0.4,0) [0|102] "Percent" Vector__XXX
@@ -95,14 +88,6 @@ BO_ 257 WheelSpeeds1: 8 VehicleGateWay
 
 
 
-CM_ SG_ 262 Doors "0 - Idle
-1 - Both doors closed
-2 - Driver door opened
-3 - Passenger door opend
-4 - Both doors opened
-5-7 Error";
-CM_ SG_ 514 BrakeRequest "abs(BrakeRequest.phys) > 0.05 m/s^2 to actually apply brakes.
-This means Enable_BrakeRequest can be active without sending smal brake request to brakeECU.";
 CM_ SG_ 263 SteeringWheelAngle "65024 - 65279 Error ; 65280 - 65535 Not available";
 CM_ SG_ 261 DriveAxle2Load "65024 - 65279 Error ; 65280 - 65535 Not available";
 CM_ SG_ 261 DriveAxle1Load "65024 - 65279 Error ; 65280 - 65535 Not available";
@@ -126,9 +111,6 @@ BA_DEF_DEF_  "GenSigStartValue" 0;
 BA_DEF_DEF_  "GenMsgSendType" "Cyclic";
 BA_DEF_DEF_  "GenMsgCycleTime" 0;
 BA_DEF_DEF_  "BusType" "CAN";
-BA_ "GenMsgCycleTime" BO_ 272 20;
-BA_ "GenMsgCycleTime" BO_ 265 20;
-BA_ "GenMsgCycleTime" BO_ 264 20;
 BA_ "GenMsgCycleTime" BO_ 262 10;
 BA_ "GenMsgCycleTime" BO_ 515 10;
 BA_ "GenMsgCycleTime" BO_ 514 10;
@@ -139,12 +121,9 @@ BA_ "GenMsgCycleTime" BO_ 260 10;
 BA_ "GenMsgCycleTime" BO_ 259 100;
 BA_ "GenMsgCycleTime" BO_ 258 10;
 BA_ "GenMsgCycleTime" BO_ 257 20;
-BA_ "GenSigStartValue" SG_ 265 BatterySOC 255;
-BA_ "GenSigStartValue" SG_ 264 EngineSpeed 65535;
 BA_ "GenSigStartValue" SG_ 264 CurrentGear 125;
 BA_ "GenSigStartValue" SG_ 262 BrakePedalPosition 255;
 BA_ "GenSigStartValue" SG_ 262 AccelerationPedalPosition 255;
 BA_ "GenSigStartValue" SG_ 515 AccelerationRequestPedal 255;
-BA_ "GenSigStartValue" SG_ 263 SteeringWheelAngle 32126.976;
+BA_ "GenSigStartValue" SG_ 263 SteeringWheelAngle 65535;
 BA_ "GenSigStartValue" SG_ 263 RoadWheelAngle 32765.3997378768;
-
