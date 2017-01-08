@@ -94,9 +94,40 @@ void ProxyFH16::setUp() {
             setUpRecordingMappedGenericCANMessage(TIMESTAMP);
         }
 
+        bool valueFound = false;
+        bool enableActuationBrake = 
+          getKeyValueConfiguration().getOptionalValue<bool>(
+              "proxy-fh16.enableActuationBrake", valueFound);
+        if (!valueFound) {
+          enableActuationBrake = false;
+        }
+        if (!enableActuationBrake) {
+          std::cout << "The brakes are not enabled for control." << std::endl;
+        }
+
+        bool enableActuationSteering = 
+          getKeyValueConfiguration().getOptionalValue<bool>(
+              "proxy-fh16.enableActuationSteering", valueFound);
+        if (!valueFound) {
+          enableActuationSteering = false;
+        }
+        if (!enableActuationSteering) {
+          std::cout << "The steering is not enabled for control." << std::endl;
+        }
+
+        bool enableActuationThrottle = 
+          getKeyValueConfiguration().getOptionalValue<bool>(
+              "proxy-fh16.enableActuationThrottle", valueFound);
+        if (!valueFound) {
+          enableActuationThrottle = false;
+        }
+        if (!enableActuationThrottle) {
+          std::cout << "The throttle is not enabled for control." << std::endl;
+        }
+
         // Create a data sink that automatically receives all Containers and
         // selectively relays them based on the Container type to the CAN device.
-        m_canMessageDataStore = unique_ptr< CanMessageDataStore >(new CanMessageDataStore(m_device));
+        m_canMessageDataStore = unique_ptr< CanMessageDataStore >(new CanMessageDataStore(m_device, enableActuationBrake, enableActuationSteering, enableActuationThrottle));
         addDataStoreFor(*m_canMessageDataStore);
 
         // Start the wrapped CAN device to receive CAN messages concurrently.
