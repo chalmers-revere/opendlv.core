@@ -17,7 +17,10 @@
  */
 
 message opendlv.proxy.AccelerometerReading [id = 161] {
-  float acceleration[3] [id = 1];
+  float accelerationX [id = 1];
+  float accelerationY [id = 2];
+  float accelerationZ [id = 3];
+
 }
 
 message opendlv.proxy.AltimeterReading [id = 162] {
@@ -25,11 +28,16 @@ message opendlv.proxy.AltimeterReading [id = 162] {
 }
 
 message opendlv.proxy.MagnetometerReading [id = 163] {
-  float magneticField[3] [id = 1];
+  float magneticFieldX [id = 1];
+  float magneticFieldY [id = 2];
+  float magneticFieldZ [id = 3];
+
 }
 
 message opendlv.proxy.GyroscopeReading [id = 168] {
-  float angularVelocity[3] [id = 1];
+  float angularVelocityX [id = 1];
+  float angularVelocityY [id = 2];
+  float angularVelocityZ [id = 3];
 }
 
 message opendlv.proxy.TemperatureReading [id=190] {

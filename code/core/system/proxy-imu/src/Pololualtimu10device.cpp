@@ -396,8 +396,7 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     CalibrateAccelerometer(&reading);
     Eigen::Vector3f rawReading(reading[0], reading[1], reading[2]);
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
-    float readingArray[] = {adjustedReading[0],adjustedReading[1],adjustedReading[2]};
-    opendlv::proxy::AccelerometerReading accelerometerReading(readingArray);
+    opendlv::proxy::AccelerometerReading accelerometerReading(adjustedReading[0],adjustedReading[1],adjustedReading[2]);
     return accelerometerReading;
 }
 
@@ -533,8 +532,7 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);    
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
 
-    float readingArray[] = {adjustedReading[0],adjustedReading[1],adjustedReading[2]};
-    opendlv::proxy::MagnetometerReading magnetometerReading(readingArray);
+    opendlv::proxy::MagnetometerReading magnetometerReading(adjustedReading[0],adjustedReading[1],adjustedReading[2]);
     return magnetometerReading;
 }
 
@@ -617,8 +615,7 @@ opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
     CalibrateGyroscope(&reading);
     Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
-    float readingArray[] = {adjustedReading[0], adjustedReading[1], adjustedReading[2]};
-    opendlv::proxy::GyroscopeReading gyroscopeReading(readingArray);
+    opendlv::proxy::GyroscopeReading gyroscopeReading(adjustedReading[0], adjustedReading[1], adjustedReading[2]);
     return gyroscopeReading;
 }
 
