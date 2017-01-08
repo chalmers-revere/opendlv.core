@@ -37,6 +37,6 @@ services:
         network_mode: "host"
         volumes:
         - .:/opt/opendlv.core.configuration
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID}--freq=10 --id=2"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --freq=10 --id=2"
 
 
