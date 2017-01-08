@@ -220,39 +220,6 @@ void ProxyFH16::setUpRecordingMappedGenericCANMessage(const string &timeStampFor
     }
 }
 
-void ProxyFH16::disableCANRequests() {
-    // Disable brakes.
-    opendlv::proxy::reverefh16::BrakeRequest brakeRequest;
-    brakeRequest.setEnableRequest(false);
-    brakeRequest.setBrake(0.0);
-    Container brakeRequestContainer(brakeRequest);
-
-    canmapping::opendlv::proxy::reverefh16::BrakeRequest brakeRequestMapping;
-    automotive::GenericCANMessage genericCanMessage = brakeRequestMapping.encode(brakeRequestContainer);
-    m_device->write(genericCanMessage);
-
-    // Disable acceleration.
-    opendlv::proxy::reverefh16::AccelerationRequest accelerationRequest;
-    accelerationRequest.setEnableRequest(false);
-    accelerationRequest.setAccelerationPedalPosition(0.0);
-    Container accelerationRequestContainer(accelerationRequest);
-
-    canmapping::opendlv::proxy::reverefh16::AccelerationRequest accelerationRequestMapping;
-    genericCanMessage = accelerationRequestMapping.encode(accelerationRequestContainer);
-    m_device->write(genericCanMessage);
-
-    // Disable steering.
-    opendlv::proxy::reverefh16::SteeringRequest steeringRequest;
-    steeringRequest.setEnableRequest(false);
-    steeringRequest.setSteeringRoadWheelAngle(0.0);
-    steeringRequest.setSteeringDeltaTorque(0.0);
-    Container steeringRequestContainer(steeringRequest);
-
-    canmapping::opendlv::proxy::reverefh16::SteeringRequest steeringRequestMapping;
-    genericCanMessage = steeringRequestMapping.encode(steeringRequestContainer);
-    m_device->write(genericCanMessage);
-}
-
 void ProxyFH16::setUpRecordingGenericCANMessage(const string &timeStampForFileName) {
     // URL for storing containers containing GenericCANMessages.
     stringstream recordingUrl;
@@ -284,15 +251,8 @@ void ProxyFH16::setUpRecordingGenericCANMessage(const string &timeStampForFileNa
     (*m_ASCfile) << "Time (s) Channel ID RX/TX d Length Byte 1 Byte 2 Byte 3 Byte 4 Byte 5 Byte 6 Byte 7 Byte 8" << endl;
 }
 
-void ProxyFH16::nextGenericCANMessage(const automotive::GenericCANMessage &gcm) {
-    static int counter = 0;
-    const int CAN_MESSAGE_COUNTER_WHEN_TO_SEND = 1;
-    const int CAN_MESSAGES_TO_IGNORE = 10;
-    counter++;
-    if (counter > CAN_MESSAGES_TO_IGNORE) {
-        counter = 0;
-    }
-
+void ProxyFH16::nextGenericCANMessage(const automotive::GenericCANMessage &gcm) 
+{
     // Log raw CAN data in ASC format.
     dumpASCData(gcm);
 
@@ -310,12 +270,7 @@ void ProxyFH16::nextGenericCANMessage(const automotive::GenericCANMessage &gcm) 
             m_fifoMappedCanMessages.add(c);
         }
 
-        // Send container to conference only every tenth message.
-        {
-            if (counter == CAN_MESSAGE_COUNTER_WHEN_TO_SEND) {
-                getConference().send(c);
-            }
-        }
+        getConference().send(c);
     }
 
     // Enqueue CAN message wrapped as Container to be recorded if we have a valid recorder.
