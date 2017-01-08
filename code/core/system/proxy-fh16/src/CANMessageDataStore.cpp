@@ -102,7 +102,7 @@ void CanMessageDataStore::add(odcore::data::Container &a_container) {
 
         const float steering = actuationRequest.getSteering();
         opendlv::proxy::reverefh16::SteeringRequest steeringRequest;
-        steerRequest.setEnableRequest(steeringEnabled);
+        steeringRequest.setEnableRequest(steeringEnabled);
         steeringRequest.setSteeringRoadWheelAngle(steering);
 
         // Must be 33.535 to disable deltatorque.
