@@ -98,6 +98,8 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
     std::shared_ptr< std::fstream > m_ASCfile;
     std::map< uint32_t, std::shared_ptr< std::fstream > > m_mapOfCSVFiles;
     std::map< uint32_t, std::shared_ptr< odcore::reflection::CSVFromVisitableVisitor > > m_mapOfCSVVisitors;
+
+    bool m_initialised;
 };
 } // proxy
 } // system

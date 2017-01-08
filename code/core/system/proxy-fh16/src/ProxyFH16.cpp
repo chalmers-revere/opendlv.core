@@ -58,7 +58,8 @@ ProxyFH16::ProxyFH16(const int &argc, char **argv)
     , m_startOfRecording()
     , m_ASCfile()
     , m_mapOfCSVFiles()
-    , m_mapOfCSVVisitors() {}
+    , m_mapOfCSVVisitors() 
+    , m_initialised(false) {}
 
 ProxyFH16::~ProxyFH16() {}
 
@@ -100,6 +101,7 @@ void ProxyFH16::setUp() {
 
         // Start the wrapped CAN device to receive CAN messages concurrently.
         m_device->start();
+        m_initialised = true;
     } else {
         cerr << "[" << getName() << "]: "
              << "Failed to open CAN device '" << DEVICE_NODE << "'." << endl;
@@ -254,6 +256,9 @@ void ProxyFH16::setUpRecordingGenericCANMessage(const string &timeStampForFileNa
 }
 
 void ProxyFH16::nextGenericCANMessage(const automotive::GenericCANMessage &gcm) {
+    if (!m_initialised) {
+        return;
+    }
     static int counter = 0;
     const int CAN_MESSAGE_COUNTER_WHEN_TO_SEND = 1;
     const int CAN_MESSAGES_TO_IGNORE = 10;
