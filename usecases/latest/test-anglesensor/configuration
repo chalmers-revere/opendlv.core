@@ -74,7 +74,7 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 
 proxy-anglesensor.pin = 0
-proxy-anglesensor.anglesminmax = -1,1
+proxy-anglesensor.anglesminmax = -60,60
 proxy-anglesensor.setUpCalibration = 1
 proxy-anglesensor.calibrationfile = /opt/opendlv.core.configuration/anglesensor0calibration.txt
 proxy-anglesensor.debug = 1

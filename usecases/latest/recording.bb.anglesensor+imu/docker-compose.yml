@@ -20,14 +20,40 @@
 version: '2'
 
 services:
-    odsupercomponent:
+        
+    # micro service for proxy-anglesensor.
+    proxy-anglesensor1:
         build: .
         network_mode: "host"
         volumes:
-        - .:/opt/opendlv.data
-        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
-        
-    proxy-imu-high:
+            - .:/opt/opendlv.core.configuration
+            - /sys/:/sys/
+        depends_on:
+            - odsupercomponent
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-anglesensor --cid=${CID} --freq=10 --id=1"
+
+    # micro service for proxy-anglesensor.
+    proxy-anglesensor2:
+        build: .
+        network_mode: "host"
+        volumes:
+            - .:/opt/opendlv.core.configuration
+            - /sys/:/sys/
+        depends_on:
+            - odsupercomponent
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-anglesensor --cid=${CID} --freq=10 --id=2"
+
+    proxy-anglesensor3:
+        build: .
+        network_mode: "host"
+        volumes:
+            - .:/opt/opendlv.core.configuration
+            - /sys/:/sys/
+        depends_on:
+            - odsupercomponent
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-anglesensor --cid=${CID} --freq=10 --id=3"
+
+    proxy-imu8:
         build: .
         devices:
         - "/dev/i2c-2:/dev/i2c-2"
@@ -36,15 +62,15 @@ services:
             - .:/opt/opendlv.core.configuration
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --id=1 --freq=10"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --freq=10 --id=8"
 
-    proxy-imu-low:
+    proxy-imu9:
         build: .
         devices:
         - "/dev/i2c-2:/dev/i2c-2"
         network_mode: "host"
         volumes:
         - .:/opt/opendlv.core.configuration
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --id=2 --freq=10"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID}--freq=10 --id=9"
 
 
