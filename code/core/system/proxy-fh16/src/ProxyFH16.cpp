@@ -286,6 +286,10 @@ void ProxyFH16::setUpRecordingGenericCANMessage(const string &timeStampForFileNa
     (*m_ASCfile) << "Time (s) Channel ID RX/TX d Length Byte 1 Byte 2 Byte 3 Byte 4 Byte 5 Byte 6 Byte 7 Byte 8" << endl;
 }
 
+void ProxyFH16::nextContainer(odcore::data::Container const &a_c){
+    
+}
+
 void ProxyFH16::nextGenericCANMessage(const automotive::GenericCANMessage &gcm) {
     if (!m_initialised) {
         return;

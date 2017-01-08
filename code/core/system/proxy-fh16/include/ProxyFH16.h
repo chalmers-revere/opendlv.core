@@ -66,6 +66,7 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
     ProxyFH16 &operator=(ProxyFH16 const &) = delete;
     virtual ~ProxyFH16();
 
+    virtual void nextContainer(odcore::data::Container const &);
     virtual void nextGenericCANMessage(const automotive::GenericCANMessage &gcm);
 
    private:
