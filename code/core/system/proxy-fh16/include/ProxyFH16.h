@@ -66,7 +66,6 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
     ProxyFH16 &operator=(ProxyFH16 const &) = delete;
     virtual ~ProxyFH16();
 
-    virtual void nextContainer(odcore::data::Container const &);
     virtual void nextGenericCANMessage(const automotive::GenericCANMessage &gcm);
 
    private:
@@ -99,8 +98,6 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
     std::shared_ptr< std::fstream > m_ASCfile;
     std::map< uint32_t, std::shared_ptr< std::fstream > > m_mapOfCSVFiles;
     std::map< uint32_t, std::shared_ptr< odcore::reflection::CSVFromVisitableVisitor > > m_mapOfCSVVisitors;
-
-    bool m_initialised;
 };
 } // proxy
 } // system

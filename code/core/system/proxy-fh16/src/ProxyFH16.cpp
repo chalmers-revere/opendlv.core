@@ -58,8 +58,7 @@ ProxyFH16::ProxyFH16(const int &argc, char **argv)
     , m_startOfRecording()
     , m_ASCfile()
     , m_mapOfCSVFiles()
-    , m_mapOfCSVVisitors() 
-    , m_initialised(false) {}
+    , m_mapOfCSVVisitors() {}
 
 ProxyFH16::~ProxyFH16() {}
 
@@ -94,45 +93,13 @@ void ProxyFH16::setUp() {
             setUpRecordingMappedGenericCANMessage(TIMESTAMP);
         }
 
-        bool valueFound = false;
-        bool enableActuationBrake = 
-          getKeyValueConfiguration().getOptionalValue<bool>(
-              "proxy-fh16.enableActuationBrake", valueFound);
-        if (!valueFound) {
-          enableActuationBrake = false;
-        }
-        if (!enableActuationBrake) {
-          std::cout << "The brakes are not enabled for control." << std::endl;
-        }
-
-        bool enableActuationSteering = 
-          getKeyValueConfiguration().getOptionalValue<bool>(
-              "proxy-fh16.enableActuationSteering", valueFound);
-        if (!valueFound) {
-          enableActuationSteering = false;
-        }
-        if (!enableActuationSteering) {
-          std::cout << "The steering is not enabled for control." << std::endl;
-        }
-
-        bool enableActuationThrottle = 
-          getKeyValueConfiguration().getOptionalValue<bool>(
-              "proxy-fh16.enableActuationThrottle", valueFound);
-        if (!valueFound) {
-          enableActuationThrottle = false;
-        }
-        if (!enableActuationThrottle) {
-          std::cout << "The throttle is not enabled for control." << std::endl;
-        }
-
         // Create a data sink that automatically receives all Containers and
         // selectively relays them based on the Container type to the CAN device.
-        m_canMessageDataStore = unique_ptr< CanMessageDataStore >(new CanMessageDataStore(m_device, enableActuationBrake, enableActuationSteering, enableActuationThrottle));
+        m_canMessageDataStore = unique_ptr< CanMessageDataStore >(new CanMessageDataStore(m_device));
         addDataStoreFor(*m_canMessageDataStore);
 
         // Start the wrapped CAN device to receive CAN messages concurrently.
         m_device->start();
-        m_initialised = true;
     } else {
         cerr << "[" << getName() << "]: "
              << "Failed to open CAN device '" << DEVICE_NODE << "'." << endl;
@@ -286,14 +253,7 @@ void ProxyFH16::setUpRecordingGenericCANMessage(const string &timeStampForFileNa
     (*m_ASCfile) << "Time (s) Channel ID RX/TX d Length Byte 1 Byte 2 Byte 3 Byte 4 Byte 5 Byte 6 Byte 7 Byte 8" << endl;
 }
 
-void ProxyFH16::nextContainer(odcore::data::Container const &a_c){
-    
-}
-
 void ProxyFH16::nextGenericCANMessage(const automotive::GenericCANMessage &gcm) {
-    if (!m_initialised) {
-        return;
-    }
     static int counter = 0;
     const int CAN_MESSAGE_COUNTER_WHEN_TO_SEND = 1;
     const int CAN_MESSAGES_TO_IGNORE = 10;
