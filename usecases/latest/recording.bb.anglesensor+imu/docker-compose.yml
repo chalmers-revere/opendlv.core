@@ -28,8 +28,6 @@ services:
         volumes:
             - .:/opt/opendlv.core.configuration
             - /sys/:/sys/
-        depends_on:
-            - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-anglesensor --cid=${CID} --freq=10 --id=1"
 
     # micro service for proxy-anglesensor.
@@ -39,8 +37,6 @@ services:
         volumes:
             - .:/opt/opendlv.core.configuration
             - /sys/:/sys/
-        depends_on:
-            - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-anglesensor --cid=${CID} --freq=10 --id=2"
 
     proxy-anglesensor3:
@@ -49,8 +45,6 @@ services:
         volumes:
             - .:/opt/opendlv.core.configuration
             - /sys/:/sys/
-        depends_on:
-            - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-anglesensor --cid=${CID} --freq=10 --id=3"
 
     proxy-imu8:
@@ -60,8 +54,6 @@ services:
         network_mode: "host"
         volumes:
             - .:/opt/opendlv.core.configuration
-        depends_on:
-            - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --freq=10 --id=8"
 
     proxy-imu9:
