@@ -20,6 +20,7 @@
 # Extract identifier from the message encoded in BO_.
 /^BO_/ {
     ID=$2
+    # Check for CAN extended frame
     if (ID>=2147483648)
     {
         ID=ID-2147483648
