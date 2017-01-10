@@ -297,8 +297,8 @@ void Velodyne16Decoder::nextString(const string &payload) {
                     }
                     
                     if(m_withCPC && m_pointIndexCPC < m_MAX_POINT_SIZE){
-                        //Store distance in cm in an array of uint16_t type
-                        m_16Sensors[sensorID] = ntohs(firstByte * 256 + secondByte)/5;   
+                        //Store distance with resolution 2mm in an array of uint16_t type
+                        m_16Sensors[sensorID] = ntohs(firstByte * 256 + secondByte);   
                         if(sensorID==15){
                             for(uint8_t index=0;index<16;index++){
                                 m_distanceStringStream.write((char*)(&m_16Sensors[m_sensorOrderIndex[index]]),2);
