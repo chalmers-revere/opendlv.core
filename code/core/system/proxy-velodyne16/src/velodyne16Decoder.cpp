@@ -84,20 +84,20 @@ void Velodyne16Decoder::readCalibrationFile(){
     }
 }
 
-void Velodyne16Decoder::initializeArraysCPC(){
+void Velodyne16Decoder::index16sensorIDs() {
     //Distance values for each 16 sensors with the same azimuth are ordered based on vertical angle,
     //from -15 to 15 degress, with increment 2--sensor IDs: 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15
     readCalibrationFile();
     float orderedVerticalAngle[16];
-    for (uint8_t sensorIndex = 0; sensorIndex < 16; sensorIndex++) {
-        m_16SensorsNoIntensity[sensorIndex] = 0;
-        m_16SensorsWithIntensity[sensorIndex] = 0;
-        orderedVerticalAngle[sensorIndex] = m_verticalAngle[sensorIndex];
+    for (uint8_t i = 0; i < 16; i++) {
+        m_16SensorsNoIntensity[i] = 0;
+        m_16SensorsWithIntensity[i] = 0;
+        orderedVerticalAngle[i] = m_verticalAngle[i];
     }
     //Order the vertical angles of 16 sensor IDs with increasing value
-    for(uint8_t i=0;i<16;i++){
-        for(uint8_t j=i;j<16;j++){
-            if (orderedVerticalAngle[j]<orderedVerticalAngle[i]) {
+    for (uint8_t i = 0; i < 16; i++) {
+        for (uint8_t j = i; j < 16; j++) {
+            if (orderedVerticalAngle[j] < orderedVerticalAngle[i]) {
                 float temp = orderedVerticalAngle[j];
                 orderedVerticalAngle[j] = orderedVerticalAngle[i];
                 orderedVerticalAngle[i] = temp;
@@ -105,11 +105,10 @@ void Velodyne16Decoder::initializeArraysCPC(){
         }
     }
     //Find the sensor IDs in the odered list of vertical angles
-    for(uint8_t i=0;i<16;i++){
-        for(uint8_t j=0;j<16;j++){
-            if(abs(orderedVerticalAngle[i]-m_verticalAngle[j])<0.1f) {
+    for (uint8_t i = 0; i < 16; i++) {
+        for (uint8_t j = 0; j < 16; j++) {
+            if (abs(orderedVerticalAngle[i] - m_verticalAngle[j]) < 0.1f) {
                 m_sensorOrderIndex[i] = j;
-                cout<<+m_sensorOrderIndex[i]<<endl;
                 break;
             }
         }
@@ -145,15 +144,11 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     m_spc.setHeight(1); // We have just a sequence of vectors.
     m_spc.setNumberOfComponentsPerPoint(m_NUMBER_OF_COMPONENTS_PER_POINT);
     m_spc.setComponentDataType(SharedPointCloud::FLOAT_T); // Data type per component.
-    m_spc.setUserInfo(SharedPointCloud::XYZ_INTENSITY);
+    m_spc.setUserInfo(SharedPointCloud::POLAR_INTENSITY);
 
     //Create memory for temporary storage of point cloud data for each frame
     m_segment = (float *)malloc(m_SIZE);
-    readCalibrationFile(); 
-    
-    if(m_withCPC){
-        initializeArraysCPC();
-    }
+    index16sensorIDs();
 }
 
 Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &distanceEncoding)
@@ -180,11 +175,11 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_distanceStringStreamWithIntensity("")
     , m_isStartAzimuth(true) {
     
-    initializeArraysCPC();
+    index16sensorIDs();
 }
 
 Velodyne16Decoder::~Velodyne16Decoder() {
-    if(m_withSPC){
+    if (m_withSPC) {
         free(m_segment);
     }
 }
@@ -192,7 +187,7 @@ Velodyne16Decoder::~Velodyne16Decoder() {
 //Update the shared or compact point cloud when a complete scan is completed.
 void Velodyne16Decoder::sendPointCloud() {  
     //Send shared point cloud
-    if(m_withSPC){
+    if (m_withSPC) {
         if (m_velodyneSharedMemory->isValid()) {
             Lock l(m_velodyneSharedMemory);
             memcpy(m_velodyneSharedMemory->getSharedMemory(), m_segment, m_SIZE);
@@ -206,20 +201,18 @@ void Velodyne16Decoder::sendPointCloud() {
         m_startID = 0;
     }
     //Send compact point cloud
-    if(m_withCPC){
-        if(m_CPCIntensityOption==0){
-            CompactPointCloud cpc(m_startAzimuth,m_previousAzimuth,m_ENTRIES_PER_AZIMUTH,m_distanceStringStreamNoIntensity.str(),0,static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));    
+    if (m_withCPC) {
+        if (m_CPCIntensityOption == 0) {
+            CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));    
             Container c(cpc);
             m_velodyneContainer.send(c);
-        }
-        else if(m_CPCIntensityOption==1){
-            CompactPointCloud cpc(m_startAzimuth,m_previousAzimuth,m_ENTRIES_PER_AZIMUTH,m_distanceStringStreamWithIntensity.str(),m_numberOfBitsForIntensity,static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));    
+        } else if (m_CPCIntensityOption == 1) {
+            CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));    
             Container c(cpc);
             m_velodyneContainer.send(c);
-        }
-        else{
-            CompactPointCloud cpcNoIntensity(m_startAzimuth,m_previousAzimuth,m_ENTRIES_PER_AZIMUTH,m_distanceStringStreamNoIntensity.str(),0,static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding)); 
-            CompactPointCloud cpcWithIntensity(m_startAzimuth,m_previousAzimuth,m_ENTRIES_PER_AZIMUTH,m_distanceStringStreamWithIntensity.str(),m_numberOfBitsForIntensity,static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));  
+        } else{
+            CompactPointCloud cpcNoIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding)); 
+            CompactPointCloud cpcWithIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));  
             Container c1(cpcNoIntensity);
             m_velodyneContainer.send(c1);
             Container c2(cpcWithIntensity);
@@ -227,7 +220,7 @@ void Velodyne16Decoder::sendPointCloud() {
         }
         m_pointIndexCPC = 0;
         m_startAzimuth = m_currentAzimuth;
-        m_isStartAzimuth=false;
+        m_isStartAzimuth = false;
         m_distanceStringStreamNoIntensity.str("");
         m_distanceStringStreamWithIntensity.str("");
     }
@@ -239,22 +232,21 @@ void Velodyne16Decoder::nextString(const string &payload) {
         uint32_t position = 0; //position specifies the starting position to read from the 1206 bytes
 
         //The payload of a VLP-16 packet consists of 12 blocks with 100 bytes each. Decode each block separately.
-        static uint8_t firstByte, secondByte, thirdByte;
-        static uint32_t dataValue;
+        static uint8_t firstByte, secondByte, thirdByte;//two bytes for distance and one byte for intensity
+        static uint16_t dataValue;
         for (uint8_t blockID = 0; blockID < 12; blockID++) {
             //Skip the flag: 0xFFEE(2 bytes)
             position += 2;
 
             //Decode azimuth information: 2 bytes. Swap the two bytes, change to decimal, and divide it by 100. Due to azimuth interpolation, the azimuth of blocks 1-11 is already decoded in the middle of the previous block.
-            if(blockID == 0){
+            if(blockID == 0) {
                 firstByte = (uint8_t)(payload.at(position));
                 secondByte = (uint8_t)(payload.at(position + 1));
                 dataValue = ntohs(firstByte * 256 + secondByte);
-                m_currentAzimuth = static_cast< float >(dataValue / 100.0);
-            }
-            else{
+                m_currentAzimuth = static_cast< float >(dataValue / 100.0f);
+            } else {
                 m_currentAzimuth = m_nextAzimuth;
-                if(m_currentAzimuth > 360.0f){
+                if (m_currentAzimuth > 360.0f) {
                     m_currentAzimuth -= 360.0f;
                 }
             }
@@ -265,7 +257,6 @@ void Velodyne16Decoder::nextString(const string &payload) {
             position += 2;
 
             //Only decode the data if the maximum number of points of the current frame has not been reached
-            //SPC discards points with distance closer than 1m while CPC does not discard points. Hence, a CPC frame may contain more points than SPC
             if (m_pointIndexSPC < m_MAX_POINT_SIZE || m_pointIndexCPC < m_MAX_POINT_SIZE) {
                 //Decode distance information and intensity of each beam/channel in a block, which contains two firing sequences
                 for (uint8_t counter = 0; counter < 32; counter++) {
@@ -276,7 +267,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             firstByte = (uint8_t)(payload.at(position));
                             secondByte = (uint8_t)(payload.at(position + 1));
                             dataValue = ntohs(firstByte * 256 + secondByte);
-                            m_nextAzimuth = static_cast< float >(dataValue / 100.0);
+                            m_nextAzimuth = static_cast< float >(dataValue / 100.0f);
                             position -= 50; //reset pointer
                             if (m_nextAzimuth < m_currentAzimuth) {
                                 m_nextAzimuth += 360.0f;
@@ -288,9 +279,9 @@ void Velodyne16Decoder::nextString(const string &payload) {
                         }
                         if (m_currentAzimuth > 360.0f) {
                             m_currentAzimuth -= 360.0f;
-                            if (m_currentAzimuth < m_previousAzimuth) {
-                                sendPointCloud(); //Send a complete scan as one frame
-                            }
+                            //if (m_currentAzimuth < m_previousAzimuth) {
+                            sendPointCloud(); //Send a complete scan as one frame
+                            //}
                         }
                         m_previousAzimuth = m_currentAzimuth;
                     }
@@ -304,32 +295,29 @@ void Velodyne16Decoder::nextString(const string &payload) {
                     secondByte = (uint8_t)(payload.at(position + 1));
                     thirdByte = (uint8_t)(payload.at(position + 2));//original intensity value
                     
-                    if(m_withSPC && m_pointIndexSPC < m_MAX_POINT_SIZE){
+                    if (m_withSPC && m_pointIndexSPC < m_MAX_POINT_SIZE) {
                         dataValue = ntohs(firstByte * 256 + secondByte);
-                        m_distance = dataValue / 500.0; //*2mm-->/1000 for meter
+                        m_distance = dataValue / 500.0f; //*2mm-->/1000 for meter
 
-                        if (m_distance > 1.0f) {
-                            static float xyDistance, xData, yData, zData, intensity;
+                        //if (m_distance > 1.0f) {
+                            /*static float xyDistance, xData, yData, zData, intensity;
                             //Compute x, y, z cooridnate
                             xyDistance = m_distance * cos(m_verticalAngle[sensorID] * toRadian);
                             xData = xyDistance * sin(m_currentAzimuth * toRadian);
                             yData = xyDistance * cos(m_currentAzimuth * toRadian);
-                            zData = m_distance * sin(m_verticalAngle[sensorID] * toRadian);
-                            //Get intensity/reflectivity: 1 byte
-                            //uint8_t intensityInt = (uint8_t)(payload.at(position + 2));
-                            intensity = (float)thirdByte;
+                            zData = m_distance * sin(m_verticalAngle[sensorID] * toRadian);*/
+                            float intensity = (float)thirdByte;
 
                             //Store coordinate information of each point to the malloc memory
-                            m_segment[m_startID] = xData;
-                            m_segment[m_startID + 1] = yData;
-                            m_segment[m_startID + 2] = zData;
-                            m_segment[m_startID + 3] = intensity;
+                            m_segment[m_startID] = m_currentAzimuth;
+                            m_segment[m_startID + 1] = m_distance;
+                            m_segment[m_startID + 2] = intensity;
                             m_pointIndexSPC++;
                             m_startID += m_NUMBER_OF_COMPONENTS_PER_POINT;
-                        }
+                        //}
                     }
                     
-                    if(m_withCPC && m_pointIndexCPC < m_MAX_POINT_SIZE){
+                    if (m_withCPC && m_pointIndexCPC < m_MAX_POINT_SIZE) {
                         if(m_CPCIntensityOption==0 || m_CPCIntensityOption==2){
                             //Store distance with resolution 2mm in an array of uint16_t type
                             m_16SensorsNoIntensity[sensorID] = ntohs(firstByte * 256 + secondByte);
@@ -377,7 +365,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
 
                     if ((m_withCPC && m_pointIndexCPC >= m_MAX_POINT_SIZE) || (!m_withCPC && m_pointIndexSPC >= m_MAX_POINT_SIZE)) {
                         position += 3 * (31 - counter); //Discard the points of the current frame when the preallocated shared memory is full; move the position to be read in the 1206 bytes
-                        //cout<<"Point overflow!"<<endl;
+                        //cout << "Point overflow!" << endl;
                         break;
                     }
                 }
