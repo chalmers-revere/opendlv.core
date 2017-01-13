@@ -65,13 +65,14 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     //Use this constructor if the VLP-16 live feed is decoded and sent out as compact point cloud only.  
     //The first uint8_t type parameter tells the intensity option of CPC; the second uint8_t type parameter tells number of bits for intensity in CPC;
     //the third uint8_t parameter tells distance encoding unit option
-    Velodyne16Decoder(odcore::io::conference::ContainerConference &, const uint8_t &, const uint8_t &, const uint8_t &);
+    Velodyne16Decoder(odcore::io::conference::ContainerConference &, const string &, const uint8_t &, const uint8_t &, const uint8_t &);
 
     virtual ~Velodyne16Decoder();
 
     virtual void nextString(const std::string &s);
 
    private:
+    void readCalibrationFile();
     void initializeArraysCPC();
     void sendPointCloud();
    private:
@@ -95,7 +96,7 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     float *m_segment;                                       //temporary memory for transferring data of each frame to the shared memory
     odcore::io::conference::ContainerConference &m_velodyneContainer;
     odcore::data::SharedPointCloud m_spc; //shared point cloud
-    float m_vertCorrection[16];           //Vertal angle of each sensor beam
+    float m_verticalAngle[16];           //Vertal angle of each sensor beam
     string m_calibration;  //name of the calibration file for VLP-16
     const float toRadian = static_cast<float>(M_PI) / 180.0f;  //degree to radian
     bool m_withSPC;  //if SPC is expected

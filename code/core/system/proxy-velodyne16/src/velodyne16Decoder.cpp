@@ -42,30 +42,78 @@ using namespace odcore::base;
 using namespace odcore::data;
 using namespace odcore::wrapper;
 
+void Velodyne16Decoder::readCalibrationFile(){
+    //Load calibration data from the calibration file
+    //VLP-16 has 16 channels/sensors. Each sensor has a specific vertical angle, which can be read from
+    //m_verticalAngle[sensor ID] is specified in the calibration file.
+    string line;
+    ifstream in(m_calibration);
+    if (!in.is_open()){
+        cout << "Calibration file not found." << endl;
+    }
+    uint8_t counter = 0; //corresponds to the index of the vertical angle of each beam
+    bool found = false;
+
+    while (getline(in, line) && counter < 16) {
+        string tmp; // strip whitespaces from the beginning
+        for (uint8_t i = 0; i < line.length(); i++) {
+
+            if ((line[i] == '\t' || line[i] == ' ') && tmp.size() == 0) {
+            } else {
+                if (line[i] == '<') {
+
+                    if (found) {
+                        m_verticalAngle[counter] = atof(tmp.c_str());
+
+                        counter++;
+                        found = false;
+                        continue;
+                    }
+                    tmp += line[i];
+                } else {
+                    tmp += line[i];
+                }
+            }
+
+            if (tmp == "<vertCorrection_>") {
+                found = true;
+                tmp = "";
+            } else {
+            }
+        }
+    }
+}
+
 void Velodyne16Decoder::initializeArraysCPC(){
-//Distance values for each 16 sensors with the same azimuth are ordered based on vertical angle,
+    //Distance values for each 16 sensors with the same azimuth are ordered based on vertical angle,
     //from -15 to 15 degress, with increment 2--sensor IDs: 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15
-    m_sensorOrderIndex[0] = 0;
-    m_sensorOrderIndex[1] = 2;
-    m_sensorOrderIndex[2] = 4;
-    m_sensorOrderIndex[3] = 6;
-    m_sensorOrderIndex[4] = 8;
-    m_sensorOrderIndex[5] = 10;
-    m_sensorOrderIndex[6] = 12;
-    m_sensorOrderIndex[7] = 14;
-    m_sensorOrderIndex[8] = 1;
-    m_sensorOrderIndex[9] = 3;
-    m_sensorOrderIndex[10] = 5;
-    m_sensorOrderIndex[11] = 7;
-    m_sensorOrderIndex[12] = 9;
-    m_sensorOrderIndex[13] = 11;
-    m_sensorOrderIndex[14] = 13;
-    m_sensorOrderIndex[15] = 15;
-    
+    readCalibrationFile();
+    float orderedVerticalAngle[16];
     for (uint8_t sensorIndex = 0; sensorIndex < 16; sensorIndex++) {
         m_16SensorsNoIntensity[sensorIndex] = 0;
         m_16SensorsWithIntensity[sensorIndex] = 0;
+        orderedVerticalAngle[sensorIndex] = m_verticalAngle[sensorIndex];
     }
+    //Order the vertical angles of 16 sensor IDs with increasing value
+    for(uint8_t i=0;i<16;i++){
+        for(uint8_t j=i;j<16;j++){
+            if (orderedVerticalAngle[j]<orderedVerticalAngle[i]) {
+                float temp = orderedVerticalAngle[j];
+                orderedVerticalAngle[j] = orderedVerticalAngle[i];
+                orderedVerticalAngle[i] = temp;
+            }
+        }
+    }
+    //Find the sensor IDs in the odered list of vertical angles
+    for(uint8_t i=0;i<16;i++){
+        for(uint8_t j=0;j<16;j++){
+            if(abs(orderedVerticalAngle[i]-m_verticalAngle[j])<0.1f) {
+                m_sensorOrderIndex[i] = j;
+                cout<<+m_sensorOrderIndex[i]<<endl;
+                break;
+            }
+        }
+    }      
 }
 
 Velodyne16Decoder::Velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
@@ -101,53 +149,14 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
 
     //Create memory for temporary storage of point cloud data for each frame
     m_segment = (float *)malloc(m_SIZE);
-
-    //Load calibration data from the calibration file
-    //VLP-16 has 16 channels/sensors. Each sensor has a specific vertical angle, which can be read from
-    //m_vertCorrection[sensor ID] is specified in the calibration file.
-    string line;
-    ifstream in(m_calibration);
-    if (!in.is_open()){
-        cout << "Calibration file not found." << endl;
-    }
-    uint8_t counter = 0; //corresponds to the index of the vertical angle of each beam
-    bool found = false;
-
-    while (getline(in, line) && counter < 16) {
-        string tmp; // strip whitespaces from the beginning
-        for (uint8_t i = 0; i < line.length(); i++) {
-
-            if ((line[i] == '\t' || line[i] == ' ') && tmp.size() == 0) {
-            } else {
-                if (line[i] == '<') {
-
-                    if (found) {
-                        m_vertCorrection[counter] = atof(tmp.c_str());
-
-                        counter++;
-                        found = false;
-                        continue;
-                    }
-                    tmp += line[i];
-                } else {
-                    tmp += line[i];
-                }
-            }
-
-            if (tmp == "<vertCorrection_>") {
-                found = true;
-                tmp = "";
-            } else {
-            }
-        }
-    }
+    readCalibrationFile(); 
     
     if(m_withCPC){
         initializeArraysCPC();
     }
 }
 
-Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &distanceEncoding)
+Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &distanceEncoding)
     : m_CPCIntensityOption(CPCIntensityOption)
     , m_numberOfBitsForIntensity(numberOfBitsForIntensity)
     , m_distanceEncoding(distanceEncoding)
@@ -163,7 +172,7 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_segment(NULL)
     , m_velodyneContainer(c)
     , m_spc()
-    , m_calibration("")
+    , m_calibration(s)
     , m_withSPC(false)
     , m_withCPC(true)
     , m_startAzimuth(0.0)
@@ -191,8 +200,7 @@ void Velodyne16Decoder::sendPointCloud() {
             m_spc.setSize(m_SIZE); // Size in raw bytes.
             m_spc.setWidth(m_pointIndexSPC); // Number of points.
             Container c(m_spc);
-            m_velodyneContainer.send(c);
-            
+            m_velodyneContainer.send(c);     
         }
         m_pointIndexSPC = 0;
         m_startID = 0;
@@ -217,7 +225,6 @@ void Velodyne16Decoder::sendPointCloud() {
             Container c2(cpcWithIntensity);
             m_velodyneContainer.send(c2);
         }
-
         m_pointIndexCPC = 0;
         m_startAzimuth = m_currentAzimuth;
         m_isStartAzimuth=false;
@@ -304,10 +311,10 @@ void Velodyne16Decoder::nextString(const string &payload) {
                         if (m_distance > 1.0f) {
                             static float xyDistance, xData, yData, zData, intensity;
                             //Compute x, y, z cooridnate
-                            xyDistance = m_distance * cos(m_vertCorrection[sensorID] * toRadian);
+                            xyDistance = m_distance * cos(m_verticalAngle[sensorID] * toRadian);
                             xData = xyDistance * sin(m_currentAzimuth * toRadian);
                             yData = xyDistance * cos(m_currentAzimuth * toRadian);
-                            zData = m_distance * sin(m_vertCorrection[sensorID] * toRadian);
+                            zData = m_distance * sin(m_verticalAngle[sensorID] * toRadian);
                             //Get intensity/reflectivity: 1 byte
                             //uint8_t intensityInt = (uint8_t)(payload.at(position + 2));
                             intensity = (float)thirdByte;

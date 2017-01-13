@@ -80,7 +80,7 @@ void ProxyVelodyne16::setUp() {
         }
     }
     else if(m_pointCloudOption==1){
-        m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(getConference(),m_CPCIntensityOption,m_numberOfBitsForIntensity,m_distanceEncoding));
+        m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(getConference(),getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration"),m_CPCIntensityOption,m_numberOfBitsForIntensity,m_distanceEncoding));
     }
     else{
         throw invalid_argument( "Invalid point cloud option! 0: shared point cloud (SPC) only; 1: compact point cloud (CPC) only; 2: both SPC and CPC" );
