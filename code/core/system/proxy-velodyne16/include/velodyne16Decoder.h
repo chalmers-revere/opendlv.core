@@ -91,7 +91,8 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     float m_currentAzimuth;
     float m_nextAzimuth;
     float m_deltaAzimuth;
-    float m_distance;
+    float m_distance[16]; //Store the distance values of the current 16 sensors for SPC
+    float m_intensity[16]; //Store the intensity values of the current 16 sensors for SPC
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for shared point cloud
     float *m_segment;  //temporary memory for transferring data of each frame to the shared memory
     odcore::io::conference::ContainerConference &m_velodyneContainer;
@@ -108,9 +109,9 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     std::stringstream m_distanceStringStreamNoIntensity; //The string stream with distance values for all points of one frame, excluding intensity
     std::stringstream m_distanceStringStreamWithIntensity; //The string stream with distance values for all points of one frame, including intensity
     bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
-    uint8_t m_sensorOrderIndex[16];//Specify the order for each 16 points in the string with distance values
-    uint16_t m_16SensorsNoIntensity[16];//Store the distance values of the current 16 sensors
-    uint16_t m_16SensorsWithIntensity[16];//Store the distance values of the current 16 sensors 
+    uint8_t m_sensorOrderIndex[16];//Specify the sensor ID order for each 16 points with increasing vertical angle for CPC and SPC
+    uint16_t m_16SensorsNoIntensity[16];//Store the distance values of the current 16 sensors for CPC without intensity
+    uint16_t m_16SensorsWithIntensity[16];//Store the distance values of the current 16 sensors for CPC with intensity
 };
 }
 }

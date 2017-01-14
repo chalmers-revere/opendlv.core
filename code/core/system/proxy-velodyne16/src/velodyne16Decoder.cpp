@@ -90,6 +90,8 @@ void Velodyne16Decoder::index16sensorIDs() {
     readCalibrationFile();
     float orderedVerticalAngle[16];
     for (uint8_t i = 0; i < 16; i++) {
+        m_distance[i] = 0.0;
+        m_intensity[i] = 0.0;
         m_16SensorsNoIntensity[i] = 0;
         m_16SensorsWithIntensity[i] = 0;
         orderedVerticalAngle[i] = m_verticalAngle[i];
@@ -127,7 +129,6 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_currentAzimuth(0.0)
     , m_nextAzimuth(0.0)
     , m_deltaAzimuth(0.0)
-    , m_distance(0.0)
     , m_velodyneSharedMemory(m)
     , m_segment(NULL)
     , m_velodyneContainer(c)
@@ -162,7 +163,6 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_currentAzimuth(0.0)
     , m_nextAzimuth(0.0)
     , m_deltaAzimuth(0.0)
-    , m_distance(0.0)
     , m_velodyneSharedMemory()
     , m_segment(NULL)
     , m_velodyneContainer(c)
@@ -174,7 +174,7 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_distanceStringStreamNoIntensity("")
     , m_distanceStringStreamWithIntensity("")
     , m_isStartAzimuth(true) {
-    
+        
     index16sensorIDs();
 }
 
@@ -297,16 +297,27 @@ void Velodyne16Decoder::nextString(const string &payload) {
                     
                     if (m_withSPC && m_pointIndexSPC < m_MAX_POINT_SIZE) {
                         dataValue = ntohs(firstByte * 256 + secondByte);
-                        m_distance = dataValue / 500.0f; //*2mm-->/1000 for meter
+                        m_distance[sensorID] = dataValue / 500.0f; //*2mm-->/1000 for meter
+                        m_intensity[sensorID] = (float)thirdByte;
+                        
+                        if (sensorID == 15) {
+                            for (uint8_t index = 0; index < 16; index++) {
+                                m_segment[m_startID] = m_currentAzimuth;
+                                m_segment[m_startID + 1] = m_distance[m_sensorOrderIndex[index]];
+                                m_segment[m_startID + 2] = m_intensity[m_sensorOrderIndex[index]];
+                                m_startID += m_NUMBER_OF_COMPONENTS_PER_POINT;
+                            }
+                        }
+                        m_pointIndexSPC++;
 
-                        //if (m_distance > 1.0f) {
-                            /*static float xyDistance, xData, yData, zData, intensity;
+                        /*if (m_distance > 1.0f) {
+                            static float xyDistance, xData, yData, zData, intensity;
                             //Compute x, y, z cooridnate
                             xyDistance = m_distance * cos(m_verticalAngle[sensorID] * toRadian);
                             xData = xyDistance * sin(m_currentAzimuth * toRadian);
                             yData = xyDistance * cos(m_currentAzimuth * toRadian);
-                            zData = m_distance * sin(m_verticalAngle[sensorID] * toRadian);*/
-                            float intensity = (float)thirdByte;
+                            zData = m_distance * sin(m_verticalAngle[sensorID] * toRadian);
+                            //float intensity = (float)thirdByte;
 
                             //Store coordinate information of each point to the malloc memory
                             m_segment[m_startID] = m_currentAzimuth;
@@ -314,46 +325,46 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             m_segment[m_startID + 2] = intensity;
                             m_pointIndexSPC++;
                             m_startID += m_NUMBER_OF_COMPONENTS_PER_POINT;
-                        //}
+                        }*/
                     }
                     
                     if (m_withCPC && m_pointIndexCPC < m_MAX_POINT_SIZE) {
-                        if(m_CPCIntensityOption==0 || m_CPCIntensityOption==2){
+                        if (m_CPCIntensityOption == 0 || m_CPCIntensityOption == 2) {
                             //Store distance with resolution 2mm in an array of uint16_t type
                             m_16SensorsNoIntensity[sensorID] = ntohs(firstByte * 256 + secondByte);
-                            if(m_distanceEncoding==0){
+                            if (m_distanceEncoding == 0) {
                                 //Store distance with resolution 1cm in an array of uint16_t type
-                                m_16SensorsNoIntensity[sensorID] = m_16SensorsNoIntensity[sensorID]/5;  
+                                m_16SensorsNoIntensity[sensorID] = m_16SensorsNoIntensity[sensorID] / 5;  
                             }
                             
-                            if(sensorID==15){
-                                for(uint8_t index=0;index<16;index++){
+                            if (sensorID == 15) {
+                                for (uint8_t index = 0; index < 16; index++) {
                                     m_distanceStringStreamNoIntensity.write((char*)(&m_16SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
                                 }
                             }
                             m_pointIndexCPC++;    
                         }
                         
-                        if(m_CPCIntensityOption==1 || m_CPCIntensityOption==2){
+                        if (m_CPCIntensityOption == 1 || m_CPCIntensityOption == 2) {
                             //Store distance with resolution 2mm in an array of uint16_t type
                             uint16_t distance = ntohs(firstByte * 256 + secondByte);
-                            if(m_distanceEncoding==0){
-                                distance =distance / 5;
+                            if (m_distanceEncoding == 0) {
+                                distance = distance / 5;
                             }
                             distance = distance >> m_numberOfBitsForIntensity; ////Reserve the upper n bits for intensity
                             
                             //Map the original 256 intensity levels to 2^n levels using n bits and 
 	                        //place these n bits as the highest n bits of the byte representing both intensity and distance
 	                        uint16_t intensityLevel = thirdByte;
-	                        intensityLevel = (intensityLevel>>(8-m_numberOfBitsForIntensity))<<(16-m_numberOfBitsForIntensity);
+	                        intensityLevel = (intensityLevel >> (8 - m_numberOfBitsForIntensity)) << (16 - m_numberOfBitsForIntensity);
 	                        m_16SensorsWithIntensity[sensorID] = intensityLevel | distance; ////n bits for intensity + (16-n) bits for distance
                             
-                            if(sensorID==15){
-                                for(uint8_t index=0;index<16;index++){
-                                    m_distanceStringStreamWithIntensity.write((char*)(&m_16SensorsWithIntensity[m_sensorOrderIndex[index]]),2);
+                            if (sensorID == 15) {
+                                for (uint8_t index = 0; index < 16; index++) {
+                                    m_distanceStringStreamWithIntensity.write((char*)(&m_16SensorsWithIntensity[m_sensorOrderIndex[index]]), 2);
                                 }
                             }
-                            if(m_CPCIntensityOption==1){
+                            if (m_CPCIntensityOption == 1) {
                                 m_pointIndexCPC++; 
                             }
                         }
