@@ -90,8 +90,6 @@ void Velodyne16Decoder::index16sensorIDs() {
     readCalibrationFile();
     float orderedVerticalAngle[16];
     for (uint8_t i = 0; i < 16; i++) {
-        m_distance[i] = 0.0;
-        m_intensity[i] = 0.0;
         m_16SensorsNoIntensity[i] = 0;
         m_16SensorsWithIntensity[i] = 0;
         orderedVerticalAngle[i] = m_verticalAngle[i];
@@ -118,8 +116,9 @@ void Velodyne16Decoder::index16sensorIDs() {
 }
 
 Velodyne16Decoder::Velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
-odcore::io::conference::ContainerConference &c, const string &s, const bool &withCPC, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &distanceEncoding)
-    : m_CPCIntensityOption(CPCIntensityOption)
+odcore::io::conference::ContainerConference &c, const string &s, const bool &withCPC, const uint8_t &SPCOption, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &distanceEncoding)
+    : m_SPCOption(SPCOption)
+    , m_CPCIntensityOption(CPCIntensityOption)
     , m_numberOfBitsForIntensity(numberOfBitsForIntensity)
     , m_distanceEncoding(distanceEncoding)
     , m_pointIndexSPC(0)
@@ -129,6 +128,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_currentAzimuth(0.0)
     , m_nextAzimuth(0.0)
     , m_deltaAzimuth(0.0)
+    , m_distance(0.0)
     , m_velodyneSharedMemory(m)
     , m_segment(NULL)
     , m_velodyneContainer(c)
@@ -145,7 +145,11 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     m_spc.setHeight(1); // We have just a sequence of vectors.
     m_spc.setNumberOfComponentsPerPoint(m_NUMBER_OF_COMPONENTS_PER_POINT);
     m_spc.setComponentDataType(SharedPointCloud::FLOAT_T); // Data type per component.
-    m_spc.setUserInfo(SharedPointCloud::POLAR_INTENSITY);
+    if (m_SPCOption == 0) {
+        m_spc.setUserInfo(SharedPointCloud::XYZ_INTENSITY);
+    } else {
+        m_spc.setUserInfo(SharedPointCloud::POLAR_INTENSITY);
+    }
 
     //Create memory for temporary storage of point cloud data for each frame
     m_segment = (float *)malloc(m_SIZE);
@@ -153,7 +157,8 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
 }
 
 Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &distanceEncoding)
-    : m_CPCIntensityOption(CPCIntensityOption)
+    : m_SPCOption(0)
+    , m_CPCIntensityOption(CPCIntensityOption)
     , m_numberOfBitsForIntensity(numberOfBitsForIntensity)
     , m_distanceEncoding(distanceEncoding)
     , m_pointIndexSPC(0)
@@ -163,6 +168,7 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_currentAzimuth(0.0)
     , m_nextAzimuth(0.0)
     , m_deltaAzimuth(0.0)
+    , m_distance(0.0)
     , m_velodyneSharedMemory()
     , m_segment(NULL)
     , m_velodyneContainer(c)
@@ -297,35 +303,32 @@ void Velodyne16Decoder::nextString(const string &payload) {
                     
                     if (m_withSPC && m_pointIndexSPC < m_MAX_POINT_SIZE) {
                         dataValue = ntohs(firstByte * 256 + secondByte);
-                        m_distance[sensorID] = dataValue / 500.0f; //*2mm-->/1000 for meter
-                        m_intensity[sensorID] = (float)thirdByte;
+                        m_distance = dataValue / 500.0f; //2mm-->/1000 for meter
                         
-                        if (sensorID == 15) {
-                            for (uint8_t index = 0; index < 16; index++) {
-                                m_segment[m_startID] = m_currentAzimuth;
-                                m_segment[m_startID + 1] = m_distance[m_sensorOrderIndex[index]];
-                                m_segment[m_startID + 2] = m_intensity[m_sensorOrderIndex[index]];
-                                m_startID += m_NUMBER_OF_COMPONENTS_PER_POINT;
+                        if (m_distance > 1.0f) {
+                            if (m_SPCOption == 0) {//xyz+intensity
+                                static float xyDistance, xData, yData, zData;
+                                //Compute x, y, z cooridnate
+                                xyDistance = m_distance * cos(m_verticalAngle[sensorID] * toRadian);
+                                xData = xyDistance * sin(m_currentAzimuth * toRadian);
+                                yData = xyDistance * cos(m_currentAzimuth * toRadian);
+                                zData = m_distance * sin(m_verticalAngle[sensorID] * toRadian);
+
+                                //Store coordinate information of each point to the malloc memory
+                                m_segment[m_startID] = xData;
+                                m_segment[m_startID + 1] = yData;
+                                m_segment[m_startID + 2] = zData;
+                                m_segment[m_startID + 3] = (float)thirdByte;//intensity
+
+                            } else {//distance+azimuth+vertical angle+intensity
+                                m_segment[m_startID] = m_distance;
+                                m_segment[m_startID + 1] = m_currentAzimuth;
+                                m_segment[m_startID + 2] = m_verticalAngle[sensorID];
+                                m_segment[m_startID + 3] = (float)thirdByte;//intensity; 
                             }
-                        }
-                        m_pointIndexSPC++;
-
-                        /*if (m_distance > 1.0f) {
-                            static float xyDistance, xData, yData, zData, intensity;
-                            //Compute x, y, z cooridnate
-                            xyDistance = m_distance * cos(m_verticalAngle[sensorID] * toRadian);
-                            xData = xyDistance * sin(m_currentAzimuth * toRadian);
-                            yData = xyDistance * cos(m_currentAzimuth * toRadian);
-                            zData = m_distance * sin(m_verticalAngle[sensorID] * toRadian);
-                            //float intensity = (float)thirdByte;
-
-                            //Store coordinate information of each point to the malloc memory
-                            m_segment[m_startID] = m_currentAzimuth;
-                            m_segment[m_startID + 1] = m_distance;
-                            m_segment[m_startID + 2] = intensity;
                             m_pointIndexSPC++;
                             m_startID += m_NUMBER_OF_COMPONENTS_PER_POINT;
-                        }*/
+                        }   
                     }
                     
                     if (m_withCPC && m_pointIndexCPC < m_MAX_POINT_SIZE) {

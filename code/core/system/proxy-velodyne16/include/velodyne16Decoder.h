@@ -58,9 +58,11 @@ class Velodyne16Decoder : public odcore::io::StringListener {
          * Constructor.
          */
     //Use this constructor if the VLP-16 live feed is decoded and sent out as shared point cloud. The boolean parameter tells if compact point cloud is sent out as well.
-    //The first uint8_t type parameter tells the intensity option of CPC; the second uint8_t type parameter tells number of bits for intensity in CPC;
-    //the third uint8_t parameter tells distance encoding unit option
-    Velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &, const bool &, const uint8_t &, const uint8_t &, const uint8_t &);
+    //The first uint8_t parameter tells if polar or cartesian coordinate is stored for SPC;
+    //The second uint8_t type parameter tells the intensity option of CPC;
+    //The third uint8_t type parameter tells number of bits for intensity in CPC;
+    //The fourth uint8_t parameter tells distance encoding unit option
+    Velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &, const bool &, const uint8_t &, const uint8_t &, const uint8_t &, const uint8_t &);
 
     //Use this constructor if the VLP-16 live feed is decoded and sent out as compact point cloud only.  
     //The first uint8_t type parameter tells the intensity option of CPC; the second uint8_t type parameter tells number of bits for intensity in CPC;
@@ -78,9 +80,10 @@ class Velodyne16Decoder : public odcore::io::StringListener {
    private:
     const uint32_t m_MAX_POINT_SIZE = 30000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
     const uint32_t m_SIZE_PER_COMPONENT = sizeof(float);
-    const uint8_t m_NUMBER_OF_COMPONENTS_PER_POINT = 3;  //3 components per vector: azimuth, distance, intensity
+    const uint8_t m_NUMBER_OF_COMPONENTS_PER_POINT = 4;  //4 components per vector: (1) cartesian: xyz+intensity; (2) polar: distance+azimuth+vertical angle+intensity
     const uint32_t m_SIZE = m_MAX_POINT_SIZE * m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT; //the total size of the shared memory
 
+    uint8_t m_SPCOption; //0: xyz+intensity; 1: distance+azimuth+vertical angle+intensity
     uint8_t m_CPCIntensityOption; //Only used when CPC is enabled. 0: without intensity; 1: with intensity; 2: send a CPC container twice, one with intensity, and the other without intensity
     uint8_t m_numberOfBitsForIntensity; //Range 0-7. Only used when CPC is enabled. Currently recommendation when intensity is included in CPC: 2 bits for intensity and 14 bits for distance
     uint8_t m_distanceEncoding; //0: cm; 1: 2mm
@@ -91,8 +94,7 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     float m_currentAzimuth;
     float m_nextAzimuth;
     float m_deltaAzimuth;
-    float m_distance[16]; //Store the distance values of the current 16 sensors for SPC
-    float m_intensity[16]; //Store the intensity values of the current 16 sensors for SPC
+    float m_distance;
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for shared point cloud
     float *m_segment;  //temporary memory for transferring data of each frame to the shared memory
     odcore::io::conference::ContainerConference &m_velodyneContainer;
