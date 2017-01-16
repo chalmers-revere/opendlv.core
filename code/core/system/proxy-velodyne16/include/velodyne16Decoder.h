@@ -114,6 +114,8 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     uint8_t m_sensorOrderIndex[16];//Specify the sensor ID order for each 16 points with increasing vertical angle for CPC and SPC
     uint16_t m_16SensorsNoIntensity[16];//Store the distance values of the current 16 sensors for CPC without intensity
     uint16_t m_16SensorsWithIntensity[16];//Store the distance values of the current 16 sensors for CPC with intensity
+    
+    int64_t m_packetArrivalTime;
 };
 }
 }

@@ -30,6 +30,7 @@
 #include "opendavinci/odcore/io/conference/ContainerConference.h"
 #include "opendavinci/odcore/wrapper/SharedMemory.h"
 #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
+#include <opendavinci/odcore/data/TimeStamp.h>
 
 #include "velodyne16Decoder.h"
 
@@ -139,7 +140,8 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_startAzimuth(0.0)
     , m_distanceStringStreamNoIntensity("")
     , m_distanceStringStreamWithIntensity("")
-    , m_isStartAzimuth(true) {
+    , m_isStartAzimuth(true)
+    , m_packetArrivalTime(0) {
     //Initial setup of the shared point cloud (N.B. The size and width of the shared point cloud depends on the number of points of a frame, hence they are not set up in the constructor)
     m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
     m_spc.setHeight(1); // We have just a sequence of vectors.
@@ -153,6 +155,9 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
 
     //Create memory for temporary storage of point cloud data for each frame
     m_segment = (float *)malloc(m_SIZE);
+    if (m_segment == NULL) {
+        throw bad_alloc();
+    }
     index16sensorIDs();
 }
 
@@ -179,7 +184,8 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_startAzimuth(0.0)
     , m_distanceStringStreamNoIntensity("")
     , m_distanceStringStreamWithIntensity("")
-    , m_isStartAzimuth(true) {
+    , m_isStartAzimuth(true)
+    , m_packetArrivalTime(0) {
         
     index16sensorIDs();
 }
@@ -192,6 +198,10 @@ Velodyne16Decoder::~Velodyne16Decoder() {
 
 //Update the shared or compact point cloud when a complete scan is completed.
 void Velodyne16Decoder::sendPointCloud() {  
+    int32_t seconds = m_packetArrivalTime / 1000000;
+    int32_t microseconds = m_packetArrivalTime % 1000000;
+    TimeStamp now(seconds, microseconds);
+    
     //Send shared point cloud
     if (m_withSPC) {
         if (m_velodyneSharedMemory->isValid()) {
@@ -201,6 +211,7 @@ void Velodyne16Decoder::sendPointCloud() {
             m_spc.setSize(m_SIZE); // Size in raw bytes.
             m_spc.setWidth(m_pointIndexSPC); // Number of points.
             Container c(m_spc);
+            c.setSampleTimeStamp(now);
             m_velodyneContainer.send(c);     
         }
         m_pointIndexSPC = 0;
@@ -211,17 +222,21 @@ void Velodyne16Decoder::sendPointCloud() {
         if (m_CPCIntensityOption == 0) {
             CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));    
             Container c(cpc);
+            c.setSampleTimeStamp(now);
             m_velodyneContainer.send(c);
         } else if (m_CPCIntensityOption == 1) {
             CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));    
             Container c(cpc);
+            c.setSampleTimeStamp(now);
             m_velodyneContainer.send(c);
         } else{
             CompactPointCloud cpcNoIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding)); 
             CompactPointCloud cpcWithIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));  
             Container c1(cpcNoIntensity);
+            c1.setSampleTimeStamp(now);
             m_velodyneContainer.send(c1);
             Container c2(cpcWithIntensity);
+            c2.setSampleTimeStamp(now);
             m_velodyneContainer.send(c2);
         }
         m_pointIndexCPC = 0;
@@ -234,6 +249,8 @@ void Velodyne16Decoder::sendPointCloud() {
 
 void Velodyne16Decoder::nextString(const string &payload) {
     if (payload.length() == 1206) {
+        TimeStamp newPacket;
+        m_packetArrivalTime = newPacket.toMicroseconds();
         //Decode VLP-16 data
         uint32_t position = 0; //position specifies the starting position to read from the 1206 bytes
 
@@ -354,14 +371,12 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             if (m_distanceEncoding == 0) {
                                 distance = distance / 5;
                             }
-                            distance = distance >> m_numberOfBitsForIntensity; ////Reserve the upper n bits for intensity
-                            
-                            //Map the original 256 intensity levels to 2^n levels using n bits and 
-	                        //place these n bits as the highest n bits of the byte representing both intensity and distance
-	                        uint16_t intensityLevel = thirdByte;
-	                        intensityLevel = (intensityLevel >> (8 - m_numberOfBitsForIntensity)) << (16 - m_numberOfBitsForIntensity);
-	                        m_16SensorsWithIntensity[sensorID] = intensityLevel | distance; ////n bits for intensity + (16-n) bits for distance
-                            
+                            uint16_t mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
+                            distance = distance & mask; //Reserve the lower n bits for intensity
+                            uint16_t intensityLevel = thirdByte;
+	                        intensityLevel = intensityLevel >> (8 - m_numberOfBitsForIntensity);
+                            m_16SensorsWithIntensity[sensorID] = distance + intensityLevel;//(16-n) bits for distance + n bits for intensity
+
                             if (sensorID == 15) {
                                 for (uint8_t index = 0; index < 16; index++) {
                                     m_distanceStringStreamWithIntensity.write((char*)(&m_16SensorsWithIntensity[m_sensorOrderIndex[index]]), 2);
