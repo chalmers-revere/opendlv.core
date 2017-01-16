@@ -121,6 +121,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     : m_SPCOption(SPCOption)
     , m_CPCIntensityOption(CPCIntensityOption)
     , m_numberOfBitsForIntensity(numberOfBitsForIntensity)
+    , mask(0)
     , m_distanceEncoding(distanceEncoding)
     , m_pointIndexSPC(0)
     , m_pointIndexCPC(0)
@@ -140,8 +141,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_startAzimuth(0.0)
     , m_distanceStringStreamNoIntensity("")
     , m_distanceStringStreamWithIntensity("")
-    , m_isStartAzimuth(true)
-    , m_packetArrivalTime(0) {
+    , m_isStartAzimuth(true) {
     //Initial setup of the shared point cloud (N.B. The size and width of the shared point cloud depends on the number of points of a frame, hence they are not set up in the constructor)
     m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
     m_spc.setHeight(1); // We have just a sequence of vectors.
@@ -156,15 +156,19 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     //Create memory for temporary storage of point cloud data for each frame
     m_segment = (float *)malloc(m_SIZE);
     if (m_segment == NULL) {
-        throw bad_alloc();
+        throw bad_alloc();//if memory creation using malloc fails, throw an exception
     }
     index16sensorIDs();
+    if (m_numberOfBitsForIntensity != 0) {
+        mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
+    }
 }
 
 Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &distanceEncoding)
     : m_SPCOption(0)
     , m_CPCIntensityOption(CPCIntensityOption)
     , m_numberOfBitsForIntensity(numberOfBitsForIntensity)
+    , mask()
     , m_distanceEncoding(distanceEncoding)
     , m_pointIndexSPC(0)
     , m_pointIndexCPC(0)
@@ -184,10 +188,12 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_startAzimuth(0.0)
     , m_distanceStringStreamNoIntensity("")
     , m_distanceStringStreamWithIntensity("")
-    , m_isStartAzimuth(true)
-    , m_packetArrivalTime(0) {
+    , m_isStartAzimuth(true) {
         
     index16sensorIDs();
+    if (m_numberOfBitsForIntensity != 0) {
+        mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
+    }
 }
 
 Velodyne16Decoder::~Velodyne16Decoder() {
@@ -198,10 +204,7 @@ Velodyne16Decoder::~Velodyne16Decoder() {
 
 //Update the shared or compact point cloud when a complete scan is completed.
 void Velodyne16Decoder::sendPointCloud() {  
-    int32_t seconds = m_packetArrivalTime / 1000000;
-    int32_t microseconds = m_packetArrivalTime % 1000000;
-    TimeStamp now(seconds, microseconds);
-    
+    TimeStamp now;
     //Send shared point cloud
     if (m_withSPC) {
         if (m_velodyneSharedMemory->isValid()) {
@@ -249,8 +252,6 @@ void Velodyne16Decoder::sendPointCloud() {
 
 void Velodyne16Decoder::nextString(const string &payload) {
     if (payload.length() == 1206) {
-        TimeStamp newPacket;
-        m_packetArrivalTime = newPacket.toMicroseconds();
         //Decode VLP-16 data
         uint32_t position = 0; //position specifies the starting position to read from the 1206 bytes
 
@@ -359,6 +360,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             
                             if (sensorID == 15) {
                                 for (uint8_t index = 0; index < 16; index++) {
+                                    m_16SensorsNoIntensity[m_sensorOrderIndex[index]] = htons(m_16SensorsNoIntensity[m_sensorOrderIndex[index]]);
                                     m_distanceStringStreamNoIntensity.write((char*)(&m_16SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
                                 }
                             }
@@ -371,7 +373,6 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             if (m_distanceEncoding == 0) {
                                 distance = distance / 5;
                             }
-                            uint16_t mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
                             distance = distance & mask; //Reserve the lower n bits for intensity
                             uint16_t intensityLevel = thirdByte;
 	                        intensityLevel = intensityLevel >> (8 - m_numberOfBitsForIntensity);
@@ -379,6 +380,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
 
                             if (sensorID == 15) {
                                 for (uint8_t index = 0; index < 16; index++) {
+                                    m_16SensorsWithIntensity[m_sensorOrderIndex[index]] = htons(m_16SensorsWithIntensity[m_sensorOrderIndex[index]]);
                                     m_distanceStringStreamWithIntensity.write((char*)(&m_16SensorsWithIntensity[m_sensorOrderIndex[index]]), 2);
                                 }
                             }
