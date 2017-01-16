@@ -86,7 +86,7 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     uint8_t m_SPCOption; //0: xyz+intensity; 1: distance+azimuth+vertical angle+intensity
     uint8_t m_CPCIntensityOption; //Only used when CPC is enabled. 0: without intensity; 1: with intensity; 2: send a CPC container twice, one with intensity, and the other without intensity
     uint8_t m_numberOfBitsForIntensity; //Range 0-7. Only used when CPC is enabled. Currently recommendation when intensity is included in CPC: 2 bits for intensity and 14 bits for distance
-    uint16_t mask;
+    uint16_t m_mask;
     uint8_t m_distanceEncoding; //0: cm; 1: 2mm
     uint32_t m_pointIndexSPC; //current number of points of the current frame for shared point cloud 
     uint32_t m_pointIndexCPC; //current number of points of the current frame for compact point cloud

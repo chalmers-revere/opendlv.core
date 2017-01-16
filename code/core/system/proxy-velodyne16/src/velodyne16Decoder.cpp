@@ -121,7 +121,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     : m_SPCOption(SPCOption)
     , m_CPCIntensityOption(CPCIntensityOption)
     , m_numberOfBitsForIntensity(numberOfBitsForIntensity)
-    , mask(0)
+    , m_mask(0)
     , m_distanceEncoding(distanceEncoding)
     , m_pointIndexSPC(0)
     , m_pointIndexCPC(0)
@@ -160,7 +160,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     }
     index16sensorIDs();
     if (m_numberOfBitsForIntensity != 0) {
-        mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
+        m_mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
     }
 }
 
@@ -168,7 +168,7 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     : m_SPCOption(0)
     , m_CPCIntensityOption(CPCIntensityOption)
     , m_numberOfBitsForIntensity(numberOfBitsForIntensity)
-    , mask()
+    , m_mask()
     , m_distanceEncoding(distanceEncoding)
     , m_pointIndexSPC(0)
     , m_pointIndexCPC(0)
@@ -192,7 +192,7 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
         
     index16sensorIDs();
     if (m_numberOfBitsForIntensity != 0) {
-        mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
+        m_mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
     }
 }
 
@@ -373,7 +373,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             if (m_distanceEncoding == 0) {
                                 distance = distance / 5;
                             }
-                            distance = distance & mask; //Reserve the lower n bits for intensity
+                            distance = distance & m_mask; //Reserve the lower n bits for intensity
                             uint16_t intensityLevel = thirdByte;
 	                        intensityLevel = intensityLevel >> (8 - m_numberOfBitsForIntensity);
                             m_16SensorsWithIntensity[sensorID] = distance + intensityLevel;//(16-n) bits for distance + n bits for intensity
