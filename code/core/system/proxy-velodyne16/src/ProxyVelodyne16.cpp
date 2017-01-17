@@ -41,6 +41,7 @@ using namespace odcore::io::udp;
 ProxyVelodyne16::ProxyVelodyne16(const int32_t &argc, char **argv)
     : DataTriggeredConferenceClientModule(argc, argv, "proxy-velodyne16")
     , m_pointCloudOption(0)
+    , m_SPCOption(1)
     , m_CPCIntensityOption(0)
     , m_numberOfBitsForIntensity(0)
     , m_distanceEncoding(1)
@@ -84,6 +85,12 @@ void ProxyVelodyne16::setUp() {
         throw invalid_argument( "Number of bits for intensity must be lower than 8!" );
     }
     
+    m_intensityPlacement = getKeyValueConfiguration().getValue< uint16_t >("proxy-velodyne16.intensityPlacement");
+    cout << "Intensity placement (0: lower bits; 1: higher bits):" << +m_intensityPlacement << endl;
+    if (m_intensityPlacement != 0 && m_intensityPlacement != 1) {
+        throw invalid_argument( "Invalid intensity placement! 0: lower bits; 1: higher bits" );
+    }
+    
     m_distanceEncoding = getKeyValueConfiguration().getValue< uint16_t >("proxy-velodyne16.distanceEncoding");
     cout << "Distance encoding (0: cm; 1: 2mm):" << +m_distanceEncoding << endl;
     if (m_distanceEncoding != 0 && m_distanceEncoding != 1) {
@@ -95,14 +102,14 @@ void ProxyVelodyne16::setUp() {
         m_memorySize = getKeyValueConfiguration().getValue< uint32_t >("proxy-velodyne16.sharedMemory.size");
         m_velodyneSharedMemory = SharedMemoryFactory::createSharedMemory(m_memoryName, m_memorySize);
         if (m_pointCloudOption == 0) {
-            m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration"), false, m_SPCOption, m_CPCIntensityOption, m_numberOfBitsForIntensity, m_distanceEncoding));
+            m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration"), false, m_SPCOption, m_CPCIntensityOption, m_numberOfBitsForIntensity, m_intensityPlacement, m_distanceEncoding));
         }
         else {
-            m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration"), true, m_SPCOption, m_CPCIntensityOption, m_numberOfBitsForIntensity, m_distanceEncoding));
+            m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(m_velodyneSharedMemory, getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration"), true, m_SPCOption, m_CPCIntensityOption, m_numberOfBitsForIntensity, m_intensityPlacement, m_distanceEncoding));
         }
     }
     else { //m_pointCloudOption == 1
-        m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration"), m_CPCIntensityOption, m_numberOfBitsForIntensity, m_distanceEncoding));
+        m_velodyne16decoder = shared_ptr< Velodyne16Decoder >(new Velodyne16Decoder(getConference(), getKeyValueConfiguration().getValue< string >("proxy-velodyne16.calibration"), m_CPCIntensityOption, m_numberOfBitsForIntensity, m_intensityPlacement, m_distanceEncoding));
     }
     
     m_udpreceiver->setStringListener(m_velodyne16decoder.get());

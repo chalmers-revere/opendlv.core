@@ -116,11 +116,24 @@ void Velodyne16Decoder::index16sensorIDs() {
     }      
 }
 
+void Velodyne16Decoder::setupIntensityMaskCPC(uint8_t &numberOfBitsForIntensity, uint8_t &intensityPlacement) {
+    if (numberOfBitsForIntensity != 0) {
+        m_mask = 0xFFFF;
+        if (intensityPlacement == 0) {//lower bits for intensity
+            //m_mask = 0xFFFF - static_cast< uint16_t >(pow(2.0, static_cast< float >(numberOfBitsForIntensity)) - 1);
+            m_mask = m_mask << numberOfBitsForIntensity;
+        } else {
+            m_mask = m_mask >> numberOfBitsForIntensity;
+        }
+    }
+}
+
 Velodyne16Decoder::Velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
-odcore::io::conference::ContainerConference &c, const string &s, const bool &withCPC, const uint8_t &SPCOption, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &distanceEncoding)
+odcore::io::conference::ContainerConference &c, const string &s, const bool &withCPC, const uint8_t &SPCOption, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &intensityPlacement, const uint8_t &distanceEncoding)
     : m_SPCOption(SPCOption)
     , m_CPCIntensityOption(CPCIntensityOption)
     , m_numberOfBitsForIntensity(numberOfBitsForIntensity)
+    , m_intensityPlacement(intensityPlacement)
     , m_mask(0)
     , m_distanceEncoding(distanceEncoding)
     , m_pointIndexSPC(0)
@@ -159,15 +172,16 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
         throw bad_alloc();//if memory creation using malloc fails, throw an exception
     }
     index16sensorIDs();
-    if (m_numberOfBitsForIntensity != 0) {
-        m_mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
+    if (m_withCPC && m_numberOfBitsForIntensity > 0) {
+        setupIntensityMaskCPC(m_numberOfBitsForIntensity, m_intensityPlacement);
     }
 }
 
-Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &distanceEncoding)
+Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &intensityPlacement, const uint8_t &distanceEncoding)
     : m_SPCOption(0)
     , m_CPCIntensityOption(CPCIntensityOption)
     , m_numberOfBitsForIntensity(numberOfBitsForIntensity)
+    , m_intensityPlacement(intensityPlacement)
     , m_mask()
     , m_distanceEncoding(distanceEncoding)
     , m_pointIndexSPC(0)
@@ -189,11 +203,9 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_distanceStringStreamNoIntensity("")
     , m_distanceStringStreamWithIntensity("")
     , m_isStartAzimuth(true) {
-        
+    
     index16sensorIDs();
-    if (m_numberOfBitsForIntensity != 0) {
-        m_mask = 0xFFFF - static_cast<uint16_t>(pow(2.0, static_cast<float>(m_numberOfBitsForIntensity)) - 1);
-    }
+    setupIntensityMaskCPC(m_numberOfBitsForIntensity, m_intensityPlacement);
 }
 
 Velodyne16Decoder::~Velodyne16Decoder() {
@@ -220,21 +232,21 @@ void Velodyne16Decoder::sendPointCloud() {
         m_pointIndexSPC = 0;
         m_startID = 0;
     }
-    //Send compact point cloud
+    //Send compact point cloud (format: start azimuth, end azimuth, entries per azimuth, distances, number if bits for intensity, intensity placement, distance decoding)
     if (m_withCPC) {
         if (m_CPCIntensityOption == 0) {
-            CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));    
+            CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
             Container c(cpc);
             c.setSampleTimeStamp(now);
             m_velodyneContainer.send(c);
         } else if (m_CPCIntensityOption == 1) {
-            CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));    
+            CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
             Container c(cpc);
             c.setSampleTimeStamp(now);
             m_velodyneContainer.send(c);
         } else{
-            CompactPointCloud cpcNoIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding)); 
-            CompactPointCloud cpcWithIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast<CompactPointCloud::DISTANCE_ENCODING>(m_distanceEncoding));  
+            CompactPointCloud cpcNoIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding)); 
+            CompactPointCloud cpcWithIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));  
             Container c1(cpcNoIntensity);
             c1.setSampleTimeStamp(now);
             m_velodyneContainer.send(c1);
@@ -354,8 +366,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             //Store distance with resolution 2mm in an array of uint16_t type
                             m_16SensorsNoIntensity[sensorID] = ntohs(firstByte * 256 + secondByte);
                             if (m_distanceEncoding == 0) {
-                                //Store distance with resolution 1cm in an array of uint16_t type
-                                m_16SensorsNoIntensity[sensorID] = m_16SensorsNoIntensity[sensorID] / 5;  
+                                m_16SensorsNoIntensity[sensorID] = m_16SensorsNoIntensity[sensorID] / 5;  //Store distance with resolution 1cm instead
                             }
                             
                             if (sensorID == 15) {
@@ -371,12 +382,23 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             //Store distance with resolution 2mm in an array of uint16_t type
                             uint16_t distance = ntohs(firstByte * 256 + secondByte);
                             if (m_distanceEncoding == 0) {
-                                distance = distance / 5;
+                                distance = distance / 5; //Store distance with resolution 1cm instead
                             }
-                            distance = distance & m_mask; //Reserve the lower n bits for intensity
+                            
                             uint16_t intensityLevel = thirdByte;
-	                        intensityLevel = intensityLevel >> (8 - m_numberOfBitsForIntensity);
-                            m_16SensorsWithIntensity[sensorID] = distance + intensityLevel;//(16-n) bits for distance + n bits for intensity
+                            if (m_intensityPlacement == 0) {//lower bits for intensity
+                                distance = distance & m_mask; //Reserve lower n bits for intensity
+                                intensityLevel = intensityLevel >> (8 - m_numberOfBitsForIntensity);
+                                m_16SensorsWithIntensity[sensorID] = distance + intensityLevel;//(16-n) bits for distance + n bits for intensity
+                            } else {//higher bits for intensity
+                                if (distance <= m_mask) {
+                                    distance = distance & m_mask; //Reserve higher n bits for intensity
+                                    intensityLevel = intensityLevel >> (8 - m_numberOfBitsForIntensity);
+                                    m_16SensorsWithIntensity[sensorID] = (intensityLevel << (16 - m_numberOfBitsForIntensity) ) + distance;
+                                } else {//m_mask determines the number of bits for the covered distance. Distance longer than that should return 0.
+                                    m_16SensorsWithIntensity[sensorID] = 0;
+                                }
+                            }
 
                             if (sensorID == 15) {
                                 for (uint8_t index = 0; index < 16; index++) {
