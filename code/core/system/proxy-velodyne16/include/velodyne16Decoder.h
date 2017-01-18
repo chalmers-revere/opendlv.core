@@ -103,7 +103,7 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     float *m_segment;  //temporary memory for transferring data of each frame to the shared memory
     odcore::io::conference::ContainerConference &m_velodyneContainer;
     odcore::data::SharedPointCloud m_spc; //shared point cloud
-    float m_verticalAngle[16];           //Vertal angle of each sensor beam
+    float m_verticalAngle[16];           //Vertical angle of each sensor beam
     string m_calibration;  //name of the calibration file for VLP-16
     const float toRadian = static_cast<float>(M_PI) / 180.0f;  //degree to radian
     bool m_withSPC;  //if SPC is expected

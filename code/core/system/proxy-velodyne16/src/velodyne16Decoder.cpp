@@ -120,7 +120,6 @@ void Velodyne16Decoder::setupIntensityMaskCPC(uint8_t &numberOfBitsForIntensity,
     if (numberOfBitsForIntensity != 0) {
         m_mask = 0xFFFF;
         if (intensityPlacement == 0) {//lower bits for intensity
-            //m_mask = 0xFFFF - static_cast< uint16_t >(pow(2.0, static_cast< float >(numberOfBitsForIntensity)) - 1);
             m_mask = m_mask << numberOfBitsForIntensity;
         } else {
             m_mask = m_mask >> numberOfBitsForIntensity;
@@ -315,9 +314,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
                         }
                         if (m_currentAzimuth > 360.0f) {
                             m_currentAzimuth -= 360.0f;
-                            //if (m_currentAzimuth < m_previousAzimuth) {
                             sendPointCloud(); //Send a complete scan as one frame
-                            //}
                         }
                         m_previousAzimuth = m_currentAzimuth;
                     }
@@ -418,7 +415,6 @@ void Velodyne16Decoder::nextString(const string &payload) {
 
                     if ((m_withCPC && m_pointIndexCPC >= m_MAX_POINT_SIZE) || (!m_withCPC && m_pointIndexSPC >= m_MAX_POINT_SIZE)) {
                         position += 3 * (31 - counter); //Discard the points of the current frame when the preallocated shared memory is full; move the position to be read in the 1206 bytes
-                        //cout << "Point overflow!" << endl;
                         break;
                     }
                 }
