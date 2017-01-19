@@ -1,3 +1,4 @@
+0.8.5 - Compilation fix on 32bit environments
 0.8.4 - Changes in the PointCloud data structure
 0.8.3 - Propagating updated OpenDaVINCI 4.5.1
 0.8.2 - Propagating update from OD4 to OpenDLV.core
