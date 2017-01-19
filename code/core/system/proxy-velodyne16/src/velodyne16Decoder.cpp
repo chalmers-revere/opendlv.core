@@ -119,10 +119,10 @@ void Velodyne16Decoder::index16sensorIDs() {
 void Velodyne16Decoder::setupIntensityMaskCPC(uint8_t &numberOfBitsForIntensity, uint8_t &intensityPlacement) {
     if (numberOfBitsForIntensity != 0) {
         m_mask = 0xFFFF;
-        if (intensityPlacement == 0) {//lower bits for intensity
-            m_mask = m_mask << numberOfBitsForIntensity;
-        } else {
+        if (intensityPlacement == 0) {//higher bits for intensity
             m_mask = m_mask >> numberOfBitsForIntensity;
+        } else {
+            m_mask = m_mask << numberOfBitsForIntensity;
         }
     }
 }
@@ -383,11 +383,7 @@ void Velodyne16Decoder::nextString(const string &payload) {
                             }
                             
                             uint16_t intensityLevel = thirdByte;
-                            if (m_intensityPlacement == 0) {//lower bits for intensity
-                                distance = distance & m_mask; //Reserve lower n bits for intensity
-                                intensityLevel = intensityLevel >> (8 - m_numberOfBitsForIntensity);
-                                m_16SensorsWithIntensity[sensorID] = distance + intensityLevel;//(16-n) bits for distance + n bits for intensity
-                            } else {//higher bits for intensity
+                            if (m_intensityPlacement == 0) {//higher bits for intensity
                                 if (distance <= m_mask) {
                                     distance = distance & m_mask; //Reserve higher n bits for intensity
                                     intensityLevel = intensityLevel >> (8 - m_numberOfBitsForIntensity);
@@ -395,6 +391,10 @@ void Velodyne16Decoder::nextString(const string &payload) {
                                 } else {//m_mask determines the number of bits for the covered distance. Distance longer than that should return 0.
                                     m_16SensorsWithIntensity[sensorID] = 0;
                                 }
+                            } else {//lower bits for intensity
+                                distance = distance & m_mask; //Reserve lower n bits for intensity
+                                intensityLevel = intensityLevel >> (8 - m_numberOfBitsForIntensity);
+                                m_16SensorsWithIntensity[sensorID] = distance + intensityLevel;//(16-n) bits for distance + n bits for intensity
                             }
 
                             if (sensorID == 15) {

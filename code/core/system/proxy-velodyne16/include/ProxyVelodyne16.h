@@ -79,8 +79,8 @@ class ProxyVelodyne16 : public odcore::base::module::DataTriggeredConferenceClie
     uint8_t m_pointCloudOption;  //0: shared point cloud (SPC) only; 1: compact point cloud (CPC) only; 2: both SPC and CPC
     uint8_t m_SPCOption; //0: xyz+intensity; 1: distance+azimuth+vertical angle+intensity
     uint8_t m_CPCIntensityOption; //Only used when CPC is enabled. 0: without intensity; 1: with intensity; 2: send a CPC container twice, one with intensity, and the other without intensity
-    uint8_t m_numberOfBitsForIntensity; //Range 0-7. Only used when CPC is enabled. Currently recommendation when intensity is included in CPC: 2 bits for intensity and 14 bits for distance
-    uint8_t m_intensityPlacement; //0: lower bits; 1: higher bits
+    uint8_t m_numberOfBitsForIntensity; //Range 0-7. Only used when CPC is enabled
+    uint8_t m_intensityPlacement; //0: higher bits; 1: lower bits
     uint8_t m_distanceEncoding; //0: cm; 1: 2mm
     
     string m_memoryName;   //Name of the shared memory

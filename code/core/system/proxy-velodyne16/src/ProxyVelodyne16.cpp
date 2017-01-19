@@ -86,9 +86,9 @@ void ProxyVelodyne16::setUp() {
     }
     
     m_intensityPlacement = getKeyValueConfiguration().getValue< uint16_t >("proxy-velodyne16.intensityPlacement");
-    cout << "Intensity placement (0: lower bits; 1: higher bits):" << +m_intensityPlacement << endl;
+    cout << "Intensity placement (0: higher bits; 1: lower bits):" << +m_intensityPlacement << endl;
     if (m_intensityPlacement != 0 && m_intensityPlacement != 1) {
-        throw invalid_argument( "Invalid intensity placement! 0: lower bits; 1: higher bits" );
+        throw invalid_argument( "Invalid intensity placement! 0: higher bits; 1: lower bits" );
     }
     
     m_distanceEncoding = getKeyValueConfiguration().getValue< uint16_t >("proxy-velodyne16.distanceEncoding");
