@@ -176,7 +176,7 @@ class ProxyVelodyne16Test : public CxxTest::TestSuite {
             
             for (uint32_t vCounter = 0; vCounter < m_xDataV.size(); vCounter++) {
                 if ((abs(velodyneRawData[vCounter*4] - m_xDataV[vCounter]) < 0.1f) && ((abs(velodyneRawData[vCounter*4 + 1] - m_yDataV[vCounter])) < 0.1f) &&
-                ((abs(velodyneRawData[vCounter*4 + 2] - m_zDataV[vCounter])) < 0.1f) && ((abs(velodyneRawData[vCounter*4 + 3] - m_intensityV[vCounter])) < 1.0f + 1e-7)) {
+                ((abs(velodyneRawData[vCounter*4 + 2] - m_zDataV[vCounter])) < 0.1f) && ((abs(velodyneRawData[vCounter*4 + 3] - m_intensityV[vCounter])) < 1.0f)) {
                     compare++;
                 }
             }

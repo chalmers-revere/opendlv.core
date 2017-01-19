@@ -56,19 +56,29 @@ class Velodyne16Decoder : public odcore::io::StringListener {
    public:
     /**
          * Constructor.
-         */
-    //Use this constructor if the VLP-16 live feed is decoded and sent out as shared point cloud. The boolean parameter tells if compact point cloud is sent out as well.
-    //The first uint8_t parameter tells if polar or cartesian coordinate is stored for SPC;
-    //The second uint8_t type parameter tells the intensity option of CPC;
-    //The third uint8_t type parameter tells number of bits for intensity in CPC;
-    //The fourth uint8_t parameter tells intensity placement;
-    //The fifth uint8_t parameter tells distance encoding unit option
-    Velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &, const bool &, const uint8_t &, const uint8_t &, const uint8_t &, const uint8_t &, const uint8_t &);
-
-    //Use this constructor if the VLP-16 live feed is decoded and sent out as compact point cloud only.  
-    //The first uint8_t type parameter tells the intensity option of CPC; the second uint8_t type parameter tells number of bits for intensity in CPC;
-    //the third uint8_t parameter tells intensity placement; the fourth uint8_t parameter tell distance encoding unit option
-    Velodyne16Decoder(odcore::io::conference::ContainerConference &, const string &, const uint8_t &, const uint8_t &, const uint8_t &, const uint8_t &);
+     * @param m shared memory for SPC
+     * @param c container conference 
+     * @param s name of the calibration file
+     * @param withCPC if CPC is included together with SPC
+     * @param SPCOption polar or cartesian coordinate
+     * @param CPCIntensityOption with or without intensity
+     * @param numberOfBitsForIntensity number of bits reserved for intensity
+     * @param intensityPlacement higher or lower bits for intensity
+     * @param distanceEncoding use cm or 2mm for distance encoding
+     */  
+    Velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
+odcore::io::conference::ContainerConference &c, const string &s, const bool &withCPC, const uint8_t &SPCOption, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &intensityPlacement, const uint8_t &distanceEncoding);
+    
+    /**
+         * Constructor.
+     * @param c container conference 
+     * @param s name of the calibration file
+     * @param CPCIntensityOption with or without intensity
+     * @param numberOfBitsForIntensity number of bits reserved for intensity
+     * @param intensityPlacement higher or lower bits for intensity
+     * @param distanceEncoding use cm or 2mm for distance encoding
+     */
+    Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &intensityPlacement, const uint8_t &distanceEncoding);
 
     virtual ~Velodyne16Decoder();
 

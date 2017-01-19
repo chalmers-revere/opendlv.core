@@ -168,7 +168,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     //Create memory for temporary storage of point cloud data for each frame
     m_segment = (float *)malloc(m_SIZE);
     if (m_segment == NULL) {
-        throw bad_alloc();//if memory creation using malloc fails, throw an exception
+        throw bad_alloc();
     }
     index16sensorIDs();
     if (m_withCPC && m_numberOfBitsForIntensity > 0) {
