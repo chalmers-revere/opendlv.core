@@ -154,7 +154,7 @@ test opendlv.proxy.reverefh16.VehicleState {
 }
 
 // 0xFFFF358201 read as torque=33.535 rwa=3.2 ena=1 by the gateway
-test opendlv.proxy.reverefh16.SteeringRequest {
+test opendlv.proxy.reverefh16.SteerRequest {
   0x201: 0xFFFF358201
   id 1 = 1
   id 2 = 3.2
