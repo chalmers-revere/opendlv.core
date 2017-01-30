@@ -91,7 +91,7 @@ uint32_t VideoCapture::getSize() const {
 }
 
 bool VideoCapture::isValid() const {
-    return ((m_capture != nullptr) && m_capture->isOpened());
+  return ((m_capture != nullptr) && m_capture->isOpened());
 }
 
 odcore::data::image::SharedImage VideoCapture::capture() {

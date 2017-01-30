@@ -49,34 +49,34 @@ class VideoCapture
   odcore::data::image::SharedImage capture();
 
  private:
-	/**
-	* This method is responsible to copy the image from the
-	* specific camera driver to the shared memory.
-	*
-	* @param dest Pointer where to copy the data.
-	* @param size Number of bytes to copy.
-	* @return true if the data was successfully copied.
-	*/
-	virtual bool copyImageTo(char *dest, const uint32_t &size);
-	virtual bool isValid() const;
-	virtual bool captureFrame();
+  /**
+  * This method is responsible to copy the image from the
+  * specific camera driver to the shared memory.
+  *
+  * @param dest Pointer where to copy the data.
+  * @param size Number of bytes to copy.
+  * @return true if the data was successfully copied.
+  */
+  virtual bool copyImageTo(char *dest, const uint32_t &size);
+  virtual bool isValid() const;
+  virtual bool captureFrame();
 
-	const std::string getSourcename() const;
-	uint32_t getWidth() const;
-	uint32_t getHeight() const;
-	uint32_t getSize() const;
+  const std::string getSourcename() const;
+  uint32_t getWidth() const;
+  uint32_t getHeight() const;
+  uint32_t getSize() const;
 
  private:
-	odcore::data::image::SharedImage m_sharedImage;
-	std::shared_ptr<odcore::wrapper::SharedMemory> m_sharedMemory;
+  odcore::data::image::SharedImage m_sharedImage;
+  std::shared_ptr<odcore::wrapper::SharedMemory> m_sharedMemory;
 
-	std::string m_sourcename;
-	std::string m_filename;
-	uint32_t m_width;
-	uint32_t m_height;
-	uint32_t m_size;
+  std::string m_sourcename;
+  std::string m_filename;
+  uint32_t m_width;
+  uint32_t m_height;
+  uint32_t m_size;
 
-	std::unique_ptr<cv::VideoCapture> m_capture;
+  std::unique_ptr<cv::VideoCapture> m_capture;
   cv::Mat m_image;
   bool m_debug;
 };
