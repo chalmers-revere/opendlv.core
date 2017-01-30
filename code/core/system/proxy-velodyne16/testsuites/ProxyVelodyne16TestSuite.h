@@ -83,7 +83,7 @@ class packetToByte : public odcore::io::conference::ContainerListener {
    public:
     packetToByte(std::shared_ptr< odcore::wrapper::SharedMemory > m1, std::shared_ptr< odcore::wrapper::SharedMemory > m2)
         : m_mcc(m2)
-        , m_velodyne16decoder(m1, m_mcc, "../VLP-16.xml", false) //The calibration file VLP-16.xml is automatically copied to the parent folder of the test suite binary
+        , m_velodyne16decoder(m1, m_mcc, "../VLP-16.xml", false, 0, 0, 0, 1, 1) //The calibration file VLP-16.xml is automatically copied to the parent folder of the test suite binary
     {}
 
     ~packetToByte() {}
@@ -170,13 +170,13 @@ class ProxyVelodyne16Test : public CxxTest::TestSuite {
         uint32_t compare = 0; //Number of points matched between VeloView and our Velodyne decoder
 
         if (m_segment->isValid()) {
-            float *velodyneRawData = static_cast< float * >(m_segment->getSharedMemory()); //the shared memory "m_segment" should already contain Velodyne data of Frame 0 decoded by our Velodyne16 decoder and stored in the send method of the MyContainerConference class
+            float *velodyneRawData = static_cast< float * >(m_segment->getSharedMemory()); //the shared memory "m_segment" should already contain Velodyne data of Frame 1 decoded by our Velodyne16 decoder and stored in the send method of the MyContainerConference class
             
             cout << "Before comparing:" << compare << endl;
             
             for (uint32_t vCounter = 0; vCounter < m_xDataV.size(); vCounter++) {
                 if ((abs(velodyneRawData[vCounter*4] - m_xDataV[vCounter]) < 0.1f) && ((abs(velodyneRawData[vCounter*4 + 1] - m_yDataV[vCounter])) < 0.1f) &&
-                ((abs(velodyneRawData[vCounter*4 + 2] - m_zDataV[vCounter])) < 0.1f) && ((abs(velodyneRawData[vCounter*4 + 3] - m_intensityV[vCounter])) <= 1.0f)) {
+                ((abs(velodyneRawData[vCounter*4 + 2] - m_zDataV[vCounter])) < 0.1f) && ((abs(velodyneRawData[vCounter*4 + 3] - m_intensityV[vCounter])) < 1.0f)) {
                     compare++;
                 }
             }
