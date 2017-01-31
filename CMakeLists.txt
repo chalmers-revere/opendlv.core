@@ -310,3 +310,15 @@ ExternalProject_Add(system
     TEST_BEFORE_INSTALL 1
     INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/system-prefix/src/system-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/system-prefix/src/system-build --target ${MAKE_PACKAGE})
 
+###########################################################################
+# This "external project" builds and installs the tool software stack.
+ExternalProject_Add(tool
+    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libfh16mapping libodvdtrimble libodvdv2v libodvdopendlvdatamodel
+    DOWNLOAD_COMMAND ""
+    UPDATE_COMMAND ""
+    SOURCE_DIR "${CMAKE_SOURCE_DIR}/code/tool"
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
+    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
+    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
+    TEST_BEFORE_INSTALL 1
+    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/tool-prefix/src/tool-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/tool-prefix/src/tool-build --target ${MAKE_PACKAGE})

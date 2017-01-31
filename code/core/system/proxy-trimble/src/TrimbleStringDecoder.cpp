@@ -97,9 +97,12 @@ void TrimbleStringDecoder::nextString(string const &s) {
         }
 
         string type = fields.at(0);
-        // for(auto qq : fields){
-        //   cout << qq << ", ";
-        // }
+        if(m_debug){
+            for(auto qq : fields){
+              cout << qq << ", ";
+            }
+            cout << endl;
+        }
 
         if (type == "GPGGA") {
             // TODO: FIX AND REMOVE try.

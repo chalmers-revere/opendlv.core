@@ -27,7 +27,7 @@ global.buffer.memorySegmentSize = 2800000 # Size of a memory segment in bytes.
 global.buffer.numberOfMemorySegments = 20 # Number of memory segments.
 
 # The following key describes the list of modules expected to participate in this --cid session.
-global.session.expectedModules = odrecorderh264,proxy-camera:1,proxy-camera:2,proxy-camera:3,proxy-camera:4,proxy-camera:5
+global.session.expectedModules = odrecorderh264,proxy-camera:1,proxy-camera:2,proxy-camera:3,proxy-camera:4,proxy-camera:0
 
 
 ###############################################################################
@@ -138,6 +138,7 @@ proxy-camera-axis:3.calibrationfile = /opt/opendlv.core.configuration/file.yml  
 
 proxy-trimble.ip = 10.42.42.112    # Change to Trimble IP.
 proxy-trimble.port = 9999          # Change to Trimble TCP port.
+proxy-trimble.debug = 0
 
 proxy-fh16.devicenode = /dev/pcan2  # PEAK CAN device.
 proxy-fh16.record_gcm = 0           # 1 = dump generic CAN messages.
