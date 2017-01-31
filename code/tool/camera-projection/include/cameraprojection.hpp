@@ -30,8 +30,6 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
-#include "inverseperspectivemapping.hpp"
-
 namespace opendlv {
 namespace core {
 namespace tool {
@@ -69,7 +67,6 @@ class CameraProjection
   void Project();
   void ReadMatrix();
   void Warp();
-  void SavePerspectivePoints(std::string a_path);
 
   double m_recHeight;
   double m_recWidth;
@@ -79,23 +76,9 @@ class CameraProjection
   Eigen::MatrixXd m_bMatrix;
   Eigen::MatrixXd m_projectionMatrix;
 
-  bool m_applyWarp;
   int m_point;
-  std::vector<cv::Point2f> m_regionPoints;
-  std::vector<cv::Point2f> m_outputPoints;
-
-  cv::Size m_inputSize;
-  cv::Size m_outputSize;
-
-  std::string m_warpPointsFileName;
-  std::string m_leftWarpPointsFileName;
-  std::string m_rightWarpPointsFileName;
-
+  std::string m_cameraName;
   std::string m_transformationMatrixFileName;
-  std::string m_leftTransformationMatrixFileName;
-  std::string m_rightTransformationMatrisFileName;
-
-  std::string m_path;
 
   bool m_initialized;
 
