@@ -74,4 +74,4 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 proxy-trimble.ip = 10.42.42.112    # Change to Trimble IP.
 proxy-trimble.port = 9999          # Change to Trimble TCP port.
-
+proxy-trimble.debug = 0
