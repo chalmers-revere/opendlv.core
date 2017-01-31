@@ -1,3 +1,9 @@
+0.8.5 - Compilation fix on 32bit environments
+0.8.4 - Changes in the PointCloud data structure
+0.8.3 - Propagating updated OpenDaVINCI 4.5.1
+0.8.2 - Propagating update from OD4 to OpenDLV.core
+0.8.1 - New recording use cases
+0.8.0 - Supporting new messages from CAN dbc file
 0.7.1 - Updates to proxy-velodyne16 to handle SPC and CPC; new release 0.7.1
 0.7.0 - Changing CompactPointCloud from half_float to uint16_t
 0.6.0 - Improved CompactPointCloud handling in Velodyne 16, upgraded use-cases to docker-compose 1.9.0

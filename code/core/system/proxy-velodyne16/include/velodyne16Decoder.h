@@ -56,26 +56,51 @@ class Velodyne16Decoder : public odcore::io::StringListener {
    public:
     /**
          * Constructor.
-         */
-    //Use this constructor if the VLP-16 live feed is decoded and sent out as shared point cloud. The last boolean parameter tells if compact point cloud is sent out as well
-    Velodyne16Decoder(const std::shared_ptr< SharedMemory >, odcore::io::conference::ContainerConference &, const string &, const bool &);
-
-    //Use this constructor if the VLP-16 live feed is decoded and sent out as compact point cloud only.  
-    Velodyne16Decoder(odcore::io::conference::ContainerConference &);
+     * @param m shared memory for SPC
+     * @param c container conference 
+     * @param s name of the calibration file
+     * @param withCPC if CPC is included together with SPC
+     * @param SPCOption polar or cartesian coordinate
+     * @param CPCIntensityOption with or without intensity
+     * @param numberOfBitsForIntensity number of bits reserved for intensity
+     * @param intensityPlacement higher or lower bits for intensity
+     * @param distanceEncoding use cm or 2mm for distance encoding
+     */  
+    Velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
+odcore::io::conference::ContainerConference &c, const string &s, const bool &withCPC, const uint8_t &SPCOption, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &intensityPlacement, const uint8_t &distanceEncoding);
+    
+    /**
+         * Constructor.
+     * @param c container conference 
+     * @param s name of the calibration file
+     * @param CPCIntensityOption with or without intensity
+     * @param numberOfBitsForIntensity number of bits reserved for intensity
+     * @param intensityPlacement higher or lower bits for intensity
+     * @param distanceEncoding use cm or 2mm for distance encoding
+     */
+    Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &intensityPlacement, const uint8_t &distanceEncoding);
 
     virtual ~Velodyne16Decoder();
 
     virtual void nextString(const std::string &s);
 
    private:
-    void initializeArraysCPC();
+    void readCalibrationFile();
+    void index16sensorIDs();
+    void setupIntensityMaskCPC(uint8_t &, uint8_t &);
     void sendPointCloud();
    private:
     const uint32_t m_MAX_POINT_SIZE = 30000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
     const uint32_t m_SIZE_PER_COMPONENT = sizeof(float);
-    const uint8_t m_NUMBER_OF_COMPONENTS_PER_POINT = 4;                                           // How many components do we have per vector?
-    const uint32_t m_SIZE = m_MAX_POINT_SIZE * m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT; // What is the total size of the shared memory?
+    const uint8_t m_NUMBER_OF_COMPONENTS_PER_POINT = 4;  //4 components per vector: (1) cartesian: xyz+intensity; (2) polar: distance+azimuth+vertical angle+intensity
+    const uint32_t m_SIZE = m_MAX_POINT_SIZE * m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT; //the total size of the shared memory
 
+    uint8_t m_SPCOption; //0: xyz+intensity; 1: distance+azimuth+vertical angle+intensity
+    uint8_t m_CPCIntensityOption; //Only used when CPC is enabled. 0: without intensity; 1: with intensity; 2: send a CPC container twice, one with intensity, and the other without intensity
+    uint8_t m_numberOfBitsForIntensity; //Range 0-7. Only used when CPC is enabled
+    uint8_t m_intensityPlacement;  //0: higher bits; 1: lower bits
+    uint16_t m_mask;  //for combining distance and intensity in 16 bits
+    uint8_t m_distanceEncoding; //0: cm; 1: 2mm
     uint32_t m_pointIndexSPC; //current number of points of the current frame for shared point cloud 
     uint32_t m_pointIndexCPC; //current number of points of the current frame for compact point cloud
     uint32_t m_startID;
@@ -84,11 +109,11 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     float m_nextAzimuth;
     float m_deltaAzimuth;
     float m_distance;
-    std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for the shared point cloud
-    float *m_segment;                                       //temporary memory for transferring data of each frame to the shared memory
+    std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for shared point cloud
+    float *m_segment;  //temporary memory for transferring data of each frame to the shared memory
     odcore::io::conference::ContainerConference &m_velodyneContainer;
     odcore::data::SharedPointCloud m_spc; //shared point cloud
-    float m_vertCorrection[16];           //Vertal angle of each sensor beam
+    float m_verticalAngle[16];           //Vertical angle of each sensor beam
     string m_calibration;  //name of the calibration file for VLP-16
     const float toRadian = static_cast<float>(M_PI) / 180.0f;  //degree to radian
     bool m_withSPC;  //if SPC is expected
@@ -97,10 +122,12 @@ class Velodyne16Decoder : public odcore::io::StringListener {
     //For compact point cloud:
     float m_startAzimuth;
     const uint8_t m_ENTRIES_PER_AZIMUTH = 16;//For VLP-16, there are 16 points per azimuth
-    std::stringstream m_distanceStringStream; //The string stream with distance values for all points of one frame
+    std::stringstream m_distanceStringStreamNoIntensity; //The string stream with distance values for all points of one frame, excluding intensity
+    std::stringstream m_distanceStringStreamWithIntensity; //The string stream with distance values for all points of one frame, including intensity
     bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
-    uint8_t m_sensorOrderIndex[16];//Specify the order for each 16 points in the string with distance values
-    uint16_t m_16Sensors[16];//Store the distance values (in cm) of the current 16 sensors
+    uint8_t m_sensorOrderIndex[16];//Specify the sensor ID order for each 16 points with increasing vertical angle for CPC and SPC
+    uint16_t m_16SensorsNoIntensity[16];//Store the distance values of the current 16 sensors for CPC without intensity
+    uint16_t m_16SensorsWithIntensity[16];//Store the distance values of the current 16 sensors for CPC with intensity
 };
 }
 }

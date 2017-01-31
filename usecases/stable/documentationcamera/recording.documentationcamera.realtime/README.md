@@ -1,40 +1,55 @@
-This folder provides the instructions for video recording with a single OpenCV camera. A docker-compose file is provided to start all micro-services to record video streams from the OpenCV camera with lossless H264 compression. It includes three services: odsupercomponent, opendlv-core-system-proxy-camera (or proxy-camera for short), and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. proxy-camera activates the camera and odrecorderh264 records the video. The recording is performed in headless mode, i.e., without display during the recording. Please follow the instructions in the header of the docker-compose file to support non-headless mode. It is assumed that git, Docker, and Docker Compose are installed and the camera is properly connected. To install Docker, follow the tutorial: https://docs.docker.com/engine/installation/linux/ubuntulinux/.
-    
-### Prepare proxy-camera
+# Recording Video
 
-proxy-camera is included in the opendlv.core repository (https://github.com/chalmers-revere/opendlv.core). Clone the opendlv.core source:
+This folder provides the instructions for making video recordings from a V4L camera with real-time scheduling. The following micro-services are included: odsupercomponent, health, proxy-camera and odrecorderh264. odsupercomponent is used for software component lifecycle management in OpenDaVINCI. health checks the status of device nodes. proxy-camera provides the camera image and runs under real-time scheduling, and odrecorderh264 writes the camera images to disk. This usecase can be run on headless systems.
 
-    $ git clone https://github.com/chalmers-revere/opendlv.core
-    
-    $ git pull
-    
-Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest:
+The recording files are stored at `~/recordings`. A recording consists of a `.rec`, a `.rec.mem` and a `.rec-DocumentationCamera0.h264` file. The filename format is `CID-xxx-odrecorderh264_yyy.zzz`, where `xxx` is the CID number from `.env`, `yyy` is the timestamp and `zzz` is the extension.
 
-    $ make buildComplete
-    
-    $ make createDockerImage
-    
-### Use proxy-camera with Docker Compose
+## Check for Camera Devices
 
-Go to the folder usecases/recording.1opencvcamera.scott2. This folder contains a configuration file, a docker-compose file docker-compose.yml, and an environment file .env. The environment file .env defines an environment variable CID which is referred to by the docker-compose file. CID is a user-defined environment variable that specifies the cid of the UDP session established by odsupercomponent. In .env CID has the value 201, thus in docker-compose.yml "${CID}" resolves to 201.  Run Docker Compose:
+Camera devices are listed in `/dev`. To check whether the camera is successfully attached, do
+
+    $ ls /dev/video*
+    
+which should give you the list of attached cameras. To check whether the camera works, use the usecase `calibrate.documentationcamera`.
+
+If the attached camera is not `/dev/video0`, modify the left side of the device mapping of `proxy-camera` in `docker-compose.yml`. For example if your camera device is `/dev/video2`, change the mapping from 
+
+    devices:
+        - /dev/video0:/dev/video0
+        
+to
+
+    devices:
+        - /dev/video2:/dev/video0
+        
+The right side of the mapping shall not be changed.
+    
+## Start 
+
+To start recording, run
     
     $ docker-compose up --build
 
-Then proxy-camera will start the recording with the camera. To stop the recording, run
+To stop recording, hit `Ctrl+C` in the terminal window. To leave the system in a clean state, stop all the containers of the usecase and remove them:
 
-    $ docker-compose stop
-    
-Then remove all stopped containers:
+    $ docker-compose stop && docker-compose rm
 
-    $ docker-compose rm
+## Troubleshooting
 
-After the recording, the recording files are stored at ~/recordings, including a .h264 file as the actual recording with lossless H264 compression. The recording file format is CID-xxx-odrecorderh264_yyy, where xxx is the cid number and yyy is the timestamp.
+### Real-time kernel
 
-Note that the value of CID defined in .env can be manually overwritten by preceding the docker-compose command with CID=xxx, where xxx is the cid number. For instance, the following command makes odsupercomponent, proxy-camera, and odrecorderh264 run with cid 123 instead of 201:
+This use case assumes that the Linux operating system has a real-time kernel which should enable a smoother video compared with a non-real-time kernel. To display the kernal information, run
 
-    $ CID=123 docker-compose up
-    
-Then CID=123 should also be used for docker-compose stop and docker-compose rm accordingly.
+    $ uname -a
 
-Finally, note that this use case assumes that the camera is mounted upside down. Hence video images are flipped for that reason. The configuration file in this folder includes a parameter proxy-camera.camera.flipped which is set to 1. In order to disable flipped images, change its value to 0.
+### Flipped Camera Image
 
+It is assumed that the camera is mounted upside down, thus the video images are flipped before displaying. To disable flipping, set `proxy-camera.camera.flipped` in `configuration` to `0`.
+
+### odsupercomponent
+
+If the `odsupercomponent` service fails to start, try altering the `CID` in the file `.env`.
+
+### Camera Image
+
+To test whether the camera works, use the usecase `calibrate.documentationcamera.realtime`. Double-check whether the left-hand sides of the device mappings in `docker-compose.yml` coincide.
