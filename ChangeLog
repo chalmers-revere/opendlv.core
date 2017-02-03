@@ -1,3 +1,4 @@
+0.8.7 - Angle sensor, IMU, revert to DBC v5
 0.8.6 - Camera replay and calibration functions, and Trimble GPS debug option.
 0.8.5 - Compilation fix on 32bit environments
 0.8.4 - Changes in the PointCloud data structure
