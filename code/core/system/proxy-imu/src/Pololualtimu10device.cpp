@@ -19,12 +19,11 @@
 
 #include <fcntl.h>
 #include <linux/i2c-dev.h>
-#include <math.h>
 #include <sys/ioctl.h>
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
-#include <vector>
 
 #include "Pololualtimu10device.h"
 
@@ -39,14 +38,19 @@ namespace proxy {
  * Constructor for PololuAltImuV5 device interfacing through I2C.
  *
  */
-PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::vector<double> const &a_mountRotation, std::string &a_calibrationFile, bool const &a_lockCalibration, bool &a_debug)
+PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std::string const &a_adressType, std::vector<double> const &a_mountRotation, uint32_t const &a_calibrationNumberOfSamples, std::string const &a_calibrationFile, bool const &a_lockCalibration, bool &a_debug)
     : m_deviceFile()
+    , m_addressType()
+    , m_instrumentAdress{0,0,0}
     , m_rotationMatrix()
     , m_calibrationFile(a_calibrationFile)
     , m_lockCalibration(a_lockCalibration)
+    , m_accelerometerMaxVal{0,0,0}
+    , m_accelerometerMinVal{0,0,0}
     , m_magnetometerMaxVal{0,0,0}
     , m_magnetometerMinVal{0,0,0}
-    // , m_heavyAcc{0,0,0}
+    , m_gyroscopeAvgVal{0,0,0}
+    , m_calibrationNumberOfSamples{a_calibrationNumberOfSamples}
     , m_initialized(false)
     , m_debug(a_debug)
 {
@@ -59,9 +63,29 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
     std::cout << "[Pololu Altimu] I2C bus " << a_deviceName << " opened successfully."
               << std::endl;
 
+    if(a_adressType.compare("high")) {
+        m_addressType = a_adressType;
+        m_instrumentAdress[0] = 0x1e;
+        m_instrumentAdress[1] = 0x5d;
+        m_instrumentAdress[2] = 0x6b;
+
+    } else if(a_adressType.compare("low")){
+        m_addressType = a_adressType;
+        m_instrumentAdress[0] = 0x1c;
+        m_instrumentAdress[1] = 0x5c;
+        m_instrumentAdress[2] = 0x6a;
+    } else {
+        std::cerr << "[Pololu Altimu] Address type invalid. Must be either high xor low." << std::endl; 
+    }
+
+
     initLSM6();
     initLIS3();
     initLPS25();
+
+    if(loadCalibrationFile()) {
+        initCalibration();
+    }
 
     double roll = a_mountRotation[0];
     double pitch = a_mountRotation[1];
@@ -70,7 +94,6 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
     Eigen::Matrix3d rX;
     Eigen::Matrix3d rY;
     Eigen::Matrix3d rZ;
-
     rX <<
         1,  0,  0,
         0,  std::cos(roll), -std::sin(roll),
@@ -85,13 +108,51 @@ PololuAltImu10Device::PololuAltImu10Device(std::string const &a_deviceName, std:
         0,  0,  1;
     m_rotationMatrix = rX*rY*rZ;
     if(m_debug){
-        std::cout << "Rotation matrix: \n" << m_rotationMatrix << std::endl;
+        std::cout << "[Pololu Altimu] Rotation matrix: \n" << m_rotationMatrix << std::endl;
     }
     m_initialized = true;
 }
 
 
 PololuAltImu10Device::~PololuAltImu10Device() {
+}
+
+void PololuAltImu10Device::initCalibration() {
+    //Initial values for calibration
+
+    //Acceleration
+    std::vector<float> accelerationReading = GetAcceleration();
+
+    m_accelerometerMinVal[0] = accelerationReading[0];
+    m_accelerometerMinVal[1] = accelerationReading[1];
+    m_accelerometerMinVal[2] = accelerationReading[2];
+    m_accelerometerMaxVal[0] = accelerationReading[0];
+    m_accelerometerMaxVal[1] = accelerationReading[1];
+    m_accelerometerMaxVal[2] = accelerationReading[2];
+
+    //Magnetometer
+    std::vector<float> magneticReading = GetMagneticField();
+
+    m_magnetometerMinVal[0] = magneticReading[0];
+    m_magnetometerMinVal[1] = magneticReading[1];
+    m_magnetometerMinVal[2] = magneticReading[2];
+    m_magnetometerMaxVal[0] = magneticReading[0];
+    m_magnetometerMaxVal[1] = magneticReading[1];
+    m_magnetometerMaxVal[2] = magneticReading[2];
+
+    // Gyroscope
+    Eigen::MatrixXf gyroscopeSamples(m_calibrationNumberOfSamples,3);
+    std::cout << "[Pololu Altimu] Begin sampling for offset calibration of gyroscope." << std::endl;
+    for(uint32_t i = 0; i < m_calibrationNumberOfSamples; i++) {
+        std::vector<float> gyroscopeSampleReading = GetAngularVelocity();
+        for(uint8_t j = 0; j < gyroscopeSampleReading.size(); j++) {
+            gyroscopeSamples(i,j) = gyroscopeSampleReading.at(j);                  
+        }
+    } 
+    std::cout << "[Pololu Altimu] Done sampling for offset calibration of gyroscope." << std::endl;
+    m_gyroscopeAvgVal[0] = gyroscopeSamples.col(0).mean();
+    m_gyroscopeAvgVal[1] = gyroscopeSamples.col(1).mean();
+    m_gyroscopeAvgVal[2] = gyroscopeSamples.col(2).mean();
 }
 
 bool PololuAltImu10Device::loadCalibrationFile() {
@@ -115,16 +176,31 @@ bool PololuAltImu10Device::loadCalibrationFile() {
                 for(uint8_t i = 0; i < 3; i++) { 
                     m_magnetometerMinVal[i] = std::stof(strList[i+1]);
                 }
+            } else if(strList[0].compare("m_accelerometerMaxVal") == 0) {
+                for(uint8_t i = 0; i < 3; i++) { 
+                    m_accelerometerMaxVal[i] = std::stof(strList[i+1]);
+                }
+            } else if(strList[0].compare("m_accelerometerMinVal") == 0) {
+                for(uint8_t i = 0; i < 3; i++) { 
+                    m_accelerometerMinVal[i] = std::stof(strList[i+1]);
+                }
+            } else if(strList[0].compare("m_gyroscopeAvgVal") == 0) {
+                for(uint8_t i = 0; i < 3; i++) { 
+                    m_gyroscopeAvgVal[i] = std::stof(strList[i+1]);
+                }
             }
         }
 
-        std::cout << "[Pololu Altimu] Loaded the calibration settings.";
+        std::cout << "[Pololu Altimu] Loaded the calibration settings." << std::endl;
         if(m_debug) {
-            std::cout << "\nLoaded:\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] 
-            << "," << m_magnetometerMaxVal[2] << ")\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] 
-            << "," << m_magnetometerMinVal[2] <<")";
+            std::cout << "\nLoaded:"
+            << "\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] << "," << m_magnetometerMaxVal[2] << ")"
+            << "\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] << "," << m_magnetometerMinVal[2] << ")"
+            << "\nm_accelerometerMaxVal(" << m_accelerometerMaxVal[0] << "," << m_accelerometerMaxVal[1] << "," << m_accelerometerMaxVal[2] << ")"
+            << "\nm_accelerometerMinVal(" << m_accelerometerMinVal[0] << "," << m_accelerometerMinVal[1] << "," << m_accelerometerMinVal[2] << ")" 
+            << "\nm_gyroscopeAvgVal(" << m_gyroscopeAvgVal[0] << "," << m_gyroscopeAvgVal[1] << "," << m_gyroscopeAvgVal[2] << ")" 
+            << std::endl;
         }
-        std::cout << std::endl;
         file.close();
         return 0;
     } else {
@@ -150,13 +226,31 @@ void PololuAltImu10Device::saveCalibrationFile() {
             file << " " << m_magnetometerMinVal[i];
         }
         file << std::endl;
-        std::cout << "[Pololu Altimu] Saved the calibration settings.";
-        if(m_debug) {
-            std::cout << "\nSaved:\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] 
-            << "," << m_magnetometerMaxVal[2] << "),\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] 
-            << "," << m_magnetometerMinVal[2] <<")";
+        file << "m_accelerometerMaxVal";
+        for(uint8_t i = 0; i < 3; i++) {
+            file << " " << m_accelerometerMaxVal[i];
         }
-        std::cout << std::endl;
+        file << std::endl;
+        file << "m_accelerometerMinVal";
+        for(uint8_t i = 0; i < 3; i++) {
+            file << " " << m_accelerometerMinVal[i];
+        }
+        file << std::endl;
+        file << "m_gyroscopeAvgVal";
+        for(uint8_t i = 0; i < 3; i++) {
+            file << " " << m_gyroscopeAvgVal[i];
+        }
+        file << std::endl;
+        std::cout << "[Pololu Altimu] Saved the calibration settings." << std::endl;
+        if(m_debug) {
+            std::cout << "\nSaved:"
+            << "\nm_magnetometerMaxVal(" << m_magnetometerMaxVal[0] << "," << m_magnetometerMaxVal[1] << "," << m_magnetometerMaxVal[2] << ")"
+            << "\nm_magnetometerMinVal(" << m_magnetometerMinVal[0] << "," << m_magnetometerMinVal[1] << "," << m_magnetometerMinVal[2] << ")"
+            << "\nm_accelerometerMaxVal(" << m_accelerometerMaxVal[0] << "," << m_accelerometerMaxVal[1] << "," << m_accelerometerMaxVal[2] << ")"
+            << "\nm_accelerometerMinVal(" << m_accelerometerMinVal[0] << "," << m_accelerometerMinVal[1] << "," << m_accelerometerMinVal[2] << ")" 
+            << "\nm_gyroscopeAvgVal(" << m_gyroscopeAvgVal[0] << "," << m_gyroscopeAvgVal[1] << "," << m_gyroscopeAvgVal[2] << ")" 
+            << std::endl;
+        }
     } else {
         std::cout << "[Pololu Altimu] Could not save the calibration settings." << std::endl;
     }
@@ -165,27 +259,27 @@ void PololuAltImu10Device::saveCalibrationFile() {
 }
 
 void PololuAltImu10Device::accessLSM6() {
-    uint8_t address = 0x6b;
+    uint8_t address = m_instrumentAdress[2];
     if (ioctl(m_deviceFile, I2C_SLAVE, address) < 0) {
-        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LSM6 / Accel /Gyro)"
+        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LSM6 - Accelerometer and Gyroscope)"
                   << std::endl;
         return;
     }
 }
 
 void PololuAltImu10Device::accessLIS3() {
-    uint8_t address = 0x1E;
+    uint8_t address = m_instrumentAdress[0];
     if (ioctl(m_deviceFile, I2C_SLAVE, address) < 0) {
-        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LIS3 / Magnetometer)"
+        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LIS3 - Magnetometer)"
                   << std::endl;
         return;
     }
 }
 
 void PololuAltImu10Device::accessLPS25() {
-    uint8_t address = 0x5d;
+    uint8_t address = m_instrumentAdress[1];
     if (ioctl(m_deviceFile, I2C_SLAVE, address) < 0) {
-        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LPS25 / Pressure)"
+        std::cerr << "[Pololu Altimu] Failed to acquire bus access or talk to slave device. (LPS25 - Pressure)"
                   << std::endl;
         return;
     }
@@ -233,47 +327,6 @@ void PololuAltImu10Device::initLIS3() {
     // OMZ = 11 (ultra-high-performance mode for Z)
     I2cWriteRegister(lis3RegAddr::CTRL_REG4, 0x0C);
 
-    //Initial values for calibration
-    if(loadCalibrationFile()) {
-        accessLIS3();
-        uint8_t buffer[] = {lis3RegAddr::OUT_X_L | 0x80};
-
-        uint8_t status = write(m_deviceFile, buffer, 1);
-        if (status != 1) {
-            std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Magnetometer)" << std::endl;
-        }
-
-        uint8_t outBuffer[6];
-        status = read(m_deviceFile, outBuffer, 6);
-        if (status != 6) {
-            std::cerr << "[Pololu Altimu] Failed to read to the i2c bus. (Magnetometer)" << std::endl;
-        }
-
-        uint8_t xlm = outBuffer[0];
-        uint8_t xhm = outBuffer[1];
-        uint8_t ylm = outBuffer[2];
-        uint8_t yhm = outBuffer[3];
-        uint8_t zlm = outBuffer[4];
-        uint8_t zhm = outBuffer[5];
-
-        int16_t x = (int16_t)(xhm << 8 | xlm);
-        int16_t y = (int16_t)(yhm << 8 | ylm);
-        int16_t z = (int16_t)(zhm << 8 | zlm);
-
-        //F
-        //FS=±4 gauss  --> 6842 LSB/gauss
-        float scaledX = static_cast< double >(x) / 6842.0;
-        float scaledY = static_cast< double >(y) / 6842.0;
-        float scaledZ = static_cast< double >(z) / 6842.0;
-
-        m_magnetometerMinVal[0] = scaledX;
-        m_magnetometerMinVal[1] = scaledY;
-        m_magnetometerMinVal[2] = scaledZ;
-        m_magnetometerMaxVal[0] = scaledX;
-        m_magnetometerMaxVal[1] = scaledY;
-        m_magnetometerMaxVal[2] = scaledZ;
-    }
-
 }
 
 void PololuAltImu10Device::initLPS25() {
@@ -297,7 +350,7 @@ void PololuAltImu10Device::I2cWriteRegister(uint8_t a_register, uint8_t a_value)
     }
 }
 
-opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
+std::vector<float> PololuAltImu10Device::GetAcceleration() {
     accessLSM6();
     uint8_t buffer[1];
     buffer[0] = lsm6RegAddr::OUTX_L_XL;
@@ -305,7 +358,6 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     uint8_t status = write(m_deviceFile, buffer, 1);
     if (status != 1) {
         std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Accelerometer)" << std::endl;
-        return nullptr;
     }
 
     uint8_t outBuffer[6];
@@ -331,35 +383,41 @@ opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
     z = (z << 8) | zla;
 
     //FS = ±2 --> 0.061 mg/LSB -->
-    static double gravityAccel = -9.81;
-    //Hardcoded caliberation
-    //TODO: better calibration
+    static double gravityAccel = -9.82;
     float scaledX = ((0.061 * static_cast< double >(x)) / 1000) * gravityAccel;
     float scaledY = ((0.061 * static_cast< double >(y)) / 1000) * gravityAccel;
     float scaledZ = ((0.061 * static_cast< double >(z)) / 1000) * gravityAccel;
 
+    return std::vector<float>{scaledX, scaledY, scaledZ};
+}
 
-    Eigen::Vector3f rawReading(scaledX,scaledY,scaledZ);
+opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
+    std::vector<float> reading = GetAcceleration();
+    CalibrateAccelerometer(&reading);
+    Eigen::Vector3f rawReading(reading[0], reading[1], reading[2]);
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
-
-    float reading[] = {adjustedReading[0], adjustedReading[1], adjustedReading[2]};
-    
-
-    //For magnetometer calibration
-    // for(uint8_t i = 0; i < 3; i++){
-    //     m_heavyAcc[i] += 0.5f*(reading[i] - m_heavyAcc[i]);    
-    // }
-
-
-
-    // float reading[] = {scaledX, scaledY, scaledZ};
-    opendlv::proxy::AccelerometerReading accelerometerReading(reading);
+    opendlv::proxy::AccelerometerReading accelerometerReading(adjustedReading[0],adjustedReading[1],adjustedReading[2]);
     return accelerometerReading;
 }
 
-opendlv::proxy::AltimeterReading PololuAltImu10Device::ReadAltimeter() {
-    accessLPS25();
+void PololuAltImu10Device::CalibrateAccelerometer (std::vector<float>* a_val) {
+    for(uint8_t i = 0; i < 3; i++) {
+        if(!m_lockCalibration){
+            if((*a_val)[i] > m_accelerometerMaxVal[i] ) {
+                m_accelerometerMaxVal[i] = (*a_val)[i];
+            } else if((*a_val)[i] < m_accelerometerMinVal[i]) {
+                m_accelerometerMinVal[i] = (*a_val)[i];
+            }
+        }
+        //Hard iron calibration centering the value around 0 and somewhat within range of [-1,1]
+        float offset = (m_accelerometerMinVal[i] + m_accelerometerMaxVal[i]) / 2.0f ;
+        float scale = 9.82f/(m_accelerometerMaxVal[i]-offset);
+        (*a_val)[i] = ((*a_val)[i]-offset)*scale;
+    }
+}
 
+float PololuAltImu10Device::GetAltitude() {
+    accessLPS25();
     // Pressure
     uint8_t buffer[] = {lps25RegAddr::PRESS_OUT_XL | (1 << 7)};
 
@@ -381,7 +439,7 @@ opendlv::proxy::AltimeterReading PololuAltImu10Device::ReadAltimeter() {
 
     // combine bytes
     int32_t pressure_raw = (int32_t)ph << 16 | (uint16_t)pl << 8 | pxl;
-    double pressure_bar = static_cast< double >(pressure_raw) / 4096;
+    double pressure_bar = pressure_raw/4096.0;
 
     // converts pressure in mbar to altitude in meters, using 1976 US
     // Standard Atmosphere model (note that this formula only applies to a
@@ -391,13 +449,17 @@ opendlv::proxy::AltimeterReading PololuAltImu10Device::ReadAltimeter() {
     //  compensated for actual regional pressure; otherwise, it returns
     //  the pressure altitude above the standard pressure level of 1013.25
     //  mbar or 29.9213 inHg
-    double altitude = (1 - pow(pressure_bar / 1013.25, 0.190263)) * 44330.8;
+    float altitude = static_cast<float>((1 - pow(pressure_bar / 1013.25, 0.190263)) * 44330.8);
+    return altitude;
+}
 
+opendlv::proxy::AltimeterReading PololuAltImu10Device::ReadAltimeter() {
+    float altitude = GetAltitude();
     opendlv::proxy::AltimeterReading altimeterReading(altitude);
     return altimeterReading;
 }
 
-opendlv::proxy::TemperatureReading PololuAltImu10Device::ReadTemperature() {
+float PololuAltImu10Device::GetTemperature() {
     accessLPS25();
 
     //Temperature
@@ -419,19 +481,22 @@ opendlv::proxy::TemperatureReading PololuAltImu10Device::ReadTemperature() {
 
     // combine bytes
     float temperature = 42.5 + ((int16_t)(th << 8 | tl)) / 480.0;
+    return temperature;
+}
 
+opendlv::proxy::TemperatureReading PololuAltImu10Device::ReadTemperature() {
+    float temperature = GetTemperature();
     opendlv::proxy::TemperatureReading temperatureReading(temperature);
     return temperatureReading;
 }
 
-opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
+std::vector<float> PololuAltImu10Device::GetMagneticField() {
     accessLIS3();
     uint8_t buffer[] = {lis3RegAddr::OUT_X_L | 0x80};
 
     uint8_t status = write(m_deviceFile, buffer, 1);
     if (status != 1) {
         std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Magnetometer)" << std::endl;
-        return nullptr;
     }
 
     uint8_t outBuffer[6];
@@ -456,42 +521,39 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     float scaledX = static_cast< double >(x) / 6842.0;
     float scaledY = static_cast< double >(y) / 6842.0;
     float scaledZ = static_cast< double >(z) / 6842.0;
-    
-    float reading[3] = {scaledX, scaledY, scaledZ};
-    CalibrateMagnetometer(reading);
+    return std::vector<float>{scaledX,scaledY,scaledZ};
+}
 
-    Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);
-    
+opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
+    std::vector<float> reading = GetMagneticField();
+
+    CalibrateMagnetometer(&reading);
+
+    Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);    
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
-    adjustedReading.normalize();
-    reading[0] = adjustedReading[0];
-    reading[1] = adjustedReading[1];
-    reading[2] = adjustedReading[2];
 
-    opendlv::proxy::MagnetometerReading magnetometerReading(reading);
+    opendlv::proxy::MagnetometerReading magnetometerReading(adjustedReading[0],adjustedReading[1],adjustedReading[2]);
     return magnetometerReading;
 }
 
-void PololuAltImu10Device::CalibrateMagnetometer(float* a_val)
-{
-
-
-    // std::cout << "Raw values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
+void PololuAltImu10Device::CalibrateMagnetometer(std::vector<float>* a_val) {
+    // std::cout << "Raw values: "<< (*a_val)[0] << "," << (*a_val)[1]<< "," <<(*a_val)[2] <<  std::endl;
     for(uint8_t i = 0; i < 3; i++) {
         if(!m_lockCalibration){
-            if(a_val[i] > m_magnetometerMaxVal[i] ) {
-                m_magnetometerMaxVal[i] = a_val[i];
-            } else if(a_val[i] < m_magnetometerMinVal[i]) {
-                m_magnetometerMinVal[i] = a_val[i];
+            if((*a_val).at(i) > m_magnetometerMaxVal[i]) {
+                m_magnetometerMaxVal[i] = (*a_val).at(i);
+            } else if((*a_val).at(i) < m_magnetometerMinVal[i]) {
+                m_magnetometerMinVal[i] = (*a_val).at(i);
             }
         }
-        //Hard iron calibration
-        a_val[i] -= (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i]) / 2.0f ;
-        //Soft iron calibration
-        // a_val[i]  = (a_val[i] - m_magnetometerMinVal[i]) / (m_magnetometerMaxVal[i] - m_magnetometerMinVal[i]) * 2 - 1;
+
+        //Hard iron calibration centering the value around 0 and somewhat within range of [-1,1]
+        float offset = (m_magnetometerMinVal[i] + m_magnetometerMaxVal[i])/ 2.0f ;
+        float scale = 1.0f/(m_magnetometerMaxVal[i]-offset);
+        (*a_val)[i] = ((*a_val).at(i)-offset)*(scale);
     }
-    // std::cout << "Calibrated values: "<< a_val[0] << "," << a_val[1]<< "," <<a_val[2] <<  std::endl;
-    // std::cout << "Heading: " << 180 * atan2(a_val[1],a_val[0]) / M_PI << std::endl;
+    // std::cout << "Calibrated values: "<< (*a_val)[0] << "," << (*a_val)[1]<< "," <<(*a_val)[2] <<  std::endl;
+    // std::cout << "Heading: " << 180 * atan2((*a_val)[1],(*a_val)[0]) / M_PI << std::endl;
 
     //Tilt compensation
     // float roll = atan2(m_heavyAcc[1],m_heavyAcc[2]);
@@ -499,22 +561,19 @@ void PololuAltImu10Device::CalibrateMagnetometer(float* a_val)
 
 
 
-    // a_val[0] = a_val[0]*cosf(pitch)+a_val[2]*sinf(pitch);
-    // a_val[1] = a_val[0]*sinf(pitch)*sinf(roll) + a_val[1]*cosf(roll) - a_val[2]*sinf(roll)*cosf(pitch);
-    // a_val[2] = -a_val[0]*cosf(roll)*sinf(pitch) + a_val[1]*sinf(roll) + a_val[2]*cosf(roll)*cosf(pitch);
-    // std::cout << "Tilt compensation: "<< 180 * atan2(a_val[1],a_val[0]) / M_PI << " (Pitch, Roll): " << pitch << "," << roll <<std::endl;
+    // (*a_val)[0] = (*a_val)[0]*cosf(pitch)+(*a_val)[2]*sinf(pitch);
+    // (*a_val)[1] = (*a_val)[0]*sinf(pitch)*sinf(roll) + (*a_val)[1]*cosf(roll) - (*a_val)[2]*sinf(roll)*cosf(pitch);
+    // (*a_val)[2] = -(*a_val)[0]*cosf(roll)*sinf(pitch) + (*a_val)[1]*sinf(roll) + (*a_val)[2]*cosf(roll)*cosf(pitch);
+    // std::cout << "Tilt compensation: "<< 180 * atan2((*a_val)[1],(*a_val)[0]) / M_PI << " (Pitch, Roll): " << pitch << "," << roll <<std::endl;
 
 }
-
-
-opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
+std::vector<float> PololuAltImu10Device::GetAngularVelocity() {
     accessLSM6();
     uint8_t buffer[] = {lsm6RegAddr::OUTX_L_G};
 
     uint8_t status = write(m_deviceFile, buffer, 1);
     if (status != 1) {
         std::cerr << "[Pololu Altimu] Failed to write to the i2c bus. (Gyroscope)" << std::endl;
-        return nullptr;
     }
 
     uint8_t outBuffer[6];
@@ -544,23 +603,33 @@ opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
     //a.z = ~a.z + 1;
 
     //FS = ±245 --> 8.75 mdps/LSB
-    static double PI = 3.14159265359;
-    //Calibration also needed.
-    float scaledX = (((8.75 * static_cast< double >(x)) / 1000) / 180) * PI;
-    float scaledY = (((8.75 * static_cast< double >(y)) / 1000) / 180) * PI;
-    float scaledZ = (((8.75 * static_cast< double >(z)) / 1000) / 180) * PI;
+    float scaledX = (((8.75 * static_cast< double >(x)) / 1000) / 180) * M_PI;
+    float scaledY = (((8.75 * static_cast< double >(y)) / 1000) / 180) * M_PI;
+    float scaledZ = (((8.75 * static_cast< double >(z)) / 1000) / 180) * M_PI;
+    return std::vector<float> {scaledX,scaledY,scaledZ}; 
+}
 
-    float reading[] = {scaledX, scaledY, scaledZ};
-    opendlv::proxy::GyroscopeReading gyroscopeReading(reading);
+
+opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
+    std::vector<float> reading = GetAngularVelocity();
+    CalibrateGyroscope(&reading);
+    Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);
+    Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
+    opendlv::proxy::GyroscopeReading gyroscopeReading(adjustedReading[0], adjustedReading[1], adjustedReading[2]);
     return gyroscopeReading;
+}
+
+void PololuAltImu10Device::CalibrateGyroscope(std::vector<float>* a_val) {
+    for(uint8_t i = 0; i < 3; i++) {
+        (*a_val).at(i) -= m_gyroscopeAvgVal[i];
+    }
 }
 
 bool PololuAltImu10Device::IsInitialized() const {
     return m_initialized;
 }
 
-Eigen::Vector3f PololuAltImu10Device::Rotate(Eigen::Vector3f a_v, Eigen::Matrix3d a_m)
-{
+Eigen::Vector3f PololuAltImu10Device::Rotate(Eigen::Vector3f a_v, Eigen::Matrix3d a_m) {
     return (a_m*a_v.cast<double>()).cast<float>();
 }
 

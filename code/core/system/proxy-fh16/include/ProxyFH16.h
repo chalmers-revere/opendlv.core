@@ -80,7 +80,6 @@ class ProxyFH16 : public odcore::base::module::TimeTriggeredConferenceClientModu
    private:
     void dumpASCData(const automotive::GenericCANMessage &gcm);
     void dumpCSVData(odcore::data::Container &c);
-    void disableCANRequests();
 
    private:
     odcore::base::FIFOQueue m_fifoGenericCanMessages;

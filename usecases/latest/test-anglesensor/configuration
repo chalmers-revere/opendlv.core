@@ -65,29 +65,16 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 ###############################################################################
 ###############################################################################
 #
-# NEXT, THE CONFIGURATION FOR OPENDLV SOFTWARE FOLLOWS. 
+# CONFIGURATION FOR PROXY
 #
 
 ###############################################################################
 #
-# CONFIGURATION FOR proxy-fh16
+# CONFIGURATION FOR proxy-anglesensor
 #
-proxy-fh16.devicenode = /dev/pcan2  # PEAK CAN device.
-proxy-fh16.record_gcm = 0           # 1 = dump generic CAN messages.
-proxy-fh16.record_mapped_data = 0   # 1 = record mapped containers.
-proxy-fh16.enableActuationBrake = 1
-proxy-fh16.enableActuationSteering = 1
-proxy-fh16.enableActuationThrottle = 1
 
-###############################################################################
-#
-# CONFIGURATION FOR ps3 controller
-#
-system-ps3controller.ps3controllerdevicenode = /dev/input/js0   # Gamepad.
-
-system-ps3controller.acceleration.min = 0
-system-ps3controller.acceleration.max = 50
-system-ps3controller.deceleration.min = 0
-system-ps3controller.deceleration.max = -10
-system-ps3controller.steering.min = -10
-system-ps3controller.steering.max = 10
+proxy-anglesensor.pin = 0
+proxy-anglesensor.anglesminmax = -60,60
+proxy-anglesensor.setUpCalibration = 1
+proxy-anglesensor.calibrationfile = /opt/opendlv.core.configuration/anglesensor0calibration.txt
+proxy-anglesensor.debug = 1

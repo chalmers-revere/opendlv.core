@@ -1,5 +1,6 @@
-/*
- * Copyright (C) 2016 Chalmers REVERE
+/**
+ * ProxyAnglesensor
+ * Copyright (C) 2016 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,30 +17,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-message opendlv.proxy.AccelerometerReading [id = 161] {
-  float accelerationX [id = 1];
-  float accelerationY [id = 2];
-  float accelerationZ [id = 3];
+#ifndef PROXYIMU_TESTSUITE_H
+#define PROXYIMU_TESTSUITE_H
 
-}
+#include "cxxtest/TestSuite.h"
 
-message opendlv.proxy.AltimeterReading [id = 162] {
-  float altitude [id = 1];
-}
+// Include local header files.
+#include "../include/ProxyAnglesensor.h"
 
-message opendlv.proxy.MagnetometerReading [id = 163] {
-  float magneticFieldX [id = 1];
-  float magneticFieldY [id = 2];
-  float magneticFieldZ [id = 3];
+using namespace std;
+using namespace opendlv::core::system;
 
-}
+class ProxyIMUTest : public CxxTest::TestSuite {
+   public:
+    void setUp() {}
 
-message opendlv.proxy.GyroscopeReading [id = 168] {
-  float angularVelocityX [id = 1];
-  float angularVelocityY [id = 2];
-  float angularVelocityZ [id = 3];
-}
+    void tearDown() {}
 
-message opendlv.proxy.TemperatureReading [id=190] {
-  float temperature [id = 1];
-}
+    void testApplication() {
+        TS_ASSERT(true);
+    }
+};
+
+#endif /*PROXYIMU_TESTSUITE_H*/
