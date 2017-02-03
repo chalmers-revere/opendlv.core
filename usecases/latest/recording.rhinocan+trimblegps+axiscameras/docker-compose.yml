@@ -109,22 +109,22 @@ services:
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera-axis --cid=${CID} --freq=20 --id=3"
 
     # micro service for proxy-trimble.
-    proxy-trimble:
-        build: .
-        network_mode: "host"
-        depends_on:
-            - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID}"
+   # proxy-trimble:
+   #     build: .
+   #     network_mode: "host"
+   #     depends_on:
+   #         - odsupercomponent
+   #     command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID}"
 
     # micro service for proxy-fh16.
-    proxy-fh16:
-        build: .
-        network_mode: "host"
-        devices:
-        - "/dev/pcanpci2:/dev/pcan2"
-        depends_on:
-            - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
+    #proxy-fh16:
+    #    build: .
+    #    network_mode: "host"
+    #    devices:
+    #    - "/dev/pcanpci2:/dev/pcan2"
+    #    depends_on:
+    #        - odsupercomponent
+    #    command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
 
     #odrecorderh264
     odrecorderh264:
@@ -138,5 +138,5 @@ services:
         network_mode: host
         ipc: host
         working_dir: "/opt/recordings"
-        command: "/opt/od4/bin/odrecorderh264 --cid=${CID} --freq=10"
+        command: "/opt/od4/bin/odrecorderh264 --cid=${CID} --freq=30"
 

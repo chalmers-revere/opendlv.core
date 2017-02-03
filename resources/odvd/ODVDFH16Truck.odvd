@@ -16,12 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-message opendlv.proxy.reverefh16.ManualDriver [id = 191] {
+message opendlv.proxy.reverefh16.ManualControl [id = 191] {
     double accelerationPedalPosition [id = 1];
     double brakePedalPosition [id = 2];
     double torsionBarTorque [id = 3];
     odcore::data::TimeStamp fromSensor [id = 4];
-	uint8 doors [id = 5];
 }
 
 message opendlv.proxy.reverefh16.AccelerationRequest [id = 192] {
@@ -34,7 +33,7 @@ message opendlv.proxy.reverefh16.BrakeRequest [id = 193] {
     double brake [id = 2];
 }
 
-message opendlv.proxy.reverefh16.SteerRequest [id = 194] {
+message opendlv.proxy.reverefh16.SteeringRequest [id = 194] {
     bool enableRequest [id = 1];
     double steeringRoadWheelAngle [id = 2];
     double steeringDeltaTorque [id = 3];
@@ -47,12 +46,12 @@ message opendlv.proxy.reverefh16.Axles [id = 195] {
     odcore::data::TimeStamp fromSensor [id = 4];
 }
 
-message opendlv.proxy.reverefh16.VehicleSpeed [id = 196] {
+message opendlv.proxy.reverefh16.Propulsion [id = 196] {
     double propulsionShaftVehicleSpeed [id = 1];
     odcore::data::TimeStamp fromSensor [id = 2];
 }
 
-message opendlv.proxy.reverefh16.VehicleDynamics [id = 197] {
+message opendlv.proxy.reverefh16.VehicleState [id = 197] {
     double accelerationX [id = 1];
     double accelerationY [id = 2];
     double yawRate [id = 3];
@@ -80,9 +79,3 @@ message opendlv.proxy.reverefh16.Driveline  [id = 200] {
 	float enginespeed [id = 2];
 	int8 currentgear [id = 3];
 }
-
-message opendlv.proxy.reverefh16.Energylevels  [id = 201] {
-	double batterysoc [id = 1];
-	double fuellevel [id = 2];
-}
-

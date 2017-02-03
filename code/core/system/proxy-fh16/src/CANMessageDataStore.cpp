@@ -35,64 +35,41 @@ namespace proxy {
 
 using namespace std;
 
-CanMessageDataStore::CanMessageDataStore(shared_ptr< automotive::odcantools::CANDevice > canDevice)
-    : automotive::odcantools::MessageToCANDataStore(canDevice)
+CanMessageDataStore::CanMessageDataStore(shared_ptr<automotive::odcantools::CANDevice> a_canDevice, bool a_enableActuationBrake, bool a_enableActuationSteering, bool a_enableActuationThrottle)
+    : automotive::odcantools::MessageToCANDataStore(a_canDevice)
     , m_dataStoreMutex()
-    , m_enabled(false)
-    , m_overridden(false)
-    , m_overrideToggleStatus(true) {
+    , m_enabledActuationBrake(a_enableActuationBrake)
+    , m_enabledActuationSteering(a_enableActuationSteering)
+    , m_enabledActuationThrottle(a_enableActuationThrottle)
+{
 }
 
-void CanMessageDataStore::add(odcore::data::Container &container) {
+void CanMessageDataStore::add(odcore::data::Container &a_container) {
     odcore::base::Lock l(m_dataStoreMutex);
 
-    /*
-  if (container.getDataType() == opendlv::proxy::ControlState::ID()) {
-    opendlv::proxy::ControlState controlState = container.getData<opendlv::proxy::ControlState>();
-    bool enabledPrevious = m_enabled;
+    if (a_container.getDataType() == opendlv::proxy::ActuationRequest::ID()) {
+        auto actuationRequest = a_container.getData<opendlv::proxy::ActuationRequest>();
 
-    m_enabled = controlState.getIsAutonomous();
+        bool const isValid = actuationRequest.getIsValid();
 
-    if (m_overridden && !m_enabled && enabledPrevious) {
-      m_overridden = false;
-      std::cout << "Reset override flag" << std::endl;
-    }
-
-    std::cout << "Enable: " << m_enabled << std::endl;
-  }
-  else if (container.getDataType() == opendlv::proxy::ControlOverrideState::ID()) {
-    opendlv::proxy::ControlOverrideState controlOverrideState = container.getData<opendlv::proxy::ControlOverrideState>();
-
-    bool isOverridden = controlOverrideState.getIsOverridden();
-    if (isOverridden) {
-      // When override is once set to true, can only be reset when receiving certain ControlState
-      m_overridden = true;
-    }
-
-    std::cout << "Overridden: " << m_overridden << std::endl;
-  }
-  else
-*/
-    // TODO: m_enabled needs to be controlled externally.
-    m_enabled = true;
-
-    if (container.getDataType() == opendlv::proxy::ActuationRequest::ID()) {
-        opendlv::proxy::ActuationRequest actuationRequest = container.getData< opendlv::proxy::ActuationRequest >();
-
-        const bool isValid = actuationRequest.getIsValid();
-        if (!isValid) {
-            return;
-        }
-
-        const float acceleration = actuationRequest.getAcceleration();
+        float const acceleration = actuationRequest.getAcceleration();
         if (acceleration < 0.0f) {
+            bool brakeEnabled = false;
+            if (m_enabledActuationBrake && isValid) {
+                brakeEnabled = true;
+            }
 
             opendlv::proxy::reverefh16::BrakeRequest brakeRequest;
-            brakeRequest.setEnableRequest(m_enabled);
+            brakeRequest.setEnableRequest(brakeEnabled);
 
             float const max_deceleration = 2.0f;
             if (acceleration < -max_deceleration) {
-                std::cout << "WARNING: Deceleration was limited to " << max_deceleration << ". This should never happen, and may be a safety violating behaviour!" << std::endl;
+                if (brakeEnabled) {
+                  std::cout << "WARNING: Deceleration was limited to " 
+                    << max_deceleration << ". This should never happen, and "
+                    << "may be a safety violating behaviour!" 
+                    << std::endl;
+                }
                 brakeRequest.setBrake(-max_deceleration);
             } else {
                 brakeRequest.setBrake(acceleration);
@@ -103,10 +80,13 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
             automotive::GenericCANMessage genericCanMessage = brakeRequestMapping.encode(brakeRequestContainer);
             m_canDevice->write(genericCanMessage);
         } else {
-            opendlv::proxy::reverefh16::AccelerationRequest accelerationRequest;
-            accelerationRequest.setEnableRequest(m_enabled);
+            bool throttleEnabled = false;
+            if (m_enabledActuationThrottle && isValid) {
+                throttleEnabled = true;
+            }
 
-            // TODO: map requested acceleration value to acceleration pedal position
+            opendlv::proxy::reverefh16::AccelerationRequest accelerationRequest;
+            accelerationRequest.setEnableRequest(throttleEnabled);
             accelerationRequest.setAccelerationPedalPosition(acceleration);
 
             odcore::data::Container accelerationRequestContainer(accelerationRequest);
@@ -114,18 +94,23 @@ void CanMessageDataStore::add(odcore::data::Container &container) {
             automotive::GenericCANMessage genericCanMessage = accelerationRequestMapping.encode(accelerationRequestContainer);
             m_canDevice->write(genericCanMessage);
         }
+            
+        bool steeringEnabled = false;
+        if (m_enabledActuationSteering && isValid) {
+            steeringEnabled = true;
+        }
 
         const float steering = actuationRequest.getSteering();
-        opendlv::proxy::reverefh16::SteerRequest steerRequest;
-        steerRequest.setEnableRequest(m_enabled);
-        steerRequest.setSteeringRoadWheelAngle(steering);
+        opendlv::proxy::reverefh16::SteeringRequest steeringRequest;
+        steeringRequest.setEnableRequest(steeringEnabled);
+        steeringRequest.setSteeringRoadWheelAngle(steering);
 
         // Must be 33.535 to disable deltatorque.
-        steerRequest.setSteeringDeltaTorque(33.535);
-        odcore::data::Container steerRequestContainer(steerRequest);
+        steeringRequest.setSteeringDeltaTorque(33.535);
+        odcore::data::Container steeringRequestContainer(steeringRequest);
 
-        canmapping::opendlv::proxy::reverefh16::SteerRequest steerRequestMapping;
-        automotive::GenericCANMessage genericCanMessage = steerRequestMapping.encode(steerRequestContainer);
+        canmapping::opendlv::proxy::reverefh16::SteeringRequest steeringRequestMapping;
+        automotive::GenericCANMessage genericCanMessage = steeringRequestMapping.encode(steeringRequestContainer);
         m_canDevice->write(genericCanMessage);
     }
 }

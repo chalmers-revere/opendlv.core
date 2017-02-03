@@ -48,6 +48,7 @@ set(LIBRARIES ${OPENDAVINCI_LIBRARIES})
 ###########################################################################
 # Add subfolders with sources.
 add_subdirectory(health)
+add_subdirectory(proxy-anglesensor)
 add_subdirectory(proxy-applanix)
 add_subdirectory(proxy-camera)
 add_subdirectory(proxy-camera-axis)

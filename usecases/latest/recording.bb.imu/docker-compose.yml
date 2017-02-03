@@ -20,31 +20,23 @@
 version: '2'
 
 services:
-    odsupercomponent:
-        build: .
-        network_mode: "host"
-        volumes:
-        - .:/opt/opendlv.data
-        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
-        
-    proxy-imu-high:
+
+    proxy-imu1:
         build: .
         devices:
         - "/dev/i2c-2:/dev/i2c-2"
         network_mode: "host"
         volumes:
             - .:/opt/opendlv.core.configuration
-        depends_on:
-            - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --id=1 --freq=10"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --freq=10 --id=1"
 
-    proxy-imu-low:
+    proxy-imu2:
         build: .
         devices:
         - "/dev/i2c-2:/dev/i2c-2"
         network_mode: "host"
         volumes:
         - .:/opt/opendlv.core.configuration
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --id=2 --freq=10"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu --cid=${CID} --freq=10 --id=2"
 
 
