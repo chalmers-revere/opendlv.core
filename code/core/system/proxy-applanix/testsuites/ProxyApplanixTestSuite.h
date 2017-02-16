@@ -62,7 +62,7 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
         ApplanixStringDecoder asd(mcc);
 
         // TODO: Add Applanix data dump.
-        fstream data("../2016-08-28-Applanix.dump", ios::binary | ios::in);
+        fstream data("../2016-11-08-Applanix.dump", ios::binary | ios::in);
 
         uint32_t overallCounter = 0;
         while (overallCounter < 50) {
@@ -77,6 +77,7 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
             const string s = sstr.str();
             if (s.size() > 0) {
                 asd.nextString(s);
+cout << mcc.m_g1data.toString() << endl;
                 if (mcc.m_callCounter == 1) {
 //                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X1, 1e-8);
 //                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y1, 1e-8);
