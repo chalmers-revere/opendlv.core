@@ -75,14 +75,14 @@ ADD_LIBRARY (${PROJECT_NAME}-static STATIC ${thisproject-sources})
 ADD_EXECUTABLE (${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/apps/${PROJECT_NAME}.cpp")
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} ${PROJECT_NAME}-static ${LIBRARIES}) 
 
-# This custom command copies the "2016-08-28-Applanix.dump" file to where
+# This custom command copies the "2016-11-08-Applanix.dump" file to where
 # the test suites are generated (more correctly to the parent folder) so
 # that the test suite "ProxyApplanixTestSuite.h" can open it during
 # exection.
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/2016-08-28-Applanix.dump
-                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-08-28-Applanix.dump ${CMAKE_BINARY_DIR}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-08-28-Applanix.dump)
-ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyDumpForTest DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/2016-08-28-Applanix.dump)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/2016-11-08-Applanix.dump
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-11-08-Applanix.dump ${CMAKE_BINARY_DIR}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/2016-11-08-Applanix.dump)
+ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyDumpForTest DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/2016-11-08-Applanix.dump)
 
 ###############################################################################
 # Enable CxxTest for all available testsuites.

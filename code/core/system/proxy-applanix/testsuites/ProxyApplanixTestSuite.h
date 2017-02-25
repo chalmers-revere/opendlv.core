@@ -23,6 +23,7 @@
 #include "cxxtest/TestSuite.h"
 
 #include <memory>
+#include <iomanip>
 
 #include <opendavinci/odcore/io/conference/ContainerConference.h>
 #include <opendavinci/odcore/io/conference/ContainerConferenceFactory.h>
@@ -44,7 +45,6 @@ class MyContainerConference : public ContainerConference {
         m_callCounter++;
         if (container.getDataType() == opendlv::core::sensors::applanix::Grp1Data::ID()) {
             m_g1data = container.getData<opendlv::core::sensors::applanix::Grp1Data>();
-            cout << m_g1data.toString() << endl;
         }
     }
     mutable uint32_t m_callCounter;
@@ -61,8 +61,7 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
         MyContainerConference mcc;
         ApplanixStringDecoder asd(mcc);
 
-        // TODO: Add Applanix data dump.
-        fstream data("../2016-08-28-Applanix.dump", ios::binary | ios::in);
+        fstream data("../2016-11-08-Applanix.dump", ios::binary | ios::in);
 
         uint32_t overallCounter = 0;
         while (overallCounter < 50) {
@@ -77,17 +76,23 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
             const string s = sstr.str();
             if (s.size() > 0) {
                 asd.nextString(s);
-                if (mcc.m_callCounter == 1) {
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X1, 1e-8);
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y1, 1e-8);
-                }
                 if (mcc.m_callCounter == 2) {
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X2, 1e-8);
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y2, 1e-8);
+                    const double X1 = 57.70878319;
+                    const double Y1 = 11.94648496;
+                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X1, 1e-8);
+                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y1, 1e-8);
                 }
-                if (mcc.m_callCounter == 3) {
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X3, 1e-8);
-//                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y3, 1e-8);
+                if (mcc.m_callCounter == 4) {
+                    const double X2 = 57.70878314;
+                    const double Y2 = 11.94648486;
+                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X2, 1e-8);
+                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y2, 1e-8);
+                }
+                if (mcc.m_callCounter == 6) {
+                    const double X3 = 57.70878309;
+                    const double Y3 = 11.94648475;
+                    TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X3, 1e-8);
+                    TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y3, 1e-8);
                 }
             }
             overallCounter++;
