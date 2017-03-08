@@ -69,13 +69,11 @@ class ProxySick : public odcore::base::module::TimeTriggeredConferenceClientModu
     void settingsMode();
     void setCentimeterMode();
     void setBaudrate38400();
-    void setBaudrate500k();
     void openSerialPort(std::string, uint32_t);
    private:
     std::shared_ptr<odcore::wrapper::SerialPort> m_sick;
     std::unique_ptr<SickStringDecoder> m_sickStringDecoder;
     std::string m_serialPort;
-    uint32_t m_baudRate;
 };
 }
 }

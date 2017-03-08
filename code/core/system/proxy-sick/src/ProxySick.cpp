@@ -44,7 +44,6 @@ ProxySick::ProxySick(const int &argc, char **argv)
     , m_sick()
     , m_sickStringDecoder()
     , m_serialPort()
-    , m_baudRate()
 {
 }
 
@@ -63,9 +62,7 @@ void ProxySick::setUp()
   m_sickStringDecoder = unique_ptr<SickStringDecoder>(new SickStringDecoder(getConference(), x, y, z));
 
   // Connection configuration.
-  m_serialPort = kv.getValue<string>("proxy-sick.port");
-  m_baudRate = 38400;
-  // m_baudRate = 500000; //500kbaudrate
+  m_serialPort = kv.getValue<string>("proxy-sick.serial-port");
   const uint32_t INIT_BAUD_RATE = 9600; // Fixed baud rate.
   openSerialPort(m_serialPort, INIT_BAUD_RATE);
 }
@@ -82,37 +79,36 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body()
 {
   // Initialization sequence.
   uint32_t counter = 0;
-  while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+  while (getModuleStateAndWaitForRemainingTimeInTimeslice() == 
+      odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     counter++;
-    if (counter == 10) {
+    if (counter == 1) {
       cout << "Sending stop scan" << endl;
       stopScan();
     }
-    if (counter == 12) {
+    if (counter == 3) {
       cout << "Sending status request" << endl;
       status();
     }
     if (counter == 14) {
-      cout << "Changing baudrate to " << m_baudRate << endl;
+      cout << "Changing baudrate to 38400" << endl;
       setBaudrate38400();
-      // setBaudrate500k();
     }
-    if (counter == 18) {
+    if (counter == 15) {
       cout << "Reconnecting with new baudrate" << endl;
-
       m_sick->stop();
       m_sick->setStringListener(NULL);
-      openSerialPort(m_serialPort, m_baudRate);
+      openSerialPort(m_serialPort, 38400);
     }
-    if (counter == 20) {
+    if (counter == 17) {
       cout << "Sending settings mode" << endl;
       settingsMode();
     }
-    if (counter == 22) {
+    if (counter == 21) {
       cout << "Sending centimeter mode" << endl;
       setCentimeterMode();
     }
-    if (counter == 24) {
+    if (counter == 31) {
       cout << "Start scanning" << endl;
       startScan();
       break;
@@ -169,13 +165,6 @@ void ProxySick::setBaudrate38400()
   m_sick->send(baudrate38400String); 
 }
 
-void ProxySick::setBaudrate500k()
-{ 
-  const unsigned char baudrate500k[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x48, 0x58, 0x08};
-  const string baudrate500kString(reinterpret_cast<char const *>(baudrate500k), 8);
-  m_sick->send(baudrate500kString);   
-}
-
 void ProxySick::openSerialPort(std::string a_serialPort, uint32_t a_baudRate)
 {
   try {
@@ -183,14 +172,11 @@ void ProxySick::openSerialPort(std::string a_serialPort, uint32_t a_baudRate)
     m_sick->setStringListener(m_sickStringDecoder.get());
     m_sick->start();
 
-    stringstream sstrInfo;
-    sstrInfo << "[" << getName() << "] Connected to SICK, waiting for configuration (takes approx. 30s)..." << endl;
-    toLogger(odcore::data::LogMessage::LogLevel::INFO, sstrInfo.str());
+    cout << "[" << getName() << "] Connected to SICK, waiting for configuration (takes approx. 30s)..." << endl;
+    // toLogger(odcore::data::LogMessage::LogLevel::INFO, sstrInfo.str());
   }
   catch (string &exception) {
-    stringstream sstrWarning;
-    sstrWarning << "[" << getName() << "] Could not connect to SICK: " << exception << endl;
-    toLogger(odcore::data::LogMessage::LogLevel::WARN, sstrWarning.str());
+    cout << "[" << getName() << "] Could not connect to SICK: " << exception << endl;
   }
 }
 
