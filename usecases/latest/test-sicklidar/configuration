@@ -90,3 +90,9 @@ proxy-sick.mount.roll = 0.0
 proxy-sick.mount.pitch = 0.0
 proxy-sick.mount.yaw = 0.0
 proxy-sick.record = 0  # Set to 1 to dump Lidar data in .rec format.
+
+
+odcockpit.directoriesForSharedLibaries = /opt
+global.car = file:///opt/opendlv.data/Car.objx
+global.scenario = file:///opt/opendlv.data/Track.scnx
+global.showGrid = 0
