@@ -31,6 +31,7 @@ services:
     proxy-lidar:
         build: .
         network_mode: "host"
+        ipc: host
         user: root  # This parameter will be replaced as soon as group_add parameter is available in docker-compose, cf. https://github.com/docker/compose/pull/3709.
         devices:
              - "/dev/ttyS1:/dev/ttyS1"
