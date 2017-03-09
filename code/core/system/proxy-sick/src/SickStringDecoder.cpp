@@ -20,13 +20,14 @@
 #include <stdint.h>
 
 #include <cmath>
-
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
 
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
+#include <opendavinci/odcore/base/Lock.h>
 
 #include "SickStringDecoder.h"
 
@@ -37,12 +38,23 @@ namespace proxy {
 
 using namespace std;
 
-SickStringDecoder::SickStringDecoder(odcore::io::conference::ContainerConference &a_conference, const double &a_x, const double &a_y, const double &a_z)
+SickStringDecoder::SickStringDecoder(
+        odcore::io::conference::ContainerConference &a_conference, 
+        const std::shared_ptr<odcore::wrapper::SharedMemory> a_sickSharedMemory,
+        odcore::data::SharedPointCloud a_sharedPointCloud,
+        float *a_segment,
+        const double &a_x, 
+        const double &a_y, 
+        const double &a_z)
     : m_conference(a_conference)
     , m_header(false)
     , m_startConfirmed(false)
     , m_latestReading()
     , m_buffer()
+    , m_sickSharedMemory(a_sickSharedMemory)
+    , m_segment(a_segment)
+    , m_sickContainer(a_conference)
+    , m_sharedPointCloud(a_sharedPointCloud)
 {
   m_position[0] = a_x;
   m_position[1] = a_y;
@@ -67,50 +79,52 @@ SickStringDecoder::SickStringDecoder(odcore::io::conference::ContainerConference
   m_measurementHeader[5] = 0x69;
   m_measurementHeader[6] = 0x01; //01 for centimeters, 41 for millimeters
 
-  m_centimeterResponse[0] = 0x06;
-  m_centimeterResponse[1] = 0x02;
-  m_centimeterResponse[2] = 0x80;
-  m_centimeterResponse[3] = 0x25;
-  m_centimeterResponse[4] = 0x00;
-  m_centimeterResponse[5] = 0xF7;
-  m_centimeterResponse[6] = 0x00;
-  m_centimeterResponse[7] = 0x00;
-  m_centimeterResponse[8] = 0x00;
-  m_centimeterResponse[9] = 0x46;
-  m_centimeterResponse[10] = 0x00;
-  m_centimeterResponse[11] = 0x00;
-  m_centimeterResponse[12] = 0x0D;
-  m_centimeterResponse[13] = 0x00;
-  m_centimeterResponse[14] = 0x00;
-  m_centimeterResponse[15] = 0x00;
-  m_centimeterResponse[16] = 0x02;
-  m_centimeterResponse[17] = 0x02;
-  m_centimeterResponse[18] = 0x00;
-  m_centimeterResponse[19] = 0x00;
-  m_centimeterResponse[20] = 0x00;
-  m_centimeterResponse[21] = 0x00;
-  m_centimeterResponse[22] = 0x00;
-  m_centimeterResponse[23] = 0x00;
-  m_centimeterResponse[24] = 0x00;
-  m_centimeterResponse[25] = 0x00;
-  m_centimeterResponse[26] = 0x00;
-  m_centimeterResponse[27] = 0x00;
-  m_centimeterResponse[28] = 0x00;
-  m_centimeterResponse[29] = 0x00;
-  m_centimeterResponse[30] = 0x00;
-  m_centimeterResponse[31] = 0x00;
-  m_centimeterResponse[32] = 0x00;
-  m_centimeterResponse[33] = 0x00;
-  m_centimeterResponse[34] = 0x00;
-  m_centimeterResponse[35] = 0x00;
-  m_centimeterResponse[36] = 0x00;
-  m_centimeterResponse[37] = 0x00;
-  m_centimeterResponse[38] = 0x00;
-  m_centimeterResponse[39] = 0x02;
-  m_centimeterResponse[40] = 0xCB;
-  m_centimeterResponse[41] = 0x10; //11?
-  m_centimeterResponse[42] = 0xB0; //B1?
-  m_centimeterResponse[43] = 0x11;
+  // m_centimeterResponse[0] = 0x06;
+  // m_centimeterResponse[1] = 0x02;
+  // m_centimeterResponse[2] = 0x80;
+  // m_centimeterResponse[3] = 0x25;
+  // m_centimeterResponse[4] = 0x00;
+  // m_centimeterResponse[5] = 0xF7;
+  // m_centimeterResponse[6] = 0x00;
+  // m_centimeterResponse[7] = 0x00;
+  // m_centimeterResponse[8] = 0x00;
+  // m_centimeterResponse[9] = 0x46;
+  // m_centimeterResponse[10] = 0x00;
+  // m_centimeterResponse[11] = 0x00;
+  // m_centimeterResponse[12] = 0x0D;
+  // m_centimeterResponse[13] = 0x00;
+  // m_centimeterResponse[14] = 0x00;
+  // m_centimeterResponse[15] = 0x00;
+  // m_centimeterResponse[16] = 0x02;
+  // m_centimeterResponse[17] = 0x02;
+  // m_centimeterResponse[18] = 0x00;
+  // m_centimeterResponse[19] = 0x00;
+  // m_centimeterResponse[20] = 0x00;
+  // m_centimeterResponse[21] = 0x00;
+  // m_centimeterResponse[22] = 0x00;
+  // m_centimeterResponse[23] = 0x00;
+  // m_centimeterResponse[24] = 0x00;
+  // m_centimeterResponse[25] = 0x00;
+  // m_centimeterResponse[26] = 0x00;
+  // m_centimeterResponse[27] = 0x00;
+  // m_centimeterResponse[28] = 0x00;
+  // m_centimeterResponse[29] = 0x00;
+  // m_centimeterResponse[30] = 0x00;
+  // m_centimeterResponse[31] = 0x00;
+  // m_centimeterResponse[32] = 0x00;
+  // m_centimeterResponse[33] = 0x00;
+  // m_centimeterResponse[34] = 0x00;
+  // m_centimeterResponse[35] = 0x00;
+  // m_centimeterResponse[36] = 0x00;
+  // m_centimeterResponse[37] = 0x00;
+  // m_centimeterResponse[38] = 0x00;
+  // m_centimeterResponse[39] = 0x02;
+  // m_centimeterResponse[40] = 0xCB;
+  // m_centimeterResponse[41] = 0x10; //11?
+  // m_centimeterResponse[42] = 0xB0; //B1?
+  // m_centimeterResponse[43] = 0x11;
+
+
 }
 
 SickStringDecoder::~SickStringDecoder()
@@ -124,8 +138,8 @@ void SickStringDecoder::convertToDistances()
   uint32_t distance;
   double cartesian[2];
 
-  std::vector<opendlv::model::Direction> directions; // m_directions.clear();
-  std::vector<double> radii;                         // m_radii.clear();
+  std::vector<opendlv::model::Direction> directions; 
+  std::vector<double> radii;                         
 
   for (uint32_t i = 0; i < 361; i++) {
     byte1 = (int)m_measurements[i * 2];
@@ -159,6 +173,26 @@ void SickStringDecoder::convertToDistances()
   // Distribute data.
   odcore::data::Container c(m_latestReading);
   m_conference.send(c);
+
+  for (uint32_t i = 0; i < 361; i++) {
+    byte1 = (int)m_measurements[i * 2];
+    byte2 = (int)m_measurements[i * 2 + 1];
+
+    distance = byte1 + (byte2 % 32) * 256;
+
+    float x = static_cast<float>(m_position[0]);
+    float y = static_cast<float>(m_position[1]);
+    float z = static_cast<float>(m_position[2]);
+    float intensity = 255;
+    x += static_cast<float>(distance * sin(M_PI * i / 360.0) / 100.0);
+    y += static_cast<float>(distance * (-cos(M_PI * i / 360.0)) / 100.0);
+
+    m_segment[i * 4] = x;
+    m_segment[i * 4 + 1] = y;
+    m_segment[i * 4 + 2] = z;
+    m_segment[i * 4 + 3] = intensity;
+  }
+  SendSharedPointCloud();
 }
 
 bool SickStringDecoder::tryDecode()
@@ -276,6 +310,17 @@ void SickStringDecoder::nextString(std::string const &a_string)
 
   // Always add at the end for more bytes to buffer.
   m_buffer.seekg(0, ios_base::end);
+}
+
+void SickStringDecoder::SendSharedPointCloud()
+{
+  if (m_sickSharedMemory->isValid()) {
+    odcore::base::Lock l(m_sickSharedMemory);
+    std::memcpy(m_sickSharedMemory->getSharedMemory(), m_segment, 
+        m_sickSharedMemory->getSize());
+    odcore::data::Container c(m_sharedPointCloud);
+    m_conference.send(c);
+  }
 }
 
 }

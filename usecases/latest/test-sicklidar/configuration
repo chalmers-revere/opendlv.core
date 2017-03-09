@@ -75,6 +75,13 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 
 proxy-sick.type = sick
+#The total size of the shared memory: 
+#MAX_POINT_SIZE * NUMBER_OF_COMPONENTS_PER_POINT * sizeof(float)
+#where MAX_POINT_SIZE is the maximum number of points per frame (This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed),
+#NUMBER_OF_COMPONENTS_PER_POIN = 4 (x, y, z, intensity)
+#MAX_POINT_SIZE = 180*2+1
+#sizeof(float) = 4
+proxy-sick.sharedMemory-size = 5776
 proxy-sick.serial-port = /dev/ttyS1
 proxy-sick.mount.x = 1.25
 proxy-sick.mount.y = 0.0

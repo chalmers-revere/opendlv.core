@@ -74,7 +74,9 @@ class ProxySick : public odcore::base::module::TimeTriggeredConferenceClientModu
     std::shared_ptr<odcore::wrapper::SerialPort> m_sick;
     std::unique_ptr<SickStringDecoder> m_sickStringDecoder;
     std::string m_serialPort;
+    float *m_segment;
 };
+
 }
 }
 }

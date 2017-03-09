@@ -19,12 +19,14 @@
 
 
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
 #include <opendavinci/odcore/wrapper/SerialPort.h>
 #include <opendavinci/odcore/wrapper/SerialPortFactory.h>
+#include <opendavinci/odcore/wrapper/SharedMemoryFactory.h>
 #include <opendavinci/odcore/strings/StringToolbox.h>
 #include <opendavinci/odtools/recorder/Recorder.h>
 
@@ -44,6 +46,7 @@ ProxySick::ProxySick(const int &argc, char **argv)
     , m_sick()
     , m_sickStringDecoder()
     , m_serialPort()
+    , m_segment()
 {
 }
 
@@ -59,7 +62,33 @@ void ProxySick::setUp()
   const double x = kv.getValue<float>("proxy-sick.mount.x");
   const double y = kv.getValue<float>("proxy-sick.mount.y");
   const double z = kv.getValue<float>("proxy-sick.mount.z");
-  m_sickStringDecoder = unique_ptr<SickStringDecoder>(new SickStringDecoder(getConference(), x, y, z));
+
+
+  const std::string NAME = 
+      kv.getValue<std::string>("proxy-sick.type");
+  const uint32_t MEMORY_SIZE = 
+      kv.getValue<uint32_t>("proxy-sick.sharedMemory-size");
+  std::shared_ptr<odcore::wrapper::SharedMemory> sickSharedMemory = 
+      odcore::wrapper::SharedMemoryFactory::createSharedMemory(
+          NAME, MEMORY_SIZE);
+  odcore::data::SharedPointCloud sharedPointCloud;
+  
+
+  sharedPointCloud.setName(NAME);
+  sharedPointCloud.setSize(MEMORY_SIZE);
+  sharedPointCloud.setHeight(1); // Why should this be 1?
+  sharedPointCloud.setWidth(361);
+  sharedPointCloud.setNumberOfComponentsPerPoint(4);
+  sharedPointCloud.setComponentDataType(
+      odcore::data::SharedPointCloud::FLOAT_T); // Data type per component.
+  sharedPointCloud.setUserInfo(odcore::data::SharedPointCloud::XYZ_INTENSITY);
+
+  //Create memory for temporary storage of point cloud data for each frame
+  m_segment = (float *)malloc(MEMORY_SIZE);
+
+  m_sickStringDecoder = unique_ptr<SickStringDecoder>(
+      new SickStringDecoder(getConference(), sickSharedMemory, 
+          sharedPointCloud, m_segment, x, y, z));
 
   // Connection configuration.
   m_serialPort = kv.getValue<string>("proxy-sick.serial-port");
@@ -69,6 +98,7 @@ void ProxySick::setUp()
 
 void ProxySick::tearDown()
 {
+  free(m_segment);
   stopScan();
   m_sick->stop();
   m_sick->setStringListener(NULL);
@@ -116,7 +146,8 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body()
   }
 
   // "Do nothing" sequence in general.
-  while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+  while (getModuleStateAndWaitForRemainingTimeInTimeslice() == 
+      odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     // Do nothing.
   }
 
@@ -132,51 +163,70 @@ void ProxySick::status()
 
 void ProxySick::startScan()
 {
-  const unsigned char streamStart[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x24, 0x34, 0x08};
+  const unsigned char streamStart[] = 
+      {0x02, 0x00, 0x02, 0x00, 0x20, 0x24, 0x34, 0x08};
   const string startString(reinterpret_cast<char const *>(streamStart), 8);
   m_sick->send(startString);
 }
 
 void ProxySick::stopScan()
 {
-  const unsigned char streamStop[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x25, 0x35, 0x08};
+  const unsigned char streamStop[] = 
+      {0x02, 0x00, 0x02, 0x00, 0x20, 0x25, 0x35, 0x08};
   const string stopString(reinterpret_cast<char const *>(streamStop), 8);
   m_sick->send(stopString);
 }
 
 void ProxySick::settingsMode()
 {
-  const unsigned char settingsModeString[] = {0x02, 0x00, 0x0A, 0x00, 0x20, 0x00, 0x53, 0x49, 0x43, 0x4B, 0x5F, 0x4C, 0x4D, 0x53, 0xBE, 0xC5};
-  const string settingString(reinterpret_cast<char const *>(settingsModeString), 16);
+  const unsigned char settingsModeString[] = 
+      {0x02, 0x00, 0x0A, 0x00, 0x20, 0x00, 0x53, 0x49, 0x43, 0x4B, 0x5F, 0x4C, 
+          0x4D, 0x53, 0xBE, 0xC5};
+  const string settingString(
+      reinterpret_cast<char const *>(settingsModeString), 16);
   m_sick->send(settingString);
 }
 
 void ProxySick::setCentimeterMode()
 {
-  const unsigned char centimeterMode[] = {0x02, 0x00, 0x21, 0x00, 0x77, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x00, 0x02, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0xCB};
-  const string centimeterString(reinterpret_cast<char const *>(centimeterMode), 39);
+  const unsigned char centimeterMode[] = 
+      {0x02, 0x00, 0x21, 0x00, 0x77, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0D, 0x00, 
+          0x00, 0x00, 0x02, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+          0x00, 0x00, 0x00, 0x20, 0xCB};
+  const string centimeterString(
+      reinterpret_cast<char const *>(centimeterMode), 39);
   m_sick->send(centimeterString);
 }
 
 void ProxySick::setBaudrate38400()
 {
-  const unsigned char baudrate38400[] = {0x02, 0x00, 0x02, 0x00, 0x20, 0x40, 0x50, 0x08};
-  const string baudrate38400String(reinterpret_cast<char const *>(baudrate38400), 8);
+  const unsigned char baudrate38400[] = 
+      {0x02, 0x00, 0x02, 0x00, 0x20, 0x40, 0x50, 0x08};
+  const string baudrate38400String(
+      reinterpret_cast<char const *>(baudrate38400), 8);
   m_sick->send(baudrate38400String); 
 }
 
 void ProxySick::openSerialPort(std::string a_serialPort, uint32_t a_baudRate)
 {
   try {
-    m_sick = shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(a_serialPort, a_baudRate));
+    m_sick = 
+        shared_ptr<odcore::wrapper::SerialPort>(
+            odcore::wrapper::SerialPortFactory::createSerialPort(
+                a_serialPort, a_baudRate));
     m_sick->setStringListener(m_sickStringDecoder.get());
     m_sick->start();
 
-    cout << "[" << getName() << "] Connected to SICK, waiting for configuration (takes approx. 30s)..." << endl;
+    cout << "[" << getName() 
+    << "] Connected to SICK, waiting for configuration (takes approx. 30s)..." 
+    << endl;
     // toLogger(odcore::data::LogMessage::LogLevel::INFO, sstrInfo.str());
   }
   catch (string &exception) {
-    cout << "[" << getName() << "] Could not connect to SICK: " << exception << endl;
+    cout << "[" << getName() 
+    << "] Could not connect to SICK: " << exception 
+    << endl;
   }
 }
 

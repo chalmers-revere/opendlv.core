@@ -22,9 +22,11 @@
 
 #include <sstream>
 
-#include <opendavinci/odcore/io/StringListener.h>
+#include <opendavinci/generated/odcore/data/SharedPointCloud.h>
 #include <opendavinci/odcore/io/conference/ContainerConference.h>
-#include "odvdopendlvdatamodel/generated/opendlv/core/sensors/EchoReading.h"
+#include <opendavinci/odcore/io/StringListener.h>
+#include <opendavinci/odcore/wrapper/SharedMemory.h>
+#include <odvdopendlvdatamodel/generated/opendlv/core/sensors/EchoReading.h>
 
 namespace opendlv {
 namespace core {
@@ -36,7 +38,14 @@ namespace proxy {
  */
 class SickStringDecoder : public odcore::io::StringListener {
  public:
-  SickStringDecoder(odcore::io::conference::ContainerConference &, const double&, const double&, const double&);
+  SickStringDecoder(
+      odcore::io::conference::ContainerConference &,
+      const std::shared_ptr<odcore::wrapper::SharedMemory>,
+      odcore::data::SharedPointCloud,
+      float *,
+      const double&, 
+      const double&, 
+      const double&);
   SickStringDecoder(SickStringDecoder const &) = delete;
   SickStringDecoder &operator=(SickStringDecoder const &) = delete;
   virtual ~SickStringDecoder();
@@ -46,6 +55,7 @@ class SickStringDecoder : public odcore::io::StringListener {
  private:
   void convertToDistances();
   bool tryDecode();
+  void SendSharedPointCloud();
 
  private:
   odcore::io::conference::ContainerConference &m_conference;
@@ -60,6 +70,12 @@ class SickStringDecoder : public odcore::io::StringListener {
   unsigned char m_measurementHeader[7];
   unsigned char m_centimeterResponse[44];
   std::stringstream m_buffer;
+  //shared memory for the shared point cloud
+  std::shared_ptr<odcore::wrapper::SharedMemory> m_sickSharedMemory; 
+  //temporary memory for transferring data of each frame to the shared memory
+  float *m_segment;                                       
+  odcore::io::conference::ContainerConference &m_sickContainer;
+  odcore::data::SharedPointCloud m_sharedPointCloud;
 };
 
 }
