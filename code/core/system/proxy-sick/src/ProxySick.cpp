@@ -47,9 +47,6 @@ ProxySick::ProxySick(const int &argc, char **argv)
     , m_sick()
     , m_sickStringDecoder()
     , m_serialPort()
-    , m_segment(NULL)
-    , m_initialized(false)
-    , m_hasAttachedToSharedImageMemory(false)
     , m_spcSharedMemory(NULL)
     , m_spc()
     , m_debug()
@@ -74,27 +71,21 @@ void ProxySick::setUp()
       kv.getValue<std::string>("proxy-sick.type");
   const uint32_t MEMORY_SIZE = 
       kv.getValue<uint32_t>("proxy-sick.sharedMemory-size");
-  std::shared_ptr<odcore::wrapper::SharedMemory> sickSharedMemory = 
-      odcore::wrapper::SharedMemoryFactory::createSharedMemory(
-          NAME, MEMORY_SIZE);
-  odcore::data::SharedPointCloud sharedPointCloud;
-  
+  m_spcSharedMemory = odcore::wrapper::SharedMemoryFactory::createSharedMemory(
+      NAME, MEMORY_SIZE);
 
-  sharedPointCloud.setName(NAME);
-  sharedPointCloud.setSize(MEMORY_SIZE);
-  sharedPointCloud.setHeight(1); // Why should this be 1?
-  sharedPointCloud.setWidth(361);
-  sharedPointCloud.setNumberOfComponentsPerPoint(4);
-  sharedPointCloud.setComponentDataType(
+  m_spc.setName(NAME);
+  m_spc.setSize(MEMORY_SIZE);
+  m_spc.setHeight(1); // Why should this be 1?
+  m_spc.setWidth(361);
+  m_spc.setNumberOfComponentsPerPoint(4);
+  m_spc.setComponentDataType(
       odcore::data::SharedPointCloud::FLOAT_T); // Data type per component.
-  sharedPointCloud.setUserInfo(odcore::data::SharedPointCloud::XYZ_INTENSITY);
+  m_spc.setUserInfo(odcore::data::SharedPointCloud::XYZ_INTENSITY);
 
-  //Create memory for temporary storage of point cloud data for each frame
-  m_segment = (float *)malloc(MEMORY_SIZE);
 
   m_sickStringDecoder = unique_ptr<SickStringDecoder>(
-      new SickStringDecoder(getConference(), sickSharedMemory, 
-          sharedPointCloud, m_segment, x, y, z));
+      new SickStringDecoder(getConference(), m_spcSharedMemory, m_spc, x, y, z));
 
   // Connection configuration.
   m_serialPort = kv.getValue<string>("proxy-sick.serial-port");
@@ -105,28 +96,11 @@ void ProxySick::setUp()
 
 void ProxySick::tearDown()
 {
-  free(m_segment);
   stopScan();
   m_sick->stop();
   m_sick->setStringListener(NULL);
 }
 
-void ProxySick::nextContainer(odcore::data::Container &a_c)
-{
-  std::cout << a_c.getDataType() << std::endl;
-  if (!m_initialized) {
-    return;
-  }
-  if (m_debug && !m_hasAttachedToSharedImageMemory 
-      && a_c.getDataType() == odcore::data::SharedPointCloud::ID()){
-    m_spc = a_c.getData<odcore::data::SharedPointCloud>();
-    m_spcSharedMemory = 
-        odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(
-            m_spc.getName()); 
-    m_hasAttachedToSharedImageMemory = true;
-    std::cout << "Attached to shared point cloud memory." << std::endl;
-  }
-}
 
 // This method will do the main data processing job.
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body()
@@ -165,15 +139,13 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body()
     if (counter == 31) {
       cout << "Start scanning" << endl;
       startScan();
-      m_initialized = true;
       break;
     }
   }
 
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() == 
       odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-    if (m_debug && m_hasAttachedToSharedImageMemory  
-        && m_spcSharedMemory != NULL && m_spcSharedMemory->isValid()) {
+    if (m_debug) {
       odcore::base::Lock l(m_spcSharedMemory);
       float *sickRawData = 
           static_cast<float*>(m_spcSharedMemory->getSharedMemory());

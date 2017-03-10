@@ -42,7 +42,6 @@ class SickStringDecoder : public odcore::io::StringListener {
       odcore::io::conference::ContainerConference &,
       const std::shared_ptr<odcore::wrapper::SharedMemory>,
       odcore::data::SharedPointCloud,
-      float *,
       const double&, 
       const double&, 
       const double&);

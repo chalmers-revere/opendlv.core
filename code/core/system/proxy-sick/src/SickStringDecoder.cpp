@@ -42,7 +42,6 @@ SickStringDecoder::SickStringDecoder(
         odcore::io::conference::ContainerConference &a_conference, 
         const std::shared_ptr<odcore::wrapper::SharedMemory> a_sickSharedMemory,
         odcore::data::SharedPointCloud a_sharedPointCloud,
-        float *a_segment,
         const double &a_x, 
         const double &a_y, 
         const double &a_z)
@@ -52,10 +51,12 @@ SickStringDecoder::SickStringDecoder(
     , m_latestReading()
     , m_buffer()
     , m_sickSharedMemory(a_sickSharedMemory)
-    , m_segment(a_segment)
+    , m_segment(NULL)
     , m_sickContainer(a_conference)
     , m_sharedPointCloud(a_sharedPointCloud)
 {
+  m_segment = (float *)malloc(a_sharedPointCloud.getSize());
+
   m_position[0] = a_x;
   m_position[1] = a_y;
   m_position[2] = a_z;
@@ -129,6 +130,7 @@ SickStringDecoder::SickStringDecoder(
 
 SickStringDecoder::~SickStringDecoder()
 {
+  free(m_segment);
 }
 
 void SickStringDecoder::convertToDistances()
