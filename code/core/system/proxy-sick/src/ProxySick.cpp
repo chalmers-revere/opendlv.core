@@ -113,21 +113,18 @@ void ProxySick::tearDown()
 
 void ProxySick::nextContainer(odcore::data::Container &a_c)
 {
+  std::cout << a_c.getDataType() << std::endl;
   if (!m_initialized) {
     return;
   }
-  if (m_debug && a_c.getDataType() == odcore::data::SharedPointCloud::ID()){
-    // m_SPCReceived = true;
-    odcore::data::SharedPointCloud spc = 
-        a_c.getData<odcore::data::SharedPointCloud>();
-    if (!m_hasAttachedToSharedImageMemory) {
-      m_spc = spc;
-      m_spcSharedMemory = 
-          odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(
-              spc.getName()); 
-      m_hasAttachedToSharedImageMemory = true;
-      std::cout << "Attached to shared point cloud memory." << std::endl;
-    }  
+  if (m_debug && !m_hasAttachedToSharedImageMemory 
+      && a_c.getDataType() == odcore::data::SharedPointCloud::ID()){
+    m_spc = a_c.getData<odcore::data::SharedPointCloud>();
+    m_spcSharedMemory = 
+        odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(
+            m_spc.getName()); 
+    m_hasAttachedToSharedImageMemory = true;
+    std::cout << "Attached to shared point cloud memory." << std::endl;
   }
 }
 
