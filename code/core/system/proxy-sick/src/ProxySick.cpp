@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
+#include <opendavinci/odcore/base/Lock.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
 #include <opendavinci/odcore/wrapper/SerialPort.h>
 #include <opendavinci/odcore/wrapper/SerialPortFactory.h>
@@ -46,7 +47,12 @@ ProxySick::ProxySick(const int &argc, char **argv)
     , m_sick()
     , m_sickStringDecoder()
     , m_serialPort()
-    , m_segment()
+    , m_segment(NULL)
+    , m_initialized(false)
+    , m_hasAttachedToSharedImageMemory(false)
+    , m_spcSharedMemory(NULL)
+    , m_spc()
+    , m_debug()
 {
 }
 
@@ -94,6 +100,7 @@ void ProxySick::setUp()
   m_serialPort = kv.getValue<string>("proxy-sick.serial-port");
   const uint32_t INIT_BAUD_RATE = 9600; // Fixed baud rate.
   openSerialPort(m_serialPort, INIT_BAUD_RATE);
+  m_debug = (kv.getValue<int32_t>("proxy-sick.debug") == 1);
 }
 
 void ProxySick::tearDown()
@@ -102,6 +109,26 @@ void ProxySick::tearDown()
   stopScan();
   m_sick->stop();
   m_sick->setStringListener(NULL);
+}
+
+void ProxySick::nextContainer(odcore::data::Container &a_c)
+{
+  if (!m_initialized) {
+    return;
+  }
+  if (m_debug && a_c.getDataType() == odcore::data::SharedPointCloud::ID()){
+    // m_SPCReceived = true;
+    odcore::data::SharedPointCloud spc = 
+        a_c.getData<odcore::data::SharedPointCloud>();
+    if (!m_hasAttachedToSharedImageMemory) {
+      m_spc = spc;
+      m_spcSharedMemory = 
+          odcore::wrapper::SharedMemoryFactory::attachToSharedMemory(
+              spc.getName()); 
+      m_hasAttachedToSharedImageMemory = true;
+      std::cout << "Attached to shared point cloud memory." << std::endl;
+    }  
+  }
 }
 
 // This method will do the main data processing job.
@@ -141,16 +168,30 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxySick::body()
     if (counter == 31) {
       cout << "Start scanning" << endl;
       startScan();
+      m_initialized = true;
       break;
     }
   }
 
-  // "Do nothing" sequence in general.
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() == 
       odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-    // Do nothing.
+    if (m_debug && m_hasAttachedToSharedImageMemory  
+        && m_spcSharedMemory != NULL && m_spcSharedMemory->isValid()) {
+      odcore::base::Lock l(m_spcSharedMemory);
+      float *sickRawData = 
+          static_cast<float*>(m_spcSharedMemory->getSharedMemory());
+      uint32_t startID = 0;
+      for (uint32_t i = 0; i < m_spc.getWidth(); i++) {
+        std::cout << "(x,y,z,intensityLevel): " 
+        << std::to_string(sickRawData[startID]) 
+        << "," << std::to_string(sickRawData[startID + 1]) 
+        << "," << std::to_string(sickRawData[startID + 2]) 
+        << "," << std::to_string(sickRawData[startID + 3])
+        << std::endl; 
+        startID += m_spc.getNumberOfComponentsPerPoint();
+      }
+    }
   }
-
   return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 

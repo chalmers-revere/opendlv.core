@@ -60,6 +60,7 @@ class ProxySick : public odcore::base::module::TimeTriggeredConferenceClientModu
    private:
     void setUp();
     void tearDown();
+    void nextContainer(odcore::data::Container &);
     odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
    private:
@@ -70,11 +71,17 @@ class ProxySick : public odcore::base::module::TimeTriggeredConferenceClientModu
     void setCentimeterMode();
     void setBaudrate38400();
     void openSerialPort(std::string, uint32_t);
+
    private:
     std::shared_ptr<odcore::wrapper::SerialPort> m_sick;
     std::unique_ptr<SickStringDecoder> m_sickStringDecoder;
     std::string m_serialPort;
     float *m_segment;
+    bool m_initialized;
+    bool m_hasAttachedToSharedImageMemory;
+    std::shared_ptr<odcore::wrapper::SharedMemory> m_spcSharedMemory;
+    odcore::data::SharedPointCloud m_spc;
+    bool m_debug;
 };
 
 }
