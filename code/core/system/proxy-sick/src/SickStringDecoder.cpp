@@ -54,7 +54,11 @@ SickStringDecoder::SickStringDecoder(
     , m_segment(NULL)
     , m_sickContainer(a_conference)
     , m_sharedPointCloud(a_sharedPointCloud)
+    , m_file()
 {
+  std::string filename = "/opt/opendlv.data/sickdata.csv";
+  m_file = std::ofstream(filename, std::ofstream::out);
+
   m_segment = (float *)malloc(a_sharedPointCloud.getSize());
 
   m_position[0] = a_x;
@@ -130,6 +134,8 @@ SickStringDecoder::SickStringDecoder(
 
 SickStringDecoder::~SickStringDecoder()
 {
+  m_file.flush();
+  m_file.close();
   free(m_segment);
 }
 
@@ -147,12 +153,7 @@ void SickStringDecoder::convertToDistances()
     byte1 = (int)m_measurements[i * 2];
     byte2 = (int)m_measurements[i * 2 + 1];
 
-    if (i < 361) {
-      distance = byte1 + (byte2 % 32) * 256; //Integer centimeters in local polar coordinates
-    }
-    else {
-      distance = byte2 + (byte1 % 32) * 256; //Integer centimeters in local polar coordinates
-    }
+    distance = byte1 + (byte2 % 32) * 256; //Integer centimeters in local polar coordinates
 
     if (distance < 7500) {                                     //We don't send max range responses
       cartesian[0] = distance * sin(M_PI * i / 360.0) / 100.0; //Local cartesian coordinates in meters (rotated coordinate system)
@@ -166,21 +167,6 @@ void SickStringDecoder::convertToDistances()
       directions.push_back(direction);
       radii.push_back(radius);
     }
-  }
-
-  m_latestReading.setListOfDirections(directions);
-  m_latestReading.setListOfRadii(radii);
-  m_latestReading.setNumberOfPoints(radii.size());
-
-  // Distribute data.
-  odcore::data::Container c(m_latestReading);
-  m_conference.send(c);
-
-  for (uint32_t i = 0; i < 361; i++) {
-    byte1 = (int)m_measurements[i * 2];
-    byte2 = (int)m_measurements[i * 2 + 1];
-
-    distance = byte1 + (byte2 % 32) * 256;
 
     float x = static_cast<float>(m_position[0]);
     float y = static_cast<float>(m_position[1]);
@@ -193,8 +179,24 @@ void SickStringDecoder::convertToDistances()
     m_segment[i * 4 + 1] = y;
     m_segment[i * 4 + 2] = z;
     m_segment[i * 4 + 3] = intensity;
+
+    m_file << x + "," + y + "," + z + "," + intensity;
+    if (i == 360) {
+      m_file << std::endl;
+    } else {
+      m_file << ",";
+    }
   }
+
+  m_latestReading.setListOfDirections(directions);
+  m_latestReading.setListOfRadii(radii);
+  m_latestReading.setNumberOfPoints(radii.size());
+
+  // Distribute data.
+  odcore::data::Container c(m_latestReading);
+  m_conference.send(c);
   SendSharedPointCloud();
+
 }
 
 bool SickStringDecoder::tryDecode()

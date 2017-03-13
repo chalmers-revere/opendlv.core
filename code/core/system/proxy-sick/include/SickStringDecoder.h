@@ -20,6 +20,7 @@
 #ifndef LIDAR_LIDARSTRINGDECODER_HPP_
 #define LIDAR_LIDARSTRINGDECODER_HPP_
 
+#include <fstream>
 #include <sstream>
 
 #include <opendavinci/generated/odcore/data/SharedPointCloud.h>
@@ -75,6 +76,7 @@ class SickStringDecoder : public odcore::io::StringListener {
   float *m_segment;                                       
   odcore::io::conference::ContainerConference &m_sickContainer;
   odcore::data::SharedPointCloud m_sharedPointCloud;
+  std::ofstream m_file;
 };
 
 }

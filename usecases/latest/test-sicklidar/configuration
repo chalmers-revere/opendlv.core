@@ -81,7 +81,7 @@ proxy-sick.type = sick
 #NUMBER_OF_COMPONENTS_PER_POIN = 4 (x, y, z, intensity)
 #MAX_POINT_SIZE = 180*2+1
 #sizeof(float) = 4
-proxy-sick.sharedMemory-size = 5776
+proxy-sick.sharedMemory-size = 5776 # 4*4*(180*2+1)= 5776
 proxy-sick.serial-port = /dev/ttyS1
 proxy-sick.mount.x = 1.25
 proxy-sick.mount.y = 0.0
