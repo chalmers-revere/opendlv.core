@@ -25,7 +25,7 @@ BASE_IMAGE=$(REPOSITORY)/$(IMAGE)
 BASE_IMAGE_VERSION=v4.10.0
 BASE_IMAGE_DEV_SUFFIX=-dev
 BASE_IMAGE_DEV=$(REPOSITORY)/$(IMAGE)$(BASE_IMAGE_DEV_SUFFIX)
-BASE_IMAGE_DEV_VERSION=v4.10.0
+BASE_IMAGE_DEV_VERSION=$(BASE_IMAGE_VERSION)
 
 ###############################################################################
 # Product names.
@@ -46,7 +46,7 @@ CMAKE=$(shell which cmake)
 # Directories.
 SOURCE_TREE_PATH=$(shell dirname $(shell pwd))
 BUILD_PATH_BASE=$(SOURCE_TREE_PATH)/docker/builds
-BUILD_PATH=$(BUILD_PATH_BASE)/$(shell echo $(BASE_IMAGE) | cut -f2 -d"/")-$(GIT_CURRENT_BRANCH)
+BUILD_PATH=$(BUILD_PATH_BASE)/$(PRODUCT)$(shell echo $(BASE_IMAGE) | cut -f2 -d"/")-$(GIT_CURRENT_BRANCH)
 CCACHE_PATH=$(HOME)/.ccache
 PACKAGES_DIR=$(BUILD_PATH)
 
@@ -153,7 +153,7 @@ createDockerImage: createDockerImageNonDev createDockerImageDev
 
 createDockerImageNonDev:
 	cat $(SOURCE_TREE_PATH)/docker/Dockerfile.template | sed -e $(DOCKERFILE_BASEIMAGE) > $(BUILD_PATH)/Dockerfile
-	cat $(SOURCE_TREE_PATH)/docker/Dockerfile.template.nonDev | sed -e $(DOCKERFILE_BASEIMAGE) > $(BUILD_PATH)/Dockerfile && $(CMAKE) -E remove_directory $(BUILD_PATH)/opt.nonDev && $(CMAKE) -E copy_directory $(BUILD_PATH)/opt $(BUILD_PATH)/opt.nonDev && $(CMAKE) -E remove_directory $(BUILD_PATH)/opt.nonDev/${DEST_DIR}/man && $(CMAKE) -E remove_directory $(BUILD_PATH)/opt.nonDev/${DEST_DIR}/include && $(CMAKE) -E remove -f $(BUILD_PATH)/opt.nonDev/${DEST_DIR}/bin/*.jar
+	cat $(SOURCE_TREE_PATH)/docker/Dockerfile.template.nonDev | sed -e $(DOCKERFILE_BASEIMAGE) > $(BUILD_PATH)/Dockerfile && $(CMAKE) -E remove_directory $(BUILD_PATH)/opt.nonDev && $(CMAKE) -E copy_directory $(BUILD_PATH)/opt $(BUILD_PATH)/opt.nonDev && $(CMAKE) -E remove_directory $(BUILD_PATH)/opt.nonDev/${DEST_DIR}/man && $(CMAKE) -E remove_directory $(BUILD_PATH)/opt.nonDev/${DEST_DIR}/include
 	echo "${PROJECT_NAME}.build" > $(BUILD_PATH)/.dockerignore
 	echo "${PROJECT_NAME}.deb" >> $(BUILD_PATH)/.dockerignore
 	echo "$(DOCKER_IMAGE_NAME)" >> $(BUILD_PATH)/.dockerignore
