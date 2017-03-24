@@ -180,7 +180,7 @@ void SickStringDecoder::convertToDistances()
     m_segment[i * 4 + 2] = z;
     m_segment[i * 4 + 3] = intensity;
 
-    m_file << x + "," + y + "," + z + "," + intensity;
+    m_file << x << "," << y << "," << z << "," << intensity;
     if (i == 360) {
       m_file << std::endl;
     } else {

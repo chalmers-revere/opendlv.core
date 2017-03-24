@@ -69,13 +69,13 @@ message opendlv.proxy.reverefh16.Wheels [id = 198] {
 }
 
 message opendlv.proxy.reverefh16.Steering [id = 199] {
-    double roadwheelangle [id = 1];
-    double steeringwheelangle [id = 2];
+    double roadWheelAngle [id = 1];
+    double steeringWheelAngle [id = 2];
     odcore::data::TimeStamp fromSensor [id = 3];
 }
 
 message opendlv.proxy.reverefh16.Driveline  [id = 200] {
-	float enginetorque [id = 1];
-	float enginespeed [id = 2];
-	int8 currentgear [id = 3];
+	float engineTorque [id = 1];
+	float engineSpeed [id = 2];
+	int8 currentGear [id = 3];
 }
