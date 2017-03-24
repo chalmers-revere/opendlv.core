@@ -23,7 +23,7 @@
 
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
-#include <opendavinci/odcore/io/Packet.h>
+#include <opendavinci/generated/odcore/data/Packet.h>
 #include <opendavinci/odcore/io/udp/UDPFactory.h>
 
 #include "odvdv2v/GeneratedHeaders_ODVDV2V.h"
@@ -80,7 +80,7 @@ void ProxyV2V::tearDown() {
     m_udpreceiver->setPacketListener(NULL);
 }
 
-void ProxyV2V::nextPacket(const odcore::io::Packet &p) {
+void ProxyV2V::nextPacket(const odcore::data::Packet &p) {
     if(m_debug) {
         cout << "[" << getName() << "] Received a packet from " << p.getSender() << ", "
              << "with " << p.getData().length()
