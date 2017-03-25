@@ -31,6 +31,7 @@ services:
     proxy-fh16:
         build: .
         network_mode: "host"
+        privileged: true
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
