@@ -26,6 +26,7 @@
 #include <opendavinci/odcore/io/PacketListener.h>
 #include <opendavinci/odcore/io/udp/UDPReceiver.h>
 #include <opendavinci/odcore/io/udp/UDPSender.h>
+#include <opendavinci/generated/odcore/data/Packet.h>
 
 namespace opendlv {
 namespace core {
@@ -55,7 +56,7 @@ class ProxyV2V : public odcore::base::module::DataTriggeredConferenceClientModul
     virtual ~ProxyV2V();
 
    public:
-    virtual void nextPacket(const odcore::io::Packet &p);
+    virtual void nextPacket(const odcore::data::Packet &p);
     virtual void nextContainer(odcore::data::Container &c);
 
    private:

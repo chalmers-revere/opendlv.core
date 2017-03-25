@@ -42,27 +42,15 @@ The right side of the mapping shall not be changed and should correspond to the 
 
 #### Test
 
-Connect the truck's CAN cable to the interface on the car PC. Make sure the truck sends CAN data, e.g. by turning on the engine. Check whether you get CAN data by running
+Connect the truck's CAN cable to the interface on the car PC. Make sure the truck sends CAN data, e.g. by turning on the engine. Check whether you get CAN data by running where ? needs to be replaced with the correct CAN network interface:
 
-    $ cat /dev/pcanpci2
+    $ cansniffer can?
     
-There should be lots of output. If there is not, try with a different interface number (`ls /dev/pcanpci*` for the possible numbers).
+There should be lots of output. If there is not, try with a different network interface number (`ifconfig -a` for the possible numbers).
 
 #### Set Up
 
-Check whether the device name matches the mapping in `docker-compose.yml`.  If the device name determined in the previous step does not match the **left** side of the mapping, change it accordingly.
-
-Example: Suppose you get CAN data on `/dev/pcanpci0`, while in docker-compose the mapping says:
-
-    devices:
-        - /dev/pcanpci2:/dev/pcan2
-        
-In that case, change the left side of the mapping to `/dev/pcanpci0`:
-
-    devices:
-        - /dev/pcanpci0:/dev/pcan2
-        
-The right side of the mapping shall not be changed and should correspond to the `proxy-fh16.devicenode` value in `configuration`.
+Check whether the device identifier corresponds to the `proxy-fh16.devicenode` value in `configuration`.
 
 ## Start the Usecase
 

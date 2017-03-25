@@ -1,4 +1,4 @@
-0.8.10 - Propagating OpenDaVINCI 4.9.1
+0.9.0 - SocketCAN and split Docker images for building
 0.8.9 - Propagating OpenDaVINCI v4.8.0 to OpenDLV.core
 0.8.8 - Propagating OpenDaVINCI v4.7.0 to OpenDLV.core
 0.8.7 - Angle sensor, IMU, revert to DBC v5

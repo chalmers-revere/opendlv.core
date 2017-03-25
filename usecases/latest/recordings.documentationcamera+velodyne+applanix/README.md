@@ -8,7 +8,7 @@ proxy-camera is included in the opendlv.core repository (https://github.com/chal
     
     $ git pull
     
-Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest:
+Go to opendlv.core/docker, build and create the Docker image seresearch/opendlv-core-on-opendavinci-on-base:latest:
 
     $ make buildComplete
     

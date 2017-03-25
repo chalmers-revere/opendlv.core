@@ -29,7 +29,7 @@ services:
     #proxy-velodyne64
     velodyne64:
         build: .
-        image: seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
+        image: seresearch/opendlv-core-on-opendavinci-on-base:latest
         network_mode: "host"
         volumes:
         - .:/opt/opendlv.data
