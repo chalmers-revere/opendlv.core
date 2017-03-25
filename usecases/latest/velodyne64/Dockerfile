@@ -18,5 +18,5 @@
 # Date: 2016-09-01
 
 FROM seresearch/opendavinci-ubuntu-16.04-complete:latest
-FROM seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest
+FROM seresearch/opendlv-core-on-opendavinci-on-base:latest
 
