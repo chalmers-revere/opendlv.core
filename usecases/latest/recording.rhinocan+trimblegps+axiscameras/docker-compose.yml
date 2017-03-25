@@ -34,16 +34,16 @@ services:
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.core.configuration/configuration"
 
     # #camera 1
-    # proxy1:
-    #     build: .
-    #     ipc: host
-    #     user: root
-    #     devices:
-    #     - "/dev/video0:/dev/video0"
-    #     links:
-    #         - odsupercomponent
-    #     command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=1 --freq=20"
-        
+#     proxy1:
+#         build: .
+#         ipc: host
+#         user: root
+#         devices:
+#         - "/dev/video0:/dev/video0"
+#         links:
+#             - odsupercomponent
+#         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=1 --freq=20"
+
     # Micro-service for proxy-camera-axis0.
     proxy-camera-axis0:
         build: .
@@ -109,22 +109,21 @@ services:
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera-axis --cid=${CID} --freq=20 --id=3"
 
     # micro service for proxy-trimble.
-   # proxy-trimble:
-   #     build: .
-   #     network_mode: "host"
-   #     depends_on:
-   #         - odsupercomponent
-   #     command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID}"
+#    proxy-trimble:
+#        build: .
+#        network_mode: "host"
+#        depends_on:
+#            - odsupercomponent
+#        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID}"
 
     # micro service for proxy-fh16.
-    #proxy-fh16:
-    #    build: .
-    #    network_mode: "host"
-    #    devices:
-    #    - "/dev/pcanpci2:/dev/pcan2"
-    #    depends_on:
-    #        - odsupercomponent
-    #    command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
+#    proxy-fh16:
+#        build: .
+#        network_mode: "host"
+#        privileged: true
+#        depends_on:
+#            - odsupercomponent
+#        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
 
     #odrecorderh264
     odrecorderh264:
