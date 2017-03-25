@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# Date: 2016-12-02
+# Date: 2017-03-25
 
-FROM seresearch/opendlv-core-on-opendavinci-on-base:v0.7.0
+FROM seresearch/opendlv-core-on-opendavinci-on-base:v0.9.0
 
