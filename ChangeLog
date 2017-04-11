@@ -1,3 +1,6 @@
+0.9.1 - Propagating OpenDaVINCI 4.11.1 to OpenDLV.core
+0.9.0 - SocketCAN and split Docker images for building
+0.8.9 - Propagating OpenDaVINCI v4.8.0 to OpenDLV.core
 0.8.8 - Propagating OpenDaVINCI v4.7.0 to OpenDLV.core
 0.8.7 - Angle sensor, IMU, revert to DBC v5
 0.8.6 - Camera replay and calibration functions, and Trimble GPS debug option.

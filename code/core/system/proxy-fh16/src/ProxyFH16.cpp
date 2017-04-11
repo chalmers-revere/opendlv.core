@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include <odcantools/CANDevice.h>
+#include <odcantools/SocketCANDevice.h>
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/data/TimeStamp.h>
 #include <opendavinci/odcore/reflection/Message.h>
@@ -66,7 +66,7 @@ void ProxyFH16::setUp() {
     const string DEVICE_NODE = getKeyValueConfiguration().getValue< string >("proxy-fh16.devicenode");
 
     // Try to open CAN device and register this instance as receiver for GenericCANMessages.
-    m_device = shared_ptr< CANDevice >(new CANDevice(DEVICE_NODE, *this));
+    m_device = shared_ptr< CANDevice >(new SocketCANDevice(DEVICE_NODE, *this));
 
     // If the device could be successfully opened, create a recording file to dump of the data.
     if (m_device.get() && m_device->isOpen()) {

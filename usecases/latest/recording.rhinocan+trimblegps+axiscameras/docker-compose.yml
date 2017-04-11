@@ -12,7 +12,7 @@ version: '2'
 ############################
 #To be updated: Root user is required to access video devices. This is why root user is used for proxy1, proxy2, and proxy3. The OpenDaVINCI base image "seresearch/opendavinci-ubuntu-16.04-complete" defines odv as a normal user. It is possible to run proxy1, proxy2, and proxy3 with odv as the user by adding odv to the video user group during docker run:
 
-#docker run -ti --rm --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --ipc=host --user=odv --group-add video --device=/dev/video0:/dev/video0 seresearch/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest /opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111  --id=1 --freq=20
+#docker run -ti --rm --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --ipc=host --user=odv --group-add video --device=/dev/video0:/dev/video0 seresearch/opendlv-core-on-opendavinci-on-base:latest /opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=111  --id=1 --freq=20
 
 #However, currently "--group-add" is not supported by docker-compose yet. This docker-compose file will be updated with "--group-add" when docker-compose starts to include this feature in future releases.
 ############################
@@ -34,16 +34,16 @@ services:
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.core.configuration/configuration"
 
     # #camera 1
-    # proxy1:
-    #     build: .
-    #     ipc: host
-    #     user: root
-    #     devices:
-    #     - "/dev/video0:/dev/video0"
-    #     links:
-    #         - odsupercomponent
-    #     command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=1 --freq=20"
-        
+#     proxy1:
+#         build: .
+#         ipc: host
+#         user: root
+#         devices:
+#         - "/dev/video0:/dev/video0"
+#         links:
+#             - odsupercomponent
+#         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID}  --id=1 --freq=20"
+
     # Micro-service for proxy-camera-axis0.
     proxy-camera-axis0:
         build: .
@@ -109,22 +109,21 @@ services:
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera-axis --cid=${CID} --freq=20 --id=3"
 
     # micro service for proxy-trimble.
-   # proxy-trimble:
-   #     build: .
-   #     network_mode: "host"
-   #     depends_on:
-   #         - odsupercomponent
-   #     command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID}"
+#    proxy-trimble:
+#        build: .
+#        network_mode: "host"
+#        depends_on:
+#            - odsupercomponent
+#        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID}"
 
     # micro service for proxy-fh16.
-    #proxy-fh16:
-    #    build: .
-    #    network_mode: "host"
-    #    devices:
-    #    - "/dev/pcanpci2:/dev/pcan2"
-    #    depends_on:
-    #        - odsupercomponent
-    #    command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
+#    proxy-fh16:
+#        build: .
+#        network_mode: "host"
+#        privileged: true
+#        depends_on:
+#            - odsupercomponent
+#        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
 
     #odrecorderh264
     odrecorderh264:

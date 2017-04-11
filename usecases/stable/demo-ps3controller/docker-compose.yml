@@ -31,12 +31,10 @@ services:
     proxy-fh16:
         build: .
         network_mode: "host"
-        devices:
-        - "/dev/pcanpci2:/dev/pcan2"
+        privileged: true
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-fh16 --cid=${CID} --freq=100"
-
 
     # micro service for PS3 controller.
     system-ps3controller:
