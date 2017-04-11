@@ -193,31 +193,6 @@ ExternalProject_Add (libodvdfh16truck
     INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdfh16truck-prefix/src/libodvdfh16truck-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdfh16truck-prefix/src/libodvdfh16truck-build --target ${MAKE_PACKAGE})
 
 ###########################################################################
-# This "external project" simply deletes the existing libfh16mapping.
-ExternalProject_Add(libfh16mapping-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libfh16mapping
-    PATCH_COMMAND ""
-    SOURCE_DIR ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    TEST_COMMAND ""
-    INSTALL_COMMAND "")
-
-# This "external project" builds libfh16mapping.
-ExternalProject_Add(libfh16mapping
-    DEPENDS libfh16mapping-cleanup libodvdfh16truck
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODCANDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_SOURCE_DIR}/resources/can/fh16mapping.can
-    PATCH_COMMAND ""
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libfh16mapping"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
-    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
-    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
-    TEST_BEFORE_INSTALL 1
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libfh16mapping-prefix/src/libfh16mapping-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libfh16mapping-prefix/src/libfh16mapping-build --target ${MAKE_PACKAGE})
-
-###########################################################################
 # This "external project" simply deletes the existing libodvdtrimble.
 ExternalProject_Add (libodvdtrimble-cleanup
     DOWNLOAD_COMMAND ""
@@ -330,7 +305,7 @@ ExternalProject_Add (libodvdanglesensor
 ###########################################################################
 # This "external project" builds and installs the system software stack.
 ExternalProject_Add(system
-    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libfh16mapping libodvdtrimble libodvdimu libodvdanglesensor libodvdv2v libodvdopendlvdatamodel
+    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libodvdtrimble libodvdimu libodvdanglesensor libodvdv2v libodvdopendlvdatamodel
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ""
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/code/core/system"
@@ -343,7 +318,7 @@ ExternalProject_Add(system
 ###########################################################################
 # This "external project" builds and installs the tool software stack.
 ExternalProject_Add(tool
-    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libfh16mapping libodvdtrimble libodvdv2v libodvdopendlvdatamodel
+    DEPENDS libodvdapplanix libodvdvehicle libodvdfh16truck libodvdtrimble libodvdv2v libodvdopendlvdatamodel
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ""
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/code/tool"
