@@ -58,22 +58,26 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
     m_buffer.seekp(0, std::ios_base::end);
     m_buffer.write(data.c_str(), data.size());
 
-    string s = m_buffer.str();
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
-cout << __LINE__ << ", b.len = " << m_buffer.tellp() << endl;
+    // Read from the beginning.
+    m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
-    while ((m_buffer.tellp() > 8) && ((m_toRemove + 8) < m_buffer.tellp())) {
-//    while ((m_buffer.size() > 8) && ((m_toRemove + 8) < s.size())) {
+//    string s = m_buffer.str();
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
+cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
+
+    while ((m_buffer.tellp() > 8) && ((m_toRemove + 8) < m_buffer.tellp()) && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) {
+//    while ((m_buffer.size() > 8) && ((m_toRemove + 8) < s.size())) {
+cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
         // Wait for more data.
         if (m_buffering && (m_buffer.tellp() < m_payloadSize)) {
             break;
         }
 
         // Enough data available to decode GRP1.
-        if (m_buffering && (m_buffer.tellp() >= m_payloadSize)) {
+        if (m_buffering && (m_buffer.tellp() >= m_payloadSize) && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
-            m_buffer.seekg(0);
+//            m_buffer.seekg(0);
+            m_buffer.seekg(m_toRemove, std::ios_base::beg);
             opendlv::core::sensors::applanix::Grp1Data g1Data;
 
             char timedist[26];
@@ -145,27 +149,32 @@ cout << "G1 = " << g1Data.toString() << endl;
             m_conference.send(c2);
 
             // Reset internal buffer.
-            const uint32_t length = s.size();
-            const string s2 = s.substr(m_payloadSize, length);
+//            const string s = m_buffer.str().substr(m_buffer.tellg(), m_buffer.tellp());
+//            const uint32_t length = s.size();
+//            const string s2 = s.substr(m_payloadSize, length);
 
-            m_buffer.seekp(0);
-            m_buffer.seekg(0);
-            m_buffer.str(s2);
+//            m_buffer.seekp(0);
+//            m_buffer.seekg(0);
+//            m_buffer.str(s2);
+//            m_buffer.str(s);
+//            m_buffer.seekp(0, ios::end);
+//            m_buffer.seekg(0, ios::beg);
+cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
 
             m_buffering = false;
             m_foundHeader = false;
+            m_toRemove += m_payloadSize;
             m_payloadSize = 0;
-            m_toRemove = 0;
-            s = m_buffer.str();
+//            s = m_buffer.str();
         }
 
         // Try decoding GRP1 header.
-        if (!m_foundHeader && (m_buffer.tellp() >= 8)) {
+        if (!m_foundHeader && (m_buffer.tellp() >= 8) && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             // Decode GRP header.
             opendlv::core::sensors::applanix::internal::GrpHdrMsg hdr;
 
-            m_buffer.seekg(m_toRemove);
+            m_buffer.seekg(m_toRemove, ios::beg);
 
             char grpstart[4];
             m_buffer.read(grpstart, sizeof(grpstart));
@@ -190,12 +199,13 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                     m_buffering = true;
 
                     // Remove GRP header.
-                    const string s2 = s.substr(m_toRemove + 8);
-                    m_buffer.seekp(0, ios::beg);
-                    m_buffer.seekg(0, ios::beg);
-                    m_buffer.str(s2);
-                    s = m_buffer.str();
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << ", need = " << m_payloadSize << endl;
+//                    const string s2 = s.substr(m_toRemove + 8);
+//                    m_buffer.seekp(0, ios::beg);
+//                    m_buffer.seekg(0, ios::beg);
+//                    m_buffer.str(s2);
+//                    s = m_buffer.str();
+                    m_toRemove += 8;
+cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << ", need = " << m_payloadSize << endl;
                 }
                 else {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
@@ -209,7 +219,7 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             }
         }
 
-        s = m_buffer.str();
+//        s = m_buffer.str();
     }
 }
 }
