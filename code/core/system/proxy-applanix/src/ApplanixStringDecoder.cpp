@@ -40,31 +40,34 @@ using namespace odcore::data;
 
 ApplanixStringDecoder::ApplanixStringDecoder(odcore::io::conference::ContainerConference &conference)
     : m_conference(conference)
-    , m_buffer() {}
+    , m_buffer()
+    , m_foundHeader(false)
+    , m_buffering(false)
+    , m_payloadSize(0)
+    , m_toRemove(0) {}
 
 ApplanixStringDecoder::~ApplanixStringDecoder() {}
 
 void ApplanixStringDecoder::nextString(std::string const &data) {
-    static bool foundHeader = false;
-    static bool buffering = false;
-    static uint32_t PAYLOAD_SIZE = 0;
-    static uint32_t toRemove = 0;
-
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
     const string old = m_buffer.str();
     const string newString = old + data;
     m_buffer.str(newString);
     string s = m_buffer.str();
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
 
-    while ((s.size() > 8) && ((toRemove + 8) < s.size())) {
+    while ((s.size() > 8) && ((m_toRemove + 8) < s.size())) {
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
         s = m_buffer.str();
 
         // Wait for more data.
-        if (buffering && (s.size() < PAYLOAD_SIZE)) {
+        if (m_buffering && (s.size() < m_payloadSize)) {
             break;
         }
 
         // Enough data available to decode GRP1.
-        if (buffering && (s.size() >= PAYLOAD_SIZE)) {
+        if (m_buffering && (s.size() >= m_payloadSize)) {
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             m_buffer.seekg(0);
             opendlv::core::sensors::applanix::Grp1Data g1Data;
 
@@ -138,25 +141,26 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
 
             // Reset internal buffer.
             const uint32_t length = s.size();
-            const string s2 = s.substr(PAYLOAD_SIZE, length);
+            const string s2 = s.substr(m_payloadSize, length);
 
             m_buffer.seekp(0);
             m_buffer.seekg(0);
             m_buffer.str(s2);
 
-            buffering = false;
-            foundHeader = false;
-            PAYLOAD_SIZE = 0;
-            toRemove = 0;
+            m_buffering = false;
+            m_foundHeader = false;
+            m_payloadSize = 0;
+            m_toRemove = 0;
             s = m_buffer.str();
         }
 
         // Try decoding GRP1 header.
-        if (!foundHeader && (s.size() >= 8)) {
+        if (!m_foundHeader && (s.size() >= 8)) {
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             // Decode GRP header.
             opendlv::core::sensors::applanix::internal::GrpHdrMsg hdr;
 
-            m_buffer.seekg(toRemove);
+            m_buffer.seekg(m_toRemove);
 
             char grpstart[4];
             m_buffer.read(grpstart, sizeof(grpstart));
@@ -168,28 +172,33 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             hdr.setGroupnum(buffer);
 
             if (hdr.getGrpstart() == "$GRP") {
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                 if (hdr.getGroupnum() == 1) {
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                     buffer = 0;
                     m_buffer.read((char *)(&(buffer)), sizeof(buffer));
                     buffer = le32toh(buffer);
                     hdr.setBytecount(buffer);
-                    PAYLOAD_SIZE = hdr.getBytecount();
+                    m_payloadSize = hdr.getBytecount();
 
-                    foundHeader = true;
-                    buffering = true;
+                    m_foundHeader = true;
+                    m_buffering = true;
 
                     // Remove GRP header.
-                    const string s2 = s.substr(toRemove + 8);
+                    const string s2 = s.substr(m_toRemove + 8);
                     m_buffer.seekp(0);
                     m_buffer.seekg(0);
                     m_buffer.str(s2);
                     s = m_buffer.str();
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << ", need = " << m_payloadSize << endl;
                 } else {
-                    toRemove++;
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
+                    m_toRemove++;
                 }
             } else {
+cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                 // Nothing known found; discard one byte.
-                toRemove++;
+                m_toRemove++;
             }
         }
     }
