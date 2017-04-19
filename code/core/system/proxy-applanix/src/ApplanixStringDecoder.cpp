@@ -50,23 +50,28 @@ ApplanixStringDecoder::~ApplanixStringDecoder() {}
 
 void ApplanixStringDecoder::nextString(std::string const &data) {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
-    const string old = m_buffer.str();
-    const string newString = old + data;
-    m_buffer.str(newString);
+//    const string old = m_buffer.str();
+//    const string newString = old + data;
+//    m_buffer.str(newString);
+
+    // Add data to the end.
+    m_buffer.seekp(0, std::ios_base::end);
+    m_buffer.write(data.c_str(), data.size());
+
     string s = m_buffer.str();
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
+cout << __LINE__ << ", b.len = " << m_buffer.tellp() << endl;
 
-    while ((s.size() > 8) && ((m_toRemove + 8) < s.size())) {
+    while ((m_buffer.tellp() > 8) && ((m_toRemove + 8) < m_buffer.tellp())) {
+//    while ((m_buffer.size() > 8) && ((m_toRemove + 8) < s.size())) {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
-        s = m_buffer.str();
-
         // Wait for more data.
-        if (m_buffering && (s.size() < m_payloadSize)) {
+        if (m_buffering && (m_buffer.tellp() < m_payloadSize)) {
             break;
         }
 
         // Enough data available to decode GRP1.
-        if (m_buffering && (s.size() >= m_payloadSize)) {
+        if (m_buffering && (m_buffer.tellp() >= m_payloadSize)) {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             m_buffer.seekg(0);
             opendlv::core::sensors::applanix::Grp1Data g1Data;
@@ -131,7 +136,7 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             g1Data.setAccel_lon(accel_lon);
             g1Data.setAccel_trans(accel_trans);
             g1Data.setAccel_down(accel_down);
-
+cout << "G1 = " << g1Data.toString() << endl;
             Container c(g1Data);
             m_conference.send(c);
 
@@ -155,7 +160,7 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
         }
 
         // Try decoding GRP1 header.
-        if (!m_foundHeader && (s.size() >= 8)) {
+        if (!m_foundHeader && (m_buffer.tellp() >= 8)) {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             // Decode GRP header.
             opendlv::core::sensors::applanix::internal::GrpHdrMsg hdr;
@@ -186,21 +191,25 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
 
                     // Remove GRP header.
                     const string s2 = s.substr(m_toRemove + 8);
-                    m_buffer.seekp(0);
-                    m_buffer.seekg(0);
+                    m_buffer.seekp(0, ios::beg);
+                    m_buffer.seekg(0, ios::beg);
                     m_buffer.str(s2);
                     s = m_buffer.str();
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << ", need = " << m_payloadSize << endl;
-                } else {
+                }
+                else {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                     m_toRemove++;
                 }
-            } else {
+            }
+            else {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                 // Nothing known found; discard one byte.
                 m_toRemove++;
             }
         }
+
+        s = m_buffer.str();
     }
 }
 }
