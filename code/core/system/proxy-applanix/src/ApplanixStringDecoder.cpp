@@ -49,23 +49,33 @@ ApplanixStringDecoder::ApplanixStringDecoder(odcore::io::conference::ContainerCo
 ApplanixStringDecoder::~ApplanixStringDecoder() {}
 
 void ApplanixStringDecoder::nextString(std::string const &data) {
-    // Add data to the end.
+    // Add data to the end...
     m_buffer.seekp(0, std::ios_base::end);
     m_buffer.write(data.c_str(), data.size());
 
-    // Read from the beginning.
+    // ...but read always from the beginning.
     m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
-    while ((m_buffer.tellp() > 8) && ((m_toRemove + 8) < m_buffer.tellp()) && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) {
-        // Wait for more data.
+    const uint32_t GRP_HEADER_SIZE = 8;
+    while (     (m_buffer.tellp() > GRP_HEADER_SIZE)
+            && ((m_toRemove + GRP_HEADER_SIZE) < m_buffer.tellp())
+            && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) 
+          ) {
+
+        // Wait for more data if put pointer is smaller than expected buffer fill level.
         if (m_buffering && (m_buffer.tellp() < m_payloadSize)) {
             break;
         }
 
         // Enough data available to decode GRP1.
-        if (m_buffering && (m_buffer.tellp() >= m_payloadSize) && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) {
+        if (    m_buffering &&                                                               // We are buffering...
+               (m_buffer.tellp() >= m_payloadSize)                                           // ... and we have enough data in our buffer...
+            && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) // ... and the read pointer is smaller than the put pointer.
+            {
+            // Go to where we need to read from.
             m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
+            // Create sensor specific data struct.
             opendlv::core::sensors::applanix::Grp1Data g1Data;
 
             char timedist[26];
@@ -129,17 +139,15 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             g1Data.setAccel_trans(accel_trans);
             g1Data.setAccel_down(accel_down);
 
-cout << "G1 = " << g1Data.toString() << endl;
             Container c(g1Data);
             m_conference.send(c);
 
+            // Create generic message.
             opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
             Container c2(wgs84);
             m_conference.send(c2);
 
-            // Reset internal buffer.
-cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
-
+            // Maintain internal buffer status.
             m_buffering = false;
             m_foundHeader = false;
             m_toRemove += m_payloadSize;
@@ -147,11 +155,15 @@ cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.t
         }
 
         // Try decoding GRP1 header.
-        if (!m_foundHeader && (m_buffer.tellp() >= 8) && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) {
+        if (    !m_foundHeader                                                               // We have not found the header yet...
+            && (m_buffer.tellp() >= GRP_HEADER_SIZE)                                         // ... but we have enough data to decode the header...
+            && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) // ... and our read pointer is valid.
+            {
+            // Go to where we need to read from.
+            m_buffer.seekg(m_toRemove, ios::beg);
+
             // Decode GRP header.
             opendlv::core::sensors::applanix::internal::GrpHdrMsg hdr;
-
-            m_buffer.seekg(m_toRemove, ios::beg);
 
             char grpstart[4];
             m_buffer.read(grpstart, sizeof(grpstart));
@@ -162,41 +174,36 @@ cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.t
             buffer = le32toh(buffer);
             hdr.setGroupnum(buffer);
 
-            if (hdr.getGrpstart() == "$GRP") {
-                if (hdr.getGroupnum() == 1) {
-                    buffer = 0;
-                    m_buffer.read((char *)(&(buffer)), sizeof(buffer));
-                    buffer = le32toh(buffer);
-                    hdr.setBytecount(buffer);
-                    m_payloadSize = hdr.getBytecount();
+            // Decode "$GRP1" messages.
+            if ( (hdr.getGrpstart() == "$GRP") && (hdr.getGroupnum() == 1) ) {
+                buffer = 0;
+                m_buffer.read((char *)(&(buffer)), sizeof(buffer));
+                buffer = le32toh(buffer);
+                hdr.setBytecount(buffer);
+                m_payloadSize = hdr.getBytecount();
 
-                    m_foundHeader = true;
-                    m_buffering = true;
+                m_foundHeader = true;
+                m_buffering = true;
 
-                    // Remove GRP header.
-                    m_toRemove += 8;
-                }
-                else {
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
-                    m_toRemove++;
-                }
+                // Skip GRP header.
+                m_toRemove += GRP_HEADER_SIZE;
             }
             else {
-cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
-                // Nothing known found; discard one byte.
+                // Nothing known found; skip this byte and try again.
                 m_toRemove++;
             }
         }
     }
-cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
-    if (m_buffer.tellg() > 0) {
+
+    // Discard unused data from buffer but avoid copying data too often.
+    const uint32_t MAX_BUFFER = 32768;
+    if ( (m_buffer.tellg() > 0) && (m_toRemove > MAX_BUFFER) ) {
         const string s = m_buffer.str().substr(m_buffer.tellg());
         m_buffer.clear();
         m_buffer.str(s);
         m_buffer.seekp(0, ios::end);
         m_buffer.seekg(0, ios::beg);
         m_toRemove = 0;
-    cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
     }
 }
 }
