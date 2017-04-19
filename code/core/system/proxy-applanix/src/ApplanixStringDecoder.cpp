@@ -49,11 +49,6 @@ ApplanixStringDecoder::ApplanixStringDecoder(odcore::io::conference::ContainerCo
 ApplanixStringDecoder::~ApplanixStringDecoder() {}
 
 void ApplanixStringDecoder::nextString(std::string const &data) {
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
-//    const string old = m_buffer.str();
-//    const string newString = old + data;
-//    m_buffer.str(newString);
-
     // Add data to the end.
     m_buffer.seekp(0, std::ios_base::end);
     m_buffer.write(data.c_str(), data.size());
@@ -61,13 +56,7 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
     // Read from the beginning.
     m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
-//    string s = m_buffer.str();
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
-cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
-
     while ((m_buffer.tellp() > 8) && ((m_toRemove + 8) < m_buffer.tellp()) && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) {
-//    while ((m_buffer.size() > 8) && ((m_toRemove + 8) < s.size())) {
-cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
         // Wait for more data.
         if (m_buffering && (m_buffer.tellp() < m_payloadSize)) {
             break;
@@ -75,9 +64,8 @@ cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.t
 
         // Enough data available to decode GRP1.
         if (m_buffering && (m_buffer.tellp() >= m_payloadSize) && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) {
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
-//            m_buffer.seekg(0);
             m_buffer.seekg(m_toRemove, std::ios_base::beg);
+
             opendlv::core::sensors::applanix::Grp1Data g1Data;
 
             char timedist[26];
@@ -140,6 +128,7 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             g1Data.setAccel_lon(accel_lon);
             g1Data.setAccel_trans(accel_trans);
             g1Data.setAccel_down(accel_down);
+
 cout << "G1 = " << g1Data.toString() << endl;
             Container c(g1Data);
             m_conference.send(c);
@@ -149,28 +138,16 @@ cout << "G1 = " << g1Data.toString() << endl;
             m_conference.send(c2);
 
             // Reset internal buffer.
-//            const string s = m_buffer.str().substr(m_buffer.tellg(), m_buffer.tellp());
-//            const uint32_t length = s.size();
-//            const string s2 = s.substr(m_payloadSize, length);
-
-//            m_buffer.seekp(0);
-//            m_buffer.seekg(0);
-//            m_buffer.str(s2);
-//            m_buffer.str(s);
-//            m_buffer.seekp(0, ios::end);
-//            m_buffer.seekg(0, ios::beg);
 cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
 
             m_buffering = false;
             m_foundHeader = false;
             m_toRemove += m_payloadSize;
             m_payloadSize = 0;
-//            s = m_buffer.str();
         }
 
         // Try decoding GRP1 header.
         if (!m_foundHeader && (m_buffer.tellp() >= 8) && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) {
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             // Decode GRP header.
             opendlv::core::sensors::applanix::internal::GrpHdrMsg hdr;
 
@@ -186,9 +163,7 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
             hdr.setGroupnum(buffer);
 
             if (hdr.getGrpstart() == "$GRP") {
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                 if (hdr.getGroupnum() == 1) {
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                     buffer = 0;
                     m_buffer.read((char *)(&(buffer)), sizeof(buffer));
                     buffer = le32toh(buffer);
@@ -199,13 +174,7 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                     m_buffering = true;
 
                     // Remove GRP header.
-//                    const string s2 = s.substr(m_toRemove + 8);
-//                    m_buffer.seekp(0, ios::beg);
-//                    m_buffer.seekg(0, ios::beg);
-//                    m_buffer.str(s2);
-//                    s = m_buffer.str();
                     m_toRemove += 8;
-cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << ", need = " << m_payloadSize << endl;
                 }
                 else {
 cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
@@ -213,13 +182,21 @@ cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
                 }
             }
             else {
-cout << __LINE__ << ", b.len = " << m_buffer.str().length() << endl;
+cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
                 // Nothing known found; discard one byte.
                 m_toRemove++;
             }
         }
-
-//        s = m_buffer.str();
+    }
+cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
+    if (m_buffer.tellg() > 0) {
+        const string s = m_buffer.str().substr(m_buffer.tellg());
+        m_buffer.clear();
+        m_buffer.str(s);
+        m_buffer.seekp(0, ios::end);
+        m_buffer.seekg(0, ios::beg);
+        m_toRemove = 0;
+    cout << __LINE__ << ", b.len = " << m_buffer.tellp() << ", pos = " << m_buffer.tellg() << endl;
     }
 }
 }
