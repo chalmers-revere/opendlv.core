@@ -57,31 +57,6 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
 
     void tearDown() {}
 
-    void notestApplication2() {
-        MyContainerConference mcc;
-        ApplanixStringDecoder asd(mcc);
-
-        fstream data("../2017-04-19_AZ_CA_Applanix.dump", ios::binary | ios::in);
-
-        uint32_t overallCounter = 0;
-        while (overallCounter < 30000) {
-            uint32_t count = 0;
-            stringstream sstr;
-            while (data.good()) {
-                char c = data.get();
-                sstr.write(&c, sizeof(c));
-
-                if (++count == 15) break;
-            }
-            const string s = sstr.str();
-            if (s.size() > 0) {
-                asd.nextString(s);
-            }
-            overallCounter++;
-        }
-        data.close();
-    }
-
     void testApplication() {
         MyContainerConference mcc;
         ApplanixStringDecoder asd(mcc);
