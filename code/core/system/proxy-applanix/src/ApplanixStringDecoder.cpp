@@ -53,15 +53,11 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
     m_buffer.seekp(0, std::ios_base::end);
     m_buffer.write(data.c_str(), data.size());
 
-    // ...but read always from the beginning.
+    // ...but always read from the beginning.
     m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
     const uint32_t GRP_HEADER_SIZE = 8;
-    while (     (m_buffer.tellp() > GRP_HEADER_SIZE)
-            && ((m_toRemove + GRP_HEADER_SIZE) < m_buffer.tellp())
-            && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) 
-          ) {
-
+    while ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove + GRP_HEADER_SIZE) < m_buffer.tellp()) {
         // Wait for more data if put pointer is smaller than expected buffer fill level.
         if (m_buffering && (m_buffer.tellp() < m_payloadSize)) {
             break;
@@ -146,7 +142,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
             Container c2(wgs84);
             m_conference.send(c2);
-
+cout << wgs84.toString() << endl;
             // Maintain internal buffer status.
             m_buffering = false;
             m_foundHeader = false;
