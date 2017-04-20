@@ -60,15 +60,12 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
     const uint32_t GRP_HEADER_SIZE = 8;
     while ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove + GRP_HEADER_SIZE) < m_buffer.tellp()) {
         // Wait for more data if put pointer is smaller than expected buffer fill level.
-cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << endl;
-
         if (     m_buffering
             && (   (static_cast<uint32_t>(m_buffer.tellp())
                  - (static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove))
                     < m_payloadSize
                )
            ) {
-cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << endl;
             break;
         }
 
@@ -79,7 +76,6 @@ cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ",
                     >= m_payloadSize
                )
            ) {
-cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << endl;
             // Go to where we need to read from.
             m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
@@ -177,7 +173,6 @@ cout << wgs84.toString() << endl;
                     >= GRP_HEADER_SIZE
                )
            ) {
-cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << endl;
             // Go to where we need to read from.
             m_buffer.seekg(m_toRemove, ios::beg);
 
@@ -209,7 +204,6 @@ cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ",
 
                 // Define the next message to decode.
                 m_nextApplanixMessage = ApplanixStringDecoder::GRP1;
-cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << ", h " << hdr.toString() << endl;
             }
             else {
                 // Nothing known found; skip this byte and try again.

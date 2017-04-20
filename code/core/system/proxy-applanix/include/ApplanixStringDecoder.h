@@ -36,6 +36,12 @@ namespace proxy {
  */
 class ApplanixStringDecoder : public odcore::io::StringListener {
    private:
+        enum ApplanixMessages {
+            UNKNOWN = 0,
+            GRP1    = 1,
+        };
+
+   private:
     ApplanixStringDecoder(ApplanixStringDecoder const &) = delete;
     ApplanixStringDecoder &operator=(ApplanixStringDecoder const &) = delete;
 
@@ -52,6 +58,7 @@ class ApplanixStringDecoder : public odcore::io::StringListener {
     bool m_buffering;
     uint32_t m_payloadSize;
     uint32_t m_toRemove;
+    ApplanixMessages m_nextApplanixMessage;
 
 };
 }
