@@ -69,7 +69,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             break;
         }
 
-        // Enough data available to decode GRP1.
+        // Enough data available to decode the requested GRP.
         if (     m_buffering
             && (   (static_cast<uint32_t>(m_buffer.tellp())
                  - (static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove))
@@ -152,7 +152,6 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
                 opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
                 Container c2(wgs84);
                 m_conference.send(c2);
-cout << wgs84.toString() << endl;
             }
             else {
                 // Unknown message.
