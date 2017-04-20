@@ -59,7 +59,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
     const uint32_t GRP_HEADER_SIZE = 8;
     while ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove + GRP_HEADER_SIZE) < m_buffer.tellp()) {
         // Wait for more data if put pointer is smaller than expected buffer fill level.
-        if (     m_buffering 
+        if (     m_buffering
             && (   (static_cast<uint32_t>(m_buffer.tellp())
                  - (static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove))
                     < m_payloadSize
@@ -69,10 +69,12 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
         }
 
         // Enough data available to decode GRP1.
-        if (    m_buffering &&                                                               // We are buffering...
-               (m_buffer.tellp() >= m_payloadSize)                                           // ... and we have enough data in our buffer...
-            && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) // ... and the read pointer is smaller than the put pointer.
-            {
+        if (     m_buffering
+            && (   (static_cast<uint32_t>(m_buffer.tellp())
+                 - (static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove))
+                    >= m_payloadSize
+               )
+           ) {
             // Go to where we need to read from.
             m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
