@@ -59,7 +59,12 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
     const uint32_t GRP_HEADER_SIZE = 8;
     while ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove + GRP_HEADER_SIZE) < m_buffer.tellp()) {
         // Wait for more data if put pointer is smaller than expected buffer fill level.
-        if (m_buffering && (m_buffer.tellp() < m_payloadSize)) {
+        if (     m_buffering 
+            && (   (static_cast<uint32_t>(m_buffer.tellp())
+                 - (static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove))
+                    < m_payloadSize
+               )
+           ) {
             break;
         }
 
