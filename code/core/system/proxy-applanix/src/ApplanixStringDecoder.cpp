@@ -149,7 +149,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
             Container c2(wgs84);
             m_conference.send(c2);
-cout << wgs84.toString() << endl;
+
             // Maintain internal buffer status.
             m_buffering = false;
             m_foundHeader = false;
@@ -157,11 +157,13 @@ cout << wgs84.toString() << endl;
             m_payloadSize = 0;
         }
 
-        // Try decoding GRP1 header.
-        if (    !m_foundHeader                                                               // We have not found the header yet...
-            && (m_buffer.tellp() >= GRP_HEADER_SIZE)                                         // ... but we have enough data to decode the header...
-            && ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove) < m_buffer.tellp()) ) // ... and our read pointer is valid.
-            {
+        // Try decoding GRP? header.
+        if (     !m_foundHeader
+            && (   (static_cast<uint32_t>(m_buffer.tellp())
+                 - (static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove))
+                    >= GRP_HEADER_SIZE
+               )
+           ) {
             // Go to where we need to read from.
             m_buffer.seekg(m_toRemove, ios::beg);
 
