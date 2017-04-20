@@ -44,7 +44,8 @@ ApplanixStringDecoder::ApplanixStringDecoder(odcore::io::conference::ContainerCo
     , m_foundHeader(false)
     , m_buffering(false)
     , m_payloadSize(0)
-    , m_toRemove(0) {}
+    , m_toRemove(0)
+    , m_nextApplanixMessage(ApplanixStringDecoder::UNKNOWN) {}
 
 ApplanixStringDecoder::~ApplanixStringDecoder() {}
 
@@ -59,12 +60,15 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
     const uint32_t GRP_HEADER_SIZE = 8;
     while ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove + GRP_HEADER_SIZE) < m_buffer.tellp()) {
         // Wait for more data if put pointer is smaller than expected buffer fill level.
+cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << endl;
+
         if (     m_buffering
             && (   (static_cast<uint32_t>(m_buffer.tellp())
                  - (static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove))
                     < m_payloadSize
                )
            ) {
+cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << endl;
             break;
         }
 
@@ -75,86 +79,95 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
                     >= m_payloadSize
                )
            ) {
+cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << endl;
             // Go to where we need to read from.
             m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
-            // Create sensor specific data struct.
-            opendlv::core::sensors::applanix::Grp1Data g1Data;
+            // Decode Applanix GRP1.
+            if (ApplanixStringDecoder::GRP1 == m_nextApplanixMessage) {
+                // Create sensor specific data struct.
+                opendlv::core::sensors::applanix::Grp1Data g1Data;
 
-            char timedist[26];
-            m_buffer.read(timedist, sizeof(timedist));
+                char timedist[26];
+                m_buffer.read(timedist, sizeof(timedist));
 
-            double lat = 0;
-            double lon = 0;
-            double alt = 0;
-            float vel_north = 0;
-            float vel_east = 0;
-            float vel_down = 0;
-            double roll = 0;
-            double pitch = 0;
-            double heading = 0;
-            double wander = 0;
-            float track = 0;
-            float speed = 0;
-            float arate_lon = 0;
-            float arate_trans = 0;
-            float arate_down = 0;
-            float accel_lon = 0;
-            float accel_trans = 0;
-            float accel_down = 0;
+                double lat = 0;
+                double lon = 0;
+                double alt = 0;
+                float vel_north = 0;
+                float vel_east = 0;
+                float vel_down = 0;
+                double roll = 0;
+                double pitch = 0;
+                double heading = 0;
+                double wander = 0;
+                float track = 0;
+                float speed = 0;
+                float arate_lon = 0;
+                float arate_trans = 0;
+                float arate_down = 0;
+                float accel_lon = 0;
+                float accel_trans = 0;
+                float accel_down = 0;
 
-            m_buffer.read((char *)(&(lat)), sizeof(lat));
-            m_buffer.read((char *)(&(lon)), sizeof(lon));
-            m_buffer.read((char *)(&(alt)), sizeof(alt));
-            m_buffer.read((char *)(&(vel_north)), sizeof(vel_north));
-            m_buffer.read((char *)(&(vel_east)), sizeof(vel_east));
-            m_buffer.read((char *)(&(vel_down)), sizeof(vel_down));
-            m_buffer.read((char *)(&(roll)), sizeof(roll));
-            m_buffer.read((char *)(&(pitch)), sizeof(pitch));
-            m_buffer.read((char *)(&(heading)), sizeof(heading));
-            m_buffer.read((char *)(&(wander)), sizeof(wander));
-            m_buffer.read((char *)(&(track)), sizeof(track));
-            m_buffer.read((char *)(&(speed)), sizeof(speed));
-            m_buffer.read((char *)(&(arate_lon)), sizeof(arate_lon));
-            m_buffer.read((char *)(&(arate_trans)), sizeof(arate_trans));
-            m_buffer.read((char *)(&(arate_down)), sizeof(arate_down));
-            m_buffer.read((char *)(&(accel_lon)), sizeof(accel_lon));
-            m_buffer.read((char *)(&(accel_trans)), sizeof(accel_trans));
-            m_buffer.read((char *)(&(accel_down)), sizeof(accel_down));
+                m_buffer.read((char *)(&(lat)), sizeof(lat));
+                m_buffer.read((char *)(&(lon)), sizeof(lon));
+                m_buffer.read((char *)(&(alt)), sizeof(alt));
+                m_buffer.read((char *)(&(vel_north)), sizeof(vel_north));
+                m_buffer.read((char *)(&(vel_east)), sizeof(vel_east));
+                m_buffer.read((char *)(&(vel_down)), sizeof(vel_down));
+                m_buffer.read((char *)(&(roll)), sizeof(roll));
+                m_buffer.read((char *)(&(pitch)), sizeof(pitch));
+                m_buffer.read((char *)(&(heading)), sizeof(heading));
+                m_buffer.read((char *)(&(wander)), sizeof(wander));
+                m_buffer.read((char *)(&(track)), sizeof(track));
+                m_buffer.read((char *)(&(speed)), sizeof(speed));
+                m_buffer.read((char *)(&(arate_lon)), sizeof(arate_lon));
+                m_buffer.read((char *)(&(arate_trans)), sizeof(arate_trans));
+                m_buffer.read((char *)(&(arate_down)), sizeof(arate_down));
+                m_buffer.read((char *)(&(accel_lon)), sizeof(accel_lon));
+                m_buffer.read((char *)(&(accel_trans)), sizeof(accel_trans));
+                m_buffer.read((char *)(&(accel_down)), sizeof(accel_down));
 
-            g1Data.setTimedist(string(timedist, 26));
-            g1Data.setLat(lat);
-            g1Data.setLon(lon);
-            g1Data.setAlt(alt);
-            g1Data.setVel_north(vel_north);
-            g1Data.setVel_east(vel_east);
-            g1Data.setVel_down(vel_down);
-            g1Data.setRoll(roll);
-            g1Data.setPitch(pitch);
-            g1Data.setHeading(heading);
-            g1Data.setWander(wander);
-            g1Data.setTrack(track);
-            g1Data.setSpeed(speed);
-            g1Data.setArate_lon(arate_lon);
-            g1Data.setArate_trans(arate_trans);
-            g1Data.setArate_down(arate_down);
-            g1Data.setAccel_lon(accel_lon);
-            g1Data.setAccel_trans(accel_trans);
-            g1Data.setAccel_down(accel_down);
+                g1Data.setTimedist(string(timedist, 26));
+                g1Data.setLat(lat);
+                g1Data.setLon(lon);
+                g1Data.setAlt(alt);
+                g1Data.setVel_north(vel_north);
+                g1Data.setVel_east(vel_east);
+                g1Data.setVel_down(vel_down);
+                g1Data.setRoll(roll);
+                g1Data.setPitch(pitch);
+                g1Data.setHeading(heading);
+                g1Data.setWander(wander);
+                g1Data.setTrack(track);
+                g1Data.setSpeed(speed);
+                g1Data.setArate_lon(arate_lon);
+                g1Data.setArate_trans(arate_trans);
+                g1Data.setArate_down(arate_down);
+                g1Data.setAccel_lon(accel_lon);
+                g1Data.setAccel_trans(accel_trans);
+                g1Data.setAccel_down(accel_down);
 
-            Container c(g1Data);
-            m_conference.send(c);
+                Container c(g1Data);
+                m_conference.send(c);
 
-            // Create generic message.
-            opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
-            Container c2(wgs84);
-            m_conference.send(c2);
+                // Create generic message.
+                opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
+                Container c2(wgs84);
+                m_conference.send(c2);
+cout << wgs84.toString() << endl;
+            }
+            else {
+                // Unknown message.
+            }
 
             // Maintain internal buffer status.
             m_buffering = false;
             m_foundHeader = false;
             m_toRemove += m_payloadSize;
             m_payloadSize = 0;
+            m_nextApplanixMessage = ApplanixStringDecoder::UNKNOWN;
         }
 
         // Try decoding GRP? header.
@@ -164,6 +177,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
                     >= GRP_HEADER_SIZE
                )
            ) {
+cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << endl;
             // Go to where we need to read from.
             m_buffer.seekg(m_toRemove, ios::beg);
 
@@ -192,6 +206,10 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
 
                 // Skip GRP header.
                 m_toRemove += GRP_HEADER_SIZE;
+
+                // Define the next message to decode.
+                m_nextApplanixMessage = ApplanixStringDecoder::GRP1;
+cout << __LINE__ << " TR = " << m_toRemove << ", g = " << m_buffer.tellp() << ", p = " << m_buffer.tellp() << ", h " << hdr.toString() << endl;
             }
             else {
                 // Nothing known found; skip this byte and try again.
