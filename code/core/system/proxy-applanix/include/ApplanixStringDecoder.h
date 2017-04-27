@@ -41,6 +41,7 @@ class ApplanixStringDecoder : public odcore::io::StringListener {
         enum ApplanixMessages {
             UNKNOWN = 0,
             GRP1    = 1,
+            GRP2    = 2,
         };
 
    private:
@@ -54,8 +55,10 @@ class ApplanixStringDecoder : public odcore::io::StringListener {
     virtual void nextString(const std::string &s);
 
    private:
+    void prepareReadingBuffer(std::stringstream &buffer);
     opendlv::core::sensors::applanix::TimeDistance getTimeDistance(std::stringstream &buffer);
     opendlv::core::sensors::applanix::Grp1Data getGRP1(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp2Data getGRP2(std::stringstream &buffer);
 
    private:
     odcore::io::conference::ContainerConference &m_conference;
