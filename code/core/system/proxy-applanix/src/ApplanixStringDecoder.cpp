@@ -47,6 +47,23 @@ ApplanixStringDecoder::ApplanixStringDecoder(odcore::io::conference::ContainerCo
 
 ApplanixStringDecoder::~ApplanixStringDecoder() {}
 
+void ApplanixStringDecoder::prepareReadingBuffer(std::stringstream &_buffer) {
+    const uint32_t GRP_HEADER_SIZE = 8;
+
+    if (_buffer.good()) {
+        uint16_t buffer = 0;
+        _buffer.read((char *)(&(buffer)), sizeof(buffer));
+        buffer = le32toh(buffer);
+        m_payloadSize = buffer;
+
+        m_foundHeader = true;
+        m_buffering = true;
+
+        // Skip GRP header.
+        m_toRemove += GRP_HEADER_SIZE;
+    }
+}
+
 opendlv::core::sensors::applanix::TimeDistance ApplanixStringDecoder::getTimeDistance(std::stringstream &buffer) {
     opendlv::core::sensors::applanix::TimeDistance timedist;
 
@@ -79,7 +96,7 @@ opendlv::core::sensors::applanix::Grp1Data ApplanixStringDecoder::getGRP1(std::s
 
     if (buffer.good()) {
         // Read timedist field.
-        opendlv::core::sensors::applanix::TimeDistance timedist = getTimeDistance(m_buffer);
+        opendlv::core::sensors::applanix::TimeDistance timedist = getTimeDistance(buffer);
 
         double lat = 0;
         double lon = 0;
@@ -99,25 +116,30 @@ opendlv::core::sensors::applanix::Grp1Data ApplanixStringDecoder::getGRP1(std::s
         float accel_lon = 0;
         float accel_trans = 0;
         float accel_down = 0;
+        uint8_t alignment = 0;
+        char pad = 0;
 
-        m_buffer.read((char *)(&(lat)), sizeof(lat));
-        m_buffer.read((char *)(&(lon)), sizeof(lon));
-        m_buffer.read((char *)(&(alt)), sizeof(alt));
-        m_buffer.read((char *)(&(vel_north)), sizeof(vel_north));
-        m_buffer.read((char *)(&(vel_east)), sizeof(vel_east));
-        m_buffer.read((char *)(&(vel_down)), sizeof(vel_down));
-        m_buffer.read((char *)(&(roll)), sizeof(roll));
-        m_buffer.read((char *)(&(pitch)), sizeof(pitch));
-        m_buffer.read((char *)(&(heading)), sizeof(heading));
-        m_buffer.read((char *)(&(wander)), sizeof(wander));
-        m_buffer.read((char *)(&(track)), sizeof(track));
-        m_buffer.read((char *)(&(speed)), sizeof(speed));
-        m_buffer.read((char *)(&(arate_lon)), sizeof(arate_lon));
-        m_buffer.read((char *)(&(arate_trans)), sizeof(arate_trans));
-        m_buffer.read((char *)(&(arate_down)), sizeof(arate_down));
-        m_buffer.read((char *)(&(accel_lon)), sizeof(accel_lon));
-        m_buffer.read((char *)(&(accel_trans)), sizeof(accel_trans));
-        m_buffer.read((char *)(&(accel_down)), sizeof(accel_down));
+        buffer.read((char *)(&(lat)), sizeof(lat));
+        buffer.read((char *)(&(lon)), sizeof(lon));
+        buffer.read((char *)(&(alt)), sizeof(alt));
+        buffer.read((char *)(&(vel_north)), sizeof(vel_north));
+        buffer.read((char *)(&(vel_east)), sizeof(vel_east));
+        buffer.read((char *)(&(vel_down)), sizeof(vel_down));
+        buffer.read((char *)(&(roll)), sizeof(roll));
+        buffer.read((char *)(&(pitch)), sizeof(pitch));
+        buffer.read((char *)(&(heading)), sizeof(heading));
+        buffer.read((char *)(&(wander)), sizeof(wander));
+        buffer.read((char *)(&(track)), sizeof(track));
+        buffer.read((char *)(&(speed)), sizeof(speed));
+        buffer.read((char *)(&(arate_lon)), sizeof(arate_lon));
+        buffer.read((char *)(&(arate_trans)), sizeof(arate_trans));
+        buffer.read((char *)(&(arate_down)), sizeof(arate_down));
+        buffer.read((char *)(&(accel_lon)), sizeof(accel_lon));
+        buffer.read((char *)(&(accel_trans)), sizeof(accel_trans));
+        buffer.read((char *)(&(accel_down)), sizeof(accel_down));
+
+        buffer.read((char *)(&(alignment)), sizeof(alignment));
+        buffer.read((char *)(&(pad)), sizeof(pad));
 
         g1Data.setLat(lat);
         g1Data.setLon(lon);
@@ -138,9 +160,64 @@ opendlv::core::sensors::applanix::Grp1Data ApplanixStringDecoder::getGRP1(std::s
         g1Data.setAccel_trans(accel_trans);
         g1Data.setAccel_down(accel_down);
         g1Data.setTimeDistance(timedist);
+        g1Data.setAlignment(alignment);
     }
 
     return g1Data;
+}
+
+opendlv::core::sensors::applanix::Grp2Data ApplanixStringDecoder::getGRP2(std::stringstream &buffer) {
+    opendlv::core::sensors::applanix::Grp2Data g2Data;
+
+    if (buffer.good()) {
+        // Read timedist field.
+        opendlv::core::sensors::applanix::TimeDistance timedist = getTimeDistance(buffer);
+
+        float northposrms = 0;
+        float eastposrms = 0;
+        float downposrms = 0;
+        float northvelrms = 0;
+        float eastvelrms = 0;
+        float downvelrms = 0;
+        float rollrms = 0;
+        float pitchrms = 0;
+        float headingrms = 0;
+        float ellipsoidmajor = 0;
+        float ellipsoidminor = 0;
+        float ellipsoidorientation = 0;
+        uint16_t pad = 0;
+
+        buffer.read((char *)(&(northposrms)), sizeof(northposrms));
+        buffer.read((char *)(&(eastposrms)), sizeof(eastposrms));
+        buffer.read((char *)(&(downposrms)), sizeof(downposrms));
+        buffer.read((char *)(&(northvelrms)), sizeof(northvelrms));
+        buffer.read((char *)(&(eastvelrms)), sizeof(eastvelrms));
+        buffer.read((char *)(&(downvelrms)), sizeof(downvelrms));
+        buffer.read((char *)(&(rollrms)), sizeof(rollrms));
+        buffer.read((char *)(&(pitchrms)), sizeof(pitchrms));
+        buffer.read((char *)(&(headingrms)), sizeof(headingrms));
+        buffer.read((char *)(&(ellipsoidmajor)), sizeof(ellipsoidmajor));
+        buffer.read((char *)(&(ellipsoidminor)), sizeof(ellipsoidminor));
+        buffer.read((char *)(&(ellipsoidorientation)), sizeof(ellipsoidorientation));
+
+        buffer.read((char *)(&(pad)), sizeof(pad));
+
+        g2Data.setNorthposrms(northposrms);
+        g2Data.setEastposrms(eastposrms);
+        g2Data.setDownposrms(downposrms);
+        g2Data.setNorthvelrms(northvelrms);
+        g2Data.setEastvelrms(eastvelrms);
+        g2Data.setDownvelrms(downvelrms);
+        g2Data.setRollrms(rollrms);
+        g2Data.setPitchrms(pitchrms);
+        g2Data.setHeadingrms(headingrms);
+        g2Data.setEllipsoidmajor(ellipsoidmajor);
+        g2Data.setEllipsoidminor(ellipsoidminor);
+        g2Data.setEllipsoidorientation(ellipsoidorientation);
+        g2Data.setTimeDistance(timedist);
+    }
+
+    return g2Data;
 }
 
 void ApplanixStringDecoder::nextString(std::string const &data) {
@@ -152,6 +229,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
     m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
     const uint32_t GRP_HEADER_SIZE = 8;
+    const uint32_t GPR_FOOTER_SIZE = 4;
     while ((static_cast<uint32_t>(m_buffer.tellg()) + m_toRemove + GRP_HEADER_SIZE) < m_buffer.tellp()) {
         // Wait for more data if put pointer is smaller than expected buffer fill level.
         if (     m_buffering
@@ -173,8 +251,8 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             // Go to where we need to read from.
             m_buffer.seekg(m_toRemove, std::ios_base::beg);
 
-            // Decode Applanix GRP1.
             if (ApplanixStringDecoder::GRP1 == m_nextApplanixMessage) {
+                // Decode Applanix GRP1.
                 opendlv::core::sensors::applanix::Grp1Data g1Data = getGRP1(m_buffer);
 
                 Container c(g1Data);
@@ -185,6 +263,13 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
                 Container c2(wgs84);
                 m_conference.send(c2);
             }
+            else if (ApplanixStringDecoder::GRP2 == m_nextApplanixMessage) {
+                // Decode Applanix GRP1.
+                opendlv::core::sensors::applanix::Grp2Data g2Data = getGRP2(m_buffer);
+
+                Container c(g2Data);
+                m_conference.send(c);
+            }
             else {
                 // Unknown message.
             }
@@ -192,7 +277,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             // Maintain internal buffer status.
             m_buffering = false;
             m_foundHeader = false;
-            m_toRemove += m_payloadSize;
+            m_toRemove += m_payloadSize + GPR_FOOTER_SIZE;
             m_payloadSize = 0;
             m_nextApplanixMessage = ApplanixStringDecoder::UNKNOWN;
         }
@@ -219,22 +304,19 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             buffer = le32toh(buffer);
             hdr.setGroupnum(buffer);
 
-            // Decode "$GRP1" messages.
             if ( (hdr.getGrpstart() == "$GRP") && (hdr.getGroupnum() == 1) ) {
-                buffer = 0;
-                m_buffer.read((char *)(&(buffer)), sizeof(buffer));
-                buffer = le32toh(buffer);
-                hdr.setBytecount(buffer);
-                m_payloadSize = hdr.getBytecount();
-
-                m_foundHeader = true;
-                m_buffering = true;
-
-                // Skip GRP header.
-                m_toRemove += GRP_HEADER_SIZE;
+                // Decode "$GRP1" messages.
+                prepareReadingBuffer(m_buffer);
 
                 // Define the next message to decode.
                 m_nextApplanixMessage = ApplanixStringDecoder::GRP1;
+            }
+            else if ( (hdr.getGrpstart() == "$GRP") && (hdr.getGroupnum() == 2) ) {
+                // Decode "$GRP2" messages.
+                prepareReadingBuffer(m_buffer);
+
+                // Define the next message to decode.
+                m_nextApplanixMessage = ApplanixStringDecoder::GRP2;
             }
             else {
                 // Nothing known found; skip this byte and try again.
