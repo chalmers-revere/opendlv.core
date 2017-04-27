@@ -26,6 +26,8 @@
 #include <opendavinci/odcore/io/StringListener.h>
 #include <opendavinci/odcore/io/conference/ContainerConference.h>
 
+#include "odvdapplanix/GeneratedHeaders_ODVDApplanix.h"
+
 namespace opendlv {
 namespace core {
 namespace system {
@@ -50,6 +52,10 @@ class ApplanixStringDecoder : public odcore::io::StringListener {
     virtual ~ApplanixStringDecoder();
 
     virtual void nextString(const std::string &s);
+
+   private:
+    opendlv::core::sensors::applanix::TimeDistance getTimeDistance(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp1Data getGRP1(std::stringstream &buffer);
 
    private:
     odcore::io::conference::ContainerConference &m_conference;
