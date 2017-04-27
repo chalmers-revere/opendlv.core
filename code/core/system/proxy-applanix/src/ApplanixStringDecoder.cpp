@@ -26,8 +26,6 @@
 #include <opendavinci/odcore/data/TimeStamp.h>
 #include <opendlv/data/environment/WGS84Coordinate.h>
 
-#include "odvdapplanix/GeneratedHeaders_ODVDApplanix.h"
-
 #include "ApplanixStringDecoder.h"
 
 namespace opendlv {
@@ -48,6 +46,102 @@ ApplanixStringDecoder::ApplanixStringDecoder(odcore::io::conference::ContainerCo
     , m_nextApplanixMessage(ApplanixStringDecoder::UNKNOWN) {}
 
 ApplanixStringDecoder::~ApplanixStringDecoder() {}
+
+opendlv::core::sensors::applanix::TimeDistance ApplanixStringDecoder::getTimeDistance(std::stringstream &buffer) {
+    opendlv::core::sensors::applanix::TimeDistance timedist;
+
+    if (buffer.good()) {
+        double time1 = 0;
+        double time2 = 0;
+        double distanceTag = 0;
+        uint8_t timeTypes = 0;
+        uint8_t distanceType = 0;
+
+        m_buffer.read((char *)(&(time1)), sizeof(time1));
+        m_buffer.read((char *)(&(time2)), sizeof(time2));
+        m_buffer.read((char *)(&(distanceTag)), sizeof(distanceTag));
+        m_buffer.read((char *)(&(timeTypes)), sizeof(timeTypes));
+        m_buffer.read((char *)(&(distanceType)), sizeof(distanceType));
+
+        timedist.setTime1(time1);
+        timedist.setTime2(time2);
+        timedist.setDistanceTag(distanceTag);
+        timedist.setTime1Type(static_cast<opendlv::core::sensors::applanix::TimeDistance::TimeType>(timeTypes & 0x0F));
+        timedist.setTime2Type(static_cast<opendlv::core::sensors::applanix::TimeDistance::TimeType>(timeTypes & 0xF0));
+        timedist.setDistanceType(static_cast<opendlv::core::sensors::applanix::TimeDistance::DistanceType>(distanceType));
+    }
+
+    return timedist;
+}
+
+opendlv::core::sensors::applanix::Grp1Data ApplanixStringDecoder::getGRP1(std::stringstream &buffer) {
+    opendlv::core::sensors::applanix::Grp1Data g1Data;
+
+    if (buffer.good()) {
+        // Read timedist field.
+        opendlv::core::sensors::applanix::TimeDistance timedist = getTimeDistance(m_buffer);
+
+        double lat = 0;
+        double lon = 0;
+        double alt = 0;
+        float vel_north = 0;
+        float vel_east = 0;
+        float vel_down = 0;
+        double roll = 0;
+        double pitch = 0;
+        double heading = 0;
+        double wander = 0;
+        float track = 0;
+        float speed = 0;
+        float arate_lon = 0;
+        float arate_trans = 0;
+        float arate_down = 0;
+        float accel_lon = 0;
+        float accel_trans = 0;
+        float accel_down = 0;
+
+        m_buffer.read((char *)(&(lat)), sizeof(lat));
+        m_buffer.read((char *)(&(lon)), sizeof(lon));
+        m_buffer.read((char *)(&(alt)), sizeof(alt));
+        m_buffer.read((char *)(&(vel_north)), sizeof(vel_north));
+        m_buffer.read((char *)(&(vel_east)), sizeof(vel_east));
+        m_buffer.read((char *)(&(vel_down)), sizeof(vel_down));
+        m_buffer.read((char *)(&(roll)), sizeof(roll));
+        m_buffer.read((char *)(&(pitch)), sizeof(pitch));
+        m_buffer.read((char *)(&(heading)), sizeof(heading));
+        m_buffer.read((char *)(&(wander)), sizeof(wander));
+        m_buffer.read((char *)(&(track)), sizeof(track));
+        m_buffer.read((char *)(&(speed)), sizeof(speed));
+        m_buffer.read((char *)(&(arate_lon)), sizeof(arate_lon));
+        m_buffer.read((char *)(&(arate_trans)), sizeof(arate_trans));
+        m_buffer.read((char *)(&(arate_down)), sizeof(arate_down));
+        m_buffer.read((char *)(&(accel_lon)), sizeof(accel_lon));
+        m_buffer.read((char *)(&(accel_trans)), sizeof(accel_trans));
+        m_buffer.read((char *)(&(accel_down)), sizeof(accel_down));
+
+        g1Data.setLat(lat);
+        g1Data.setLon(lon);
+        g1Data.setAlt(alt);
+        g1Data.setVel_north(vel_north);
+        g1Data.setVel_east(vel_east);
+        g1Data.setVel_down(vel_down);
+        g1Data.setRoll(roll);
+        g1Data.setPitch(pitch);
+        g1Data.setHeading(heading);
+        g1Data.setWander(wander);
+        g1Data.setTrack(track);
+        g1Data.setSpeed(speed);
+        g1Data.setArate_lon(arate_lon);
+        g1Data.setArate_trans(arate_trans);
+        g1Data.setArate_down(arate_down);
+        g1Data.setAccel_lon(accel_lon);
+        g1Data.setAccel_trans(accel_trans);
+        g1Data.setAccel_down(accel_down);
+        g1Data.setTimeDistance(timedist);
+    }
+
+    return g1Data;
+}
 
 void ApplanixStringDecoder::nextString(std::string const &data) {
     // Add data to the end...
@@ -81,95 +175,13 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
 
             // Decode Applanix GRP1.
             if (ApplanixStringDecoder::GRP1 == m_nextApplanixMessage) {
-                // Create sensor specific data struct.
-                opendlv::core::sensors::applanix::Grp1Data g1Data;
-
-                opendlv::core::sensors::applanix::TimeDistance timedist;
-                {
-                    // Read timedist field.
-                    double time1 = 0;
-                    double time2 = 0;
-                    double distanceTag = 0;
-                    uint8_t timeTypes = 0;
-                    uint8_t distanceType = 0;
-
-                    m_buffer.read((char *)(&(time1)), sizeof(time1));
-                    m_buffer.read((char *)(&(time2)), sizeof(time2));
-                    m_buffer.read((char *)(&(distanceTag)), sizeof(distanceTag));
-                    m_buffer.read((char *)(&(timeTypes)), sizeof(timeTypes));
-                    m_buffer.read((char *)(&(distanceType)), sizeof(distanceType));
-
-                    timedist.setTime1(time1);
-                    timedist.setTime2(time2);
-                    timedist.setDistanceTag(distanceTag);
-                    timedist.setTime1Type(static_cast<opendlv::core::sensors::applanix::TimeDistance::TimeType>(timeTypes & 0x0F));
-                    timedist.setTime2Type(static_cast<opendlv::core::sensors::applanix::TimeDistance::TimeType>(timeTypes & 0xF0));
-                    timedist.setDistanceType(static_cast<opendlv::core::sensors::applanix::TimeDistance::DistanceType>(distanceType));
-                }
-
-                double lat = 0;
-                double lon = 0;
-                double alt = 0;
-                float vel_north = 0;
-                float vel_east = 0;
-                float vel_down = 0;
-                double roll = 0;
-                double pitch = 0;
-                double heading = 0;
-                double wander = 0;
-                float track = 0;
-                float speed = 0;
-                float arate_lon = 0;
-                float arate_trans = 0;
-                float arate_down = 0;
-                float accel_lon = 0;
-                float accel_trans = 0;
-                float accel_down = 0;
-
-                m_buffer.read((char *)(&(lat)), sizeof(lat));
-                m_buffer.read((char *)(&(lon)), sizeof(lon));
-                m_buffer.read((char *)(&(alt)), sizeof(alt));
-                m_buffer.read((char *)(&(vel_north)), sizeof(vel_north));
-                m_buffer.read((char *)(&(vel_east)), sizeof(vel_east));
-                m_buffer.read((char *)(&(vel_down)), sizeof(vel_down));
-                m_buffer.read((char *)(&(roll)), sizeof(roll));
-                m_buffer.read((char *)(&(pitch)), sizeof(pitch));
-                m_buffer.read((char *)(&(heading)), sizeof(heading));
-                m_buffer.read((char *)(&(wander)), sizeof(wander));
-                m_buffer.read((char *)(&(track)), sizeof(track));
-                m_buffer.read((char *)(&(speed)), sizeof(speed));
-                m_buffer.read((char *)(&(arate_lon)), sizeof(arate_lon));
-                m_buffer.read((char *)(&(arate_trans)), sizeof(arate_trans));
-                m_buffer.read((char *)(&(arate_down)), sizeof(arate_down));
-                m_buffer.read((char *)(&(accel_lon)), sizeof(accel_lon));
-                m_buffer.read((char *)(&(accel_trans)), sizeof(accel_trans));
-                m_buffer.read((char *)(&(accel_down)), sizeof(accel_down));
-
-                g1Data.setLat(lat);
-                g1Data.setLon(lon);
-                g1Data.setAlt(alt);
-                g1Data.setVel_north(vel_north);
-                g1Data.setVel_east(vel_east);
-                g1Data.setVel_down(vel_down);
-                g1Data.setRoll(roll);
-                g1Data.setPitch(pitch);
-                g1Data.setHeading(heading);
-                g1Data.setWander(wander);
-                g1Data.setTrack(track);
-                g1Data.setSpeed(speed);
-                g1Data.setArate_lon(arate_lon);
-                g1Data.setArate_trans(arate_trans);
-                g1Data.setArate_down(arate_down);
-                g1Data.setAccel_lon(accel_lon);
-                g1Data.setAccel_trans(accel_trans);
-                g1Data.setAccel_down(accel_down);
-                g1Data.setTimeDistance(timedist);
+                opendlv::core::sensors::applanix::Grp1Data g1Data = getGRP1(m_buffer);
 
                 Container c(g1Data);
                 m_conference.send(c);
 
                 // Create generic message.
-                opendlv::data::environment::WGS84Coordinate wgs84(lat, lon);
+                opendlv::data::environment::WGS84Coordinate wgs84(g1Data.getLat(), g1Data.getLon());
                 Container c2(wgs84);
                 m_conference.send(c2);
             }
