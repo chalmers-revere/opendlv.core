@@ -84,8 +84,28 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
                 // Create sensor specific data struct.
                 opendlv::core::sensors::applanix::Grp1Data g1Data;
 
-                char timedist[26];
-                m_buffer.read(timedist, sizeof(timedist));
+                opendlv::core::sensors::applanix::TimeDistance timedist;
+                {
+                    // Read timedist field.
+                    double time1 = 0;
+                    double time2 = 0;
+                    double distanceTag = 0;
+                    uint8_t timeTypes = 0;
+                    uint8_t distanceType = 0;
+
+                    m_buffer.read((char *)(&(time1)), sizeof(time1));
+                    m_buffer.read((char *)(&(time2)), sizeof(time2));
+                    m_buffer.read((char *)(&(distanceTag)), sizeof(distanceTag));
+                    m_buffer.read((char *)(&(timeTypes)), sizeof(timeTypes));
+                    m_buffer.read((char *)(&(distanceType)), sizeof(distanceType));
+
+                    timedist.setTime1(time1);
+                    timedist.setTime2(time2);
+                    timedist.setDistanceTag(distanceTag);
+                    timedist.setTime1Type(static_cast<opendlv::core::sensors::applanix::TimeDistance::TimeType>(timeTypes & 0x0F));
+                    timedist.setTime2Type(static_cast<opendlv::core::sensors::applanix::TimeDistance::TimeType>(timeTypes & 0xF0));
+                    timedist.setDistanceType(static_cast<opendlv::core::sensors::applanix::TimeDistance::DistanceType>(distanceType));
+                }
 
                 double lat = 0;
                 double lon = 0;
@@ -125,7 +145,6 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
                 m_buffer.read((char *)(&(accel_trans)), sizeof(accel_trans));
                 m_buffer.read((char *)(&(accel_down)), sizeof(accel_down));
 
-                g1Data.setTimedist(string(timedist, 26));
                 g1Data.setLat(lat);
                 g1Data.setLon(lon);
                 g1Data.setAlt(alt);
@@ -144,6 +163,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
                 g1Data.setAccel_lon(accel_lon);
                 g1Data.setAccel_trans(accel_trans);
                 g1Data.setAccel_down(accel_down);
+                g1Data.setTimeDistance(timedist);
 
                 Container c(g1Data);
                 m_conference.send(c);
