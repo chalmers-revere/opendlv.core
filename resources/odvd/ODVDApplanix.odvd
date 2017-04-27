@@ -27,6 +27,28 @@ message opendlv.core.sensors.applanix.internal.GrpFtrMsg [id = 532] {
     string grpend       [id = 2];
 }
 
+message opendlv.core.sensors.applanix.TimeDistance [id = 534] {
+    enum TimeType {
+        TIMETYPE_POS  = 0,
+        TIMETYPE_GPS  = 1,
+        TIMETYPE_UTC  = 2,
+        TIMETYPE_USER = 3,
+    };
+
+    enum DistanceType {
+        DISTANCETYPE_NA  = 0,
+        DISTANCETYPE_POS  = 1,
+        DISTANCETYPE_DMI  = 2,
+    };
+
+    double time1                [id = 1];
+    double time2                [id = 2];
+    double distanceTag          [id = 3];
+    TimeType time1Type          [id = 4];
+    TimeType time2Type          [id = 5];
+    DistanceType distanceType   [id = 6];
+}
+
 message opendlv.core.sensors.applanix.Grp1Data [id = 533] {
     string timedist     [id = 1];
     double lat          [id = 2];
@@ -49,5 +71,6 @@ message opendlv.core.sensors.applanix.Grp1Data [id = 533] {
     float accel_down    [id = 19];
     char alignment      [id = 20];
     char padding        [id = 21];
+    opendlv.core.sensors.applanix.TimeDistance timeDistance [id = 22];
 }
 
