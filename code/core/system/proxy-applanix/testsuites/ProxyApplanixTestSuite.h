@@ -64,7 +64,7 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
         fstream data("../2016-11-08-Applanix.dump", ios::binary | ios::in);
 
         uint32_t overallCounter = 0;
-        while (overallCounter < 100) {
+        while (overallCounter < 10000) {
             uint32_t count = 0;
             stringstream sstr;
             while (data.good()) {
