@@ -220,6 +220,54 @@ opendlv::core::sensors::applanix::Grp2Data ApplanixStringDecoder::getGRP2(std::s
     return g2Data;
 }
 
+opendlv::core::sensors::applanix::Grp3Data ApplanixStringDecoder::getGRP3(std::stringstream &buffer) {
+    opendlv::core::sensors::applanix::Grp3Data g3Data;
+
+    if (buffer.good()) {
+        // Read timedist field.
+        opendlv::core::sensors::applanix::TimeDistance timedist = getTimeDistance(buffer);
+
+        // TODO: Incomplete.
+
+        g3Data.setTimeDistance(timedist);
+    }
+
+    return g3Data;
+}
+
+opendlv::core::sensors::applanix::Grp4Data ApplanixStringDecoder::getGRP4(std::stringstream &buffer) {
+    opendlv::core::sensors::applanix::Grp4Data g4Data;
+
+    if (buffer.good()) {
+        // Read timedist field.
+        opendlv::core::sensors::applanix::TimeDistance timedist = getTimeDistance(buffer);
+
+        char imudata[24];
+        uint8_t datastatus = 0;
+        uint8_t imutype = 0;
+        uint8_t imurate = 0;
+        uint16_t imustatus = 0;
+        uint8_t pad = 0;
+
+        m_buffer.read(imudata, sizeof(imudata));
+        buffer.read((char *)(&(datastatus)), sizeof(datastatus));
+        buffer.read((char *)(&(imutype)), sizeof(imutype));
+        buffer.read((char *)(&(imurate)), sizeof(imurate));
+        buffer.read((char *)(&(imustatus)), sizeof(imustatus));
+        buffer.read((char *)(&(pad)), sizeof(pad));
+
+        g4Data.setImudata(string(imudata, 24));
+        g4Data.setDatastatus(datastatus);
+        g4Data.setImutype(imutype);
+        g4Data.setImurate(imurate);
+        g4Data.setImustatus(imustatus);
+
+        g4Data.setTimeDistance(timedist);
+    }
+
+    return g4Data;
+}
+
 void ApplanixStringDecoder::nextString(std::string const &data) {
     // Add data to the end...
     m_buffer.seekp(0, std::ios_base::end);
@@ -254,7 +302,7 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             if (ApplanixStringDecoder::GRP1 == m_nextApplanixMessage) {
                 // Decode Applanix GRP1.
                 opendlv::core::sensors::applanix::Grp1Data g1Data = getGRP1(m_buffer);
-
+cout << "G1 " << g1Data.toString() << endl;
                 Container c(g1Data);
                 m_conference.send(c);
 
@@ -264,10 +312,27 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
                 m_conference.send(c2);
             }
             else if (ApplanixStringDecoder::GRP2 == m_nextApplanixMessage) {
-                // Decode Applanix GRP1.
+                // Decode Applanix GRP2.
                 opendlv::core::sensors::applanix::Grp2Data g2Data = getGRP2(m_buffer);
+cout << "G2 " << g2Data.toString() << endl;
 
                 Container c(g2Data);
+                m_conference.send(c);
+            }
+            else if (ApplanixStringDecoder::GRP3 == m_nextApplanixMessage) {
+                // Decode Applanix GRP3.
+                opendlv::core::sensors::applanix::Grp3Data g3Data = getGRP3(m_buffer);
+cout << "G3 " << g3Data.toString() << endl;
+
+                Container c(g3Data);
+                m_conference.send(c);
+            }
+            else if (ApplanixStringDecoder::GRP4 == m_nextApplanixMessage) {
+                // Decode Applanix GRP4.
+                opendlv::core::sensors::applanix::Grp4Data g4Data = getGRP4(m_buffer);
+cout << "G4 " << g4Data.toString() << endl;
+
+                Container c(g4Data);
                 m_conference.send(c);
             }
             else {
@@ -317,6 +382,20 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
 
                 // Define the next message to decode.
                 m_nextApplanixMessage = ApplanixStringDecoder::GRP2;
+            }
+            else if ( (hdr.getGrpstart() == "$GRP") && (hdr.getGroupnum() == 3) ) {
+                // Decode "$GRP3" messages.
+                prepareReadingBuffer(m_buffer);
+
+                // Define the next message to decode.
+                m_nextApplanixMessage = ApplanixStringDecoder::GRP3;
+            }
+            else if ( (hdr.getGrpstart() == "$GRP") && (hdr.getGroupnum() == 4) ) {
+                // Decode "$GRP4" messages.
+                prepareReadingBuffer(m_buffer);
+
+                // Define the next message to decode.
+                m_nextApplanixMessage = ApplanixStringDecoder::GRP4;
             }
             else {
                 // Nothing known found; skip this byte and try again.

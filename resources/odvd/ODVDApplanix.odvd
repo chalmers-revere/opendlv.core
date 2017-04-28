@@ -84,3 +84,16 @@ message opendlv.core.sensors.applanix.Grp2Data [id = 535] {
     float ellipsoidorientation  [id = 13];
 }
 
+message opendlv.core.sensors.applanix.Grp3Data [id = 536] {
+    opendlv.core.sensors.applanix.TimeDistance timeDistance [id = 1];
+}
+
+message opendlv.core.sensors.applanix.Grp4Data [id = 537] {
+    opendlv.core.sensors.applanix.TimeDistance timeDistance [id = 1];
+    string imudata              [id = 2];
+    uint8 datastatus            [id = 3];
+    uint8 imutype               [id = 4];
+    uint8 imurate               [id = 5];
+    uint16 imustatus            [id = 6];
+}
+
