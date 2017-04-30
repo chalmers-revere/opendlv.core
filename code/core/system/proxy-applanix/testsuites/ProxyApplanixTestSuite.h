@@ -44,6 +44,7 @@ class MyContainerConference : public ContainerConference {
     virtual void send(odcore::data::Container &container) const {
         m_callCounter++;
         if (container.getDataType() == opendlv::core::sensors::applanix::Grp1Data::ID()) {
+cout << "MC " << m_callCounter << endl;
             m_g1data = container.getData<opendlv::core::sensors::applanix::Grp1Data>();
         }
     }
@@ -76,19 +77,19 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
             const string s = sstr.str();
             if (s.size() > 0) {
                 asd.nextString(s);
-                if (mcc.m_callCounter == 2) {
+                if (mcc.m_callCounter == 1) {
                     const double X1 = 57.70878319;
                     const double Y1 = 11.94648496;
                     TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X1, 1e-8);
                     TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y1, 1e-8);
                 }
-                if (mcc.m_callCounter == 4) {
+                if (mcc.m_callCounter == 114) {
                     const double X2 = 57.70878314;
                     const double Y2 = 11.94648486;
                     TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X2, 1e-8);
                     TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y2, 1e-8);
                 }
-                if (mcc.m_callCounter == 6) {
+                if (mcc.m_callCounter == 122) {
                     const double X3 = 57.70878309;
                     const double Y3 = 11.94648475;
                     TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X3, 1e-8);

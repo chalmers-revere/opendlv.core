@@ -301,7 +301,6 @@ opendlv::core::sensors::applanix::Grp3Data ApplanixStringDecoder::getGRP3(std::s
         const uint8_t SIZE_OF_GNSS = 20;
         for (uint8_t i = 0; i < (channelStatusByteCount / SIZE_OF_GNSS); i++) {
             opendlv::core::sensors::applanix::GNSSReceiverChannelStatus gnss = getGNSSReceiverChannelStatus(buffer);
-cout << gnss.toString() << endl;
             g3Data.addTo_ListOfChannel_status(gnss);
         }
 
@@ -484,7 +483,6 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
             if (ApplanixStringDecoder::GRP1 == m_nextApplanixMessage) {
                 // Decode Applanix GRP1.
                 opendlv::core::sensors::applanix::Grp1Data g1Data = getGRP1(m_buffer);
-cout << "G1 " << g1Data.toString() << endl;
                 Container c(g1Data);
                 m_conference.send(c);
 
@@ -496,7 +494,6 @@ cout << "G1 " << g1Data.toString() << endl;
             else if (ApplanixStringDecoder::GRP2 == m_nextApplanixMessage) {
                 // Decode Applanix GRP2.
                 opendlv::core::sensors::applanix::Grp2Data g2Data = getGRP2(m_buffer);
-cout << "G2 " << g2Data.toString() << endl;
 
                 Container c(g2Data);
                 m_conference.send(c);
@@ -504,7 +501,6 @@ cout << "G2 " << g2Data.toString() << endl;
             else if (ApplanixStringDecoder::GRP3 == m_nextApplanixMessage) {
                 // Decode Applanix GRP3.
                 opendlv::core::sensors::applanix::Grp3Data g3Data = getGRP3(m_buffer);
-cout << "G3 " << g3Data.toString() << endl;
 
                 Container c(g3Data);
                 m_conference.send(c);
@@ -512,7 +508,6 @@ cout << "G3 " << g3Data.toString() << endl;
             else if (ApplanixStringDecoder::GRP4 == m_nextApplanixMessage) {
                 // Decode Applanix GRP4.
                 opendlv::core::sensors::applanix::Grp4Data g4Data = getGRP4(m_buffer);
-cout << "G4 " << g4Data.toString() << endl;
 
                 Container c(g4Data);
                 m_conference.send(c);
@@ -520,7 +515,6 @@ cout << "G4 " << g4Data.toString() << endl;
             else if (ApplanixStringDecoder::GRP10001 == m_nextApplanixMessage) {
                 // Decode Applanix GRP10001.
                 opendlv::core::sensors::applanix::Grp10001Data g10001Data = getGRP10001(m_buffer);
-cout << "G10001 " << g10001Data.toString() << endl;
 
                 Container c(g10001Data);
                 m_conference.send(c);
@@ -528,7 +522,6 @@ cout << "G10001 " << g10001Data.toString() << endl;
             else if (ApplanixStringDecoder::GRP10002 == m_nextApplanixMessage) {
                 // Decode Applanix GRP10002.
                 opendlv::core::sensors::applanix::Grp10002Data g10002Data = getGRP10002(m_buffer);
-cout << "G10002 " << g10002Data.toString() << endl;
 
                 Container c(g10002Data);
                 m_conference.send(c);
@@ -536,7 +529,6 @@ cout << "G10002 " << g10002Data.toString() << endl;
             else if (ApplanixStringDecoder::GRP10003 == m_nextApplanixMessage) {
                 // Decode Applanix GRP10003.
                 opendlv::core::sensors::applanix::Grp10003Data g10003Data = getGRP10003(m_buffer);
-cout << "G10003 " << g10003Data.toString() << endl;
 
                 Container c(g10003Data);
                 m_conference.send(c);
