@@ -42,18 +42,15 @@ void LogMouseClicks(int32_t a_event, int32_t a_x, int32_t a_y, int32_t,
 {  
 
   MouseParams* click = (MouseParams*) a_userdata;
-  if (a_event == cv::EVENT_LBUTTONDOWN && click->iterator < 4)
-  {
+  if (a_event == cv::EVENT_LBUTTONDOWN && click->iterator < 4) {
 
     std::cout << "(" << a_x << ", " << a_y << ")" << std::endl;
     click->points(0,click->iterator) = a_x;
     click->points(1,click->iterator) = a_y;
     click->iterator = click->iterator +1;
-    std::cout << "Points: " + std::to_string(click->iterator) << std::endl;
+    std::cout << "Points: " << std::to_string(click->iterator) << std::endl;
     std::cout << (click->points) << std::endl;
-  }
-  if (a_event == cv::EVENT_RBUTTONDOWN)
-  {
+  } else if (a_event == cv::EVENT_RBUTTONDOWN) {
     click->iterator = 0;
   }
 }
@@ -65,21 +62,16 @@ void ProjectMouseClicks(int32_t a_event, int32_t a_x, int32_t a_y, int32_t,
   Eigen::MatrixXd* m = (Eigen::MatrixXd*) a_userdata;
   
   if(a_event == cv::EVENT_LBUTTONDOWN){
-    v << a_x,a_y,1;
-    // std::cout << *m << std::endl;
-    // std::cout << v << std::endl;
-    v = *m*v;
+    v << a_x, a_y, 1;
+    v = *m * v;
     v = v / v(2);
-
-
     std::cout << v << std::endl;
-
   } 
 }
 
-MouseParams::MouseParams() : 
-    points(),
-    iterator() 
+MouseParams::MouseParams()
+    : points()
+    , iterator() 
 {
   points = Eigen::MatrixXd(2,4);
   cv::namedWindow("Calibration", 1 );
@@ -92,7 +84,7 @@ MouseParams::~MouseParams()
 
 CameraProjection::CameraProjection(int32_t const &a_argc, char **a_argv)
     : odcore::base::module::TimeTriggeredConferenceClientModule(
-      a_argc, a_argv, "core-tool-camera-projection")
+        a_argc, a_argv, "core-tool-camera-projection")
     , m_image()
     , m_inputStr()
     , m_outputStr()
@@ -125,10 +117,9 @@ void CameraProjection::setUp()
   m_cameraName = 
       kv.getValue<std::string>("core-tool-camera-projection.cameraname");
   m_debug = (kv.getValue<int32_t>("core-tool-camera-projection.debug") == 0);
-  m_transformationMatrixFileName = "/opt/opendlv.core.configuration/" + m_cameraName + "-pixel2word-matrix.csv";
-
+  m_transformationMatrixFileName = 
+      "./" + m_cameraName + "-pixel2world-matrix.csv";
   cv::namedWindow("Calibration", 1 );
-
   m_initialized = true;
 }
 
@@ -173,10 +164,8 @@ void CameraProjection::nextContainer(odcore::data::Container &a_c)
     }
 
     sharedMem->lock();
-    {
-      memcpy(m_image.data, sharedMem->getSharedMemory(),
-          imgWidth*imgHeight*nrChannels);
-    }
+    memcpy(m_image.data, sharedMem->getSharedMemory(), 
+        imgWidth*imgHeight*nrChannels);
     sharedMem->unlock();
 
     putText(m_image, "Rectangle width: " + std::to_string(m_recWidth),
@@ -191,7 +180,6 @@ void CameraProjection::nextContainer(odcore::data::Container &a_c)
     putText(m_image, "Input string: " + m_inputStr , cvPoint(30, 70), 1, 0.8,
         cvScalar(0, 0, 254), 1, CV_AA);
 
-
     cv::imshow("Calibration", m_image);
 
     cvReleaseImage(&myIplImage);
@@ -199,7 +187,9 @@ void CameraProjection::nextContainer(odcore::data::Container &a_c)
   }
 }
 
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode CameraProjection::body(){
+odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode 
+    CameraProjection::body()
+{
   bool menuMode = 1;
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() ==
   odcore::data::dmcp::ModuleStateMessage::RUNNING){
@@ -208,27 +198,30 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode CameraProjection::body
     if (menuMode) {
       switch(key){
         case 'c':
-          std::cout << "Enter Calibration" << std::endl;
-          m_outputStr = "Click on: bottom-left, bottom-right, top-right and top-left corners";
+          std::cout << "[" << getName() << "] Enter Calibration" << std::endl;
+          m_outputStr = 
+              "Click on: bottom-left, bottom-right, top-right and top-left corners";
           Calibrate();
           m_outputStr.clear();
           break;
         case'r':
-          std::cout << "Enter Configuration" << std::endl;
-          m_outputStr = "Configuration - Enter the values seperated by commas: 'width,height,xposition,yposition' and enter with space";
+          std::cout << "[" << getName() << "] Enter Configuration" << std::endl;
+          m_outputStr = 
+              "Configuration - Enter the values seperated by commas: 'width,height,xposition,yposition' and enter with space";
           menuMode = 0;
           break;
         case 'e':
-          std::cout << "Read file" << std::endl;
+          std::cout << "[" << getName() << "] Read file" << std::endl;
           ReadMatrix();
           break;
         case's':
-          std::cout << "Calculating projection matrix and saving to file" 
+          std::cout 
+              << "[" << getName() << "] Calculating projection matrix and saving to file" 
               << std::endl;
           Save();
           break;
         case 'p':
-          std::cout << "Projecting points" << std::endl;
+          std::cout << "[" << getName() << "] Projecting points" << std::endl;
           Project();
           break;
         case 'q':
@@ -280,10 +273,10 @@ void CameraProjection::ReadMatrix()
         m(i,j) = item;
       }
     }
-    std::cout << m << std::endl;
+    std::cout << "[" << getName() << "] Read matrix: " << m << std::endl;
   }
   else {
-    std::cout<< "File not found." << std::endl;
+    std::cout << "[" << getName() << "] File not found." << std::endl;
   }
   indata.close();
 }
@@ -291,7 +284,8 @@ void CameraProjection::ReadMatrix()
 void CameraProjection::Config(std::vector<double> a_param)
 {
   if (a_param.size() != 4) {
-    std::cout << "[" << getName() 
+    std::cout 
+        << "[" << getName() 
         << "] Number of input to configuration is not 4." << std::endl;
     return;
   }
@@ -304,17 +298,13 @@ void CameraProjection::Config(std::vector<double> a_param)
   q <<  m_recPosX, m_recPosX, m_recPosX+m_recHeight,
         m_recPosY + m_recWidth, m_recPosY, m_recPosY,
         1,1,1;
-  // std::cout << q << std::endl;
   w <<  m_recPosX + m_recHeight,
         m_recPosY + m_recWidth,
         1;
-  // std::cout << w << std::endl;
 
   Eigen::Vector3d scale = q.colPivHouseholderQr().solve(w);
-  // std::cout << scale << std::endl;
 
   m_aMatrix << scale(0) * q.col(0), scale(1) * q.col(1), scale(2) * q.col(2);
-  // std::cout << m_aMatrix << std::endl;
 
   std::cout << "[" << getName() << "] Configuration done." << std::endl;
 
@@ -341,9 +331,9 @@ void CameraProjection::Calibrate()
     m_bMatrix << scale(0) * q.col(0), scale(1) * q.col(1), scale(2) * q.col(2);
     std::cout << m_bMatrix << std::endl;
 
-    std::cout << "Calibration done." << std::endl;
+    std::cout << "[" << getName() << "] Calibration done." << std::endl;
   } else {
-    std::cout << "Calibration cancelled." << std::endl;
+    std::cout << "[" << getName() << "] Calibration cancelled." << std::endl;
   }
 }
 
@@ -360,8 +350,11 @@ void CameraProjection::Save()
   if (file.is_open()) {
     file << m_projectionMatrix.format(saveFormat);
   }
+  file.flush();
   file.close();
-  std::cout << "Saved matrix as " + m_transformationMatrixFileName << std::endl;
+  std::cout << "[" << getName() << "] Saved matrix as " 
+      << m_transformationMatrixFileName 
+      << std::endl;
 
 }
 
