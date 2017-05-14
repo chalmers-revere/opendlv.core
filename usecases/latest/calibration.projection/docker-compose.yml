@@ -41,8 +41,6 @@ services:
             - /tmp/.X11-unix:/tmp/.X11-unix
             - .:/opt/opendlv.core.configuration
         user: odv
-        volumes:
-            - .:/opt/opendlv.core.configuration
         network_mode: host
         ipc: host
         command: "/opt/opendlv.core/bin/opendlv-core-tool-camera-projection --cid=${CID} --freq=20 --id=0"
