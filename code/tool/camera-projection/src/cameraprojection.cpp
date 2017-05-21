@@ -252,7 +252,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode
         m_inputStr.clear();
         m_outputStr.clear();
         menuMode = 1;
-      } else if (key !=-1) {
+      } else {
         m_inputStr.push_back(key);
       }
     }
