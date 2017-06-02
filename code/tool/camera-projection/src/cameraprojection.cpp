@@ -231,7 +231,8 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode
           break;
       }
     } else {
-      if (key == 8) {
+      if (key == -1) {
+      } else if (key == 8) {
         if (!m_inputStr.empty()) {
           m_inputStr.pop_back();
         }
