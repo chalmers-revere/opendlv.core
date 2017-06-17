@@ -1,6 +1,6 @@
 /**
  * proxy-applanix - Interface to GPS/IMU unit Applanix.
- * Copyright (C) 2016 Christian Berger
+ * Copyright (C) 2016-2017 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -115,7 +115,7 @@ opendlv::core::sensors::applanix::Grp1Data ApplanixStringDecoder::getGRP1(std::s
         float accel_trans   = 0;
         float accel_down    = 0;
         uint8_t alignment   = 0;
-        char pad            = 0;
+        uint8_t pad         = 0;
 
         buffer.read((char *)(&(lat)), sizeof(lat));
         buffer.read((char *)(&(lon)), sizeof(lon));
@@ -277,6 +277,13 @@ opendlv::core::sensors::applanix::Grp3Data ApplanixStringDecoder::getGRP3(std::s
         buffer.read((char *)(&(numberSVTracked)), sizeof(numberSVTracked));
         buffer.read((char *)(&(channelStatusByteCount)), sizeof(channelStatusByteCount));
         channelStatusByteCount = le16toh(channelStatusByteCount);
+
+        const uint8_t SIZE_OF_GNSS = 20;
+        for (uint8_t i = 0; i < (channelStatusByteCount / SIZE_OF_GNSS); i++) {
+            opendlv::core::sensors::applanix::GNSSReceiverChannelStatus gnss = getGNSSReceiverChannelStatus(buffer);
+            g3Data.addTo_ListOfChannel_status(gnss);
+        }
+
         buffer.read((char *)(&(HDOP)), sizeof(HDOP));
         buffer.read((char *)(&(VDOP)), sizeof(VDOP));
         buffer.read((char *)(&(DGPS_correction_latency)), sizeof(DGPS_correction_latency));
@@ -294,15 +301,10 @@ opendlv::core::sensors::applanix::Grp3Data ApplanixStringDecoder::getGRP3(std::s
 
         buffer.read((char *)(&(pad)), sizeof(pad));
 
+        // Set values.
         g3Data.setNavigation_solution_status(navigationSolutionStatus);
         g3Data.setNumber_sv_tracked(numberSVTracked);
         g3Data.setChannel_status_byte_count(channelStatusByteCount);
-
-        const uint8_t SIZE_OF_GNSS = 20;
-        for (uint8_t i = 0; i < (channelStatusByteCount / SIZE_OF_GNSS); i++) {
-            opendlv::core::sensors::applanix::GNSSReceiverChannelStatus gnss = getGNSSReceiverChannelStatus(buffer);
-            g3Data.addTo_ListOfChannel_status(gnss);
-        }
 
         g3Data.setHDOP(HDOP);
         g3Data.setVDOP(VDOP);
@@ -404,7 +406,7 @@ opendlv::core::sensors::applanix::Grp10002Data ApplanixStringDecoder::getGRP1000
         char imuheader[LENGTH_IMUHEADER];
         uint16_t byte_count = 0;
         vector<char> imu_raw_data;
-        int16_t checksum    = 0;
+        int16_t data_checksum = 0;
         uint8_t pad         = 0;
 
         buffer.read(imuheader, sizeof(imuheader));
@@ -415,16 +417,17 @@ opendlv::core::sensors::applanix::Grp10002Data ApplanixStringDecoder::getGRP1000
         imu_raw_data.reserve(byte_count);
         buffer.read(&imu_raw_data[0], byte_count);
 
-        buffer.read((char *)(&(checksum)), sizeof(checksum));
-        checksum = le16toh(checksum);
+        buffer.read((char *)(&(data_checksum)), sizeof(data_checksum));
+        data_checksum = le16toh(data_checksum);
 
         // Read padding.
-        for(uint8_t paddingToRead = 0; paddingToRead < ((m_payloadSize - TIME_DISTANCE_FIELD_SIZE - LENGTH_IMUHEADER - sizeof(byte_count) - byte_count - sizeof(checksum) - ApplanixStringDecoder::GRP_FOOTER_SIZE)); paddingToRead++) {
+        for(uint8_t paddingToRead = 0; paddingToRead < ((m_payloadSize - TIME_DISTANCE_FIELD_SIZE - LENGTH_IMUHEADER - sizeof(byte_count) - byte_count - sizeof(data_checksum) - ApplanixStringDecoder::GRP_FOOTER_SIZE)); paddingToRead++) {
             buffer.read((char *)(&(pad)), sizeof(pad));
         }
 
         g10002Data.setImuheader(string(imuheader, LENGTH_IMUHEADER));
         g10002Data.setImu_raw_data(string(&imu_raw_data[0], byte_count));
+        g10002Data.setDatachecksum(data_checksum);
 
         g10002Data.setTimeDistance(timedist);
     }
@@ -442,6 +445,9 @@ opendlv::core::sensors::applanix::Grp10003Data ApplanixStringDecoder::getGRP1000
         uint32_t pps = 0;
         buffer.read((char *)(&(pps)), sizeof(pps));
         pps = le32toh(pps);
+
+        uint16_t pad = 0;
+        buffer.read((char *)(&(pad)), sizeof(pad));
 
         g10003Data.setPulsecount(pps);
 

@@ -1,6 +1,6 @@
 /**
  * proxy-applanix - Interface to GPS/IMU unit Applanix.
- * Copyright (C) 2016 Christian Berger
+ * Copyright (C) 2016-2017 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -44,7 +44,6 @@ class MyContainerConference : public ContainerConference {
     virtual void send(odcore::data::Container &container) const {
         m_callCounter++;
         if (container.getDataType() == opendlv::core::sensors::applanix::Grp1Data::ID()) {
-cout << "MC " << m_callCounter << endl;
             m_g1data = container.getData<opendlv::core::sensors::applanix::Grp1Data>();
         }
     }
@@ -65,7 +64,7 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
         fstream data("../2016-11-08-Applanix.dump", ios::binary | ios::in);
 
         uint32_t overallCounter = 0;
-        while (overallCounter < 10000) {
+        while (overallCounter < 100000) {
             uint32_t count = 0;
             stringstream sstr;
             while (data.good()) {
