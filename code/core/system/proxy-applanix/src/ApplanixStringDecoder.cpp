@@ -365,14 +365,14 @@ opendlv::core::sensors::applanix::Grp10001Data ApplanixStringDecoder::getGRP1000
         // Read timedist field.
         opendlv::core::sensors::applanix::TimeDistance timedist = getTimeDistance(buffer);
 
-        uint16_t GPS_receiver_type  = 0;
+        uint16_t GNSS_receiver_type = 0;
         uint32_t reserved           = 0;
         uint16_t byte_count         = 0;
         vector<char> GNSS_receiver_raw_data;
         uint8_t pad                 = 0;
 
-        buffer.read((char *)(&(GPS_receiver_type)), sizeof(GPS_receiver_type));
-        byte_count = le16toh(byte_count);
+        buffer.read((char *)(&(GNSS_receiver_type)), sizeof(GNSS_receiver_type));
+        GNSS_receiver_type = le16toh(GNSS_receiver_type);
         buffer.read((char *)(&(reserved)), sizeof(reserved));
         buffer.read((char *)(&(byte_count)), sizeof(byte_count));
         byte_count = le16toh(byte_count);
@@ -382,11 +382,11 @@ opendlv::core::sensors::applanix::Grp10001Data ApplanixStringDecoder::getGRP1000
         buffer.read(&GNSS_receiver_raw_data[0], byte_count);
 
         // Read padding.
-        for(uint8_t paddingToRead = 0; paddingToRead < ((m_payloadSize - TIME_DISTANCE_FIELD_SIZE - sizeof(GPS_receiver_type) - sizeof(reserved) - sizeof(byte_count) - byte_count - ApplanixStringDecoder::GRP_FOOTER_SIZE)); paddingToRead++) {
+        for(uint8_t paddingToRead = 0; paddingToRead < ((m_payloadSize - TIME_DISTANCE_FIELD_SIZE - sizeof(GNSS_receiver_type) - sizeof(reserved) - sizeof(byte_count) - byte_count - ApplanixStringDecoder::GRP_FOOTER_SIZE)); paddingToRead++) {
             buffer.read((char *)(&(pad)), sizeof(pad));
         }
 
-        g10001Data.setGPS_receiver_type(GPS_receiver_type);
+        g10001Data.setGNSS_receiver_type(GNSS_receiver_type);
         g10001Data.setGNSS_receiver_raw_data(string(&GNSS_receiver_raw_data[0], byte_count));
 
         g10001Data.setTimeDistance(timedist);
@@ -455,6 +455,18 @@ opendlv::core::sensors::applanix::Grp10003Data ApplanixStringDecoder::getGRP1000
     }
 
     return g10003Data;
+}
+
+opendlv::core::sensors::applanix::Grp10009Data ApplanixStringDecoder::getGRP10009(std::stringstream &buffer) {
+    // Grp10009 message is identical to Grp10001. Thus, re-use the decoder and simply copy the data.
+    opendlv::core::sensors::applanix::Grp10001Data g10001Data = getGRP10001(buffer);
+
+    opendlv::core::sensors::applanix::Grp10009Data g10009Data;
+    g10009Data.setGNSS_receiver_type(g10001Data.getGNSS_receiver_type());
+    g10009Data.setGNSS_receiver_raw_data(g10001Data.getGNSS_receiver_raw_data());
+    g10009Data.setTimeDistance(g10001Data.getTimeDistance());
+
+    return g10009Data;
 }
 
 void ApplanixStringDecoder::nextString(std::string const &data) {
@@ -539,6 +551,13 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
                 Container c(g10003Data);
                 m_conference.send(c);
             }
+            else if (ApplanixStringDecoder::GRP10009 == m_nextApplanixMessage) {
+                // Decode Applanix GRP10009.
+                opendlv::core::sensors::applanix::Grp10009Data g10009Data = getGRP10009(m_buffer);
+
+                Container c(g10009Data);
+                m_conference.send(c);
+            }
             else {
                 // Unknown message.
             }
@@ -621,6 +640,13 @@ void ApplanixStringDecoder::nextString(std::string const &data) {
 
                 // Define the next message to decode.
                 m_nextApplanixMessage = ApplanixStringDecoder::GRP10003;
+            }
+            else if ( (hdr.getGrpstart() == "$GRP") && (hdr.getGroupnum() == 10009) ) {
+                // Decode "$GRP10009" messages.
+                prepareReadingBuffer(m_buffer);
+
+                // Define the next message to decode.
+                m_nextApplanixMessage = ApplanixStringDecoder::GRP10009;
             }
             else {
                 // Nothing known found; skip this byte and try again.

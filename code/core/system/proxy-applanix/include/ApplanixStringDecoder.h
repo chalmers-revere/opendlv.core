@@ -53,6 +53,7 @@ class ApplanixStringDecoder : public odcore::io::StringListener {
             GRP10001                    = 10001,
             GRP10002                    = 10002,
             GRP10003                    = 10003,
+            GRP10009                    = 10009,
         };
 
    private:
@@ -76,6 +77,7 @@ class ApplanixStringDecoder : public odcore::io::StringListener {
     opendlv::core::sensors::applanix::Grp10001Data getGRP10001(std::stringstream &buffer);
     opendlv::core::sensors::applanix::Grp10002Data getGRP10002(std::stringstream &buffer);
     opendlv::core::sensors::applanix::Grp10003Data getGRP10003(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp10009Data getGRP10009(std::stringstream &buffer);
 
    private:
     odcore::io::conference::ContainerConference &m_conference;

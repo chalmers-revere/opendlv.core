@@ -124,7 +124,7 @@ message opendlv.core.sensors.applanix.Grp4Data [id = 538] {
 
 message opendlv.core.sensors.applanix.Grp10001Data [id = 539] {
     opendlv.core.sensors.applanix.TimeDistance timeDistance [id = 1];
-    uint16 GPS_receiver_type            [id = 2];
+    uint16 GNSS_receiver_type           [id = 2];
     bytes GNSS_receiver_raw_data        [id = 3];
 }
 
@@ -139,4 +139,11 @@ message opendlv.core.sensors.applanix.Grp10003Data [id = 541] {
     opendlv.core.sensors.applanix.TimeDistance timeDistance [id = 1];
     uint32 pulsecount                   [id = 2];
 }
+
+message opendlv.core.sensors.applanix.Grp10009Data [id = 542] {
+    opendlv.core.sensors.applanix.TimeDistance timeDistance [id = 1];
+    uint16 GNSS_receiver_type           [id = 2];
+    bytes GNSS_receiver_raw_data        [id = 3];
+}
+
 
