@@ -1,6 +1,6 @@
 /**
  * proxy-applanix - Interface to GPS/IMU unit Applanix.
- * Copyright (C) 2016 Christian Berger
+ * Copyright (C) 2016-2017 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -64,7 +64,7 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
         fstream data("../2016-11-08-Applanix.dump", ios::binary | ios::in);
 
         uint32_t overallCounter = 0;
-        while (overallCounter < 100) {
+        while (overallCounter < 10000) {
             uint32_t count = 0;
             stringstream sstr;
             while (data.good()) {
@@ -76,19 +76,19 @@ class ProxyApplanixTest : public CxxTest::TestSuite {
             const string s = sstr.str();
             if (s.size() > 0) {
                 asd.nextString(s);
-                if (mcc.m_callCounter == 2) {
+                if (mcc.m_callCounter == 1) {
                     const double X1 = 57.70878319;
                     const double Y1 = 11.94648496;
                     TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X1, 1e-8);
                     TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y1, 1e-8);
                 }
-                if (mcc.m_callCounter == 4) {
+                if (mcc.m_callCounter == 114) {
                     const double X2 = 57.70878314;
                     const double Y2 = 11.94648486;
                     TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X2, 1e-8);
                     TS_ASSERT_DELTA(mcc.m_g1data.getLon(), Y2, 1e-8);
                 }
-                if (mcc.m_callCounter == 6) {
+                if (mcc.m_callCounter == 122) {
                     const double X3 = 57.70878309;
                     const double Y3 = 11.94648475;
                     TS_ASSERT_DELTA(mcc.m_g1data.getLat(), X3, 1e-8);
