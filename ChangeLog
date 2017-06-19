@@ -1,3 +1,4 @@
+0.9.6 - Adding more groups to Applanix and propagating OpenDaVINCI 4.13.0 to OpenDLV.core
 0.9.5 - Introducing OpenDLV standard message set
 0.9.4 - Propagating OpenDaVINCI 4.12.1 to OpenDLV.core
 0.9.3 - Lifting OpenDaVINCI 4.12.0 to OpenDLV.core and adding camera calibration
