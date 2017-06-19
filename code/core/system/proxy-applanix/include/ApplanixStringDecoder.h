@@ -1,6 +1,6 @@
 /**
  * proxy-applanix - Interface to GPS/IMU unit Applanix.
- * Copyright (C) 2016 Christian Berger
+ * Copyright (C) 2016-2017 Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,6 +26,8 @@
 #include <opendavinci/odcore/io/StringListener.h>
 #include <opendavinci/odcore/io/conference/ContainerConference.h>
 
+#include "odvdapplanix/GeneratedHeaders_ODVDApplanix.h"
+
 namespace opendlv {
 namespace core {
 namespace system {
@@ -36,9 +38,22 @@ namespace proxy {
  */
 class ApplanixStringDecoder : public odcore::io::StringListener {
    private:
+        enum GRP_SIZES {
+            GRP_HEADER_SIZE             = 8,
+            GRP_FOOTER_SIZE             = 4,
+            TIME_DISTANCE_FIELD_SIZE    = 26,
+        };
+
         enum ApplanixMessages {
-            UNKNOWN = 0,
-            GRP1    = 1,
+            UNKNOWN                     = 0,
+            GRP1                        = 1,
+            GRP2                        = 2,
+            GRP3                        = 3,
+            GRP4                        = 4,
+            GRP10001                    = 10001,
+            GRP10002                    = 10002,
+            GRP10003                    = 10003,
+            GRP10009                    = 10009,
         };
 
    private:
@@ -50,6 +65,19 @@ class ApplanixStringDecoder : public odcore::io::StringListener {
     virtual ~ApplanixStringDecoder();
 
     virtual void nextString(const std::string &s);
+
+   private:
+    void prepareReadingBuffer(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::TimeDistance getTimeDistance(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp1Data getGRP1(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp2Data getGRP2(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp3Data getGRP3(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::GNSSReceiverChannelStatus getGNSSReceiverChannelStatus(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp4Data getGRP4(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp10001Data getGRP10001(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp10002Data getGRP10002(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp10003Data getGRP10003(std::stringstream &buffer);
+    opendlv::core::sensors::applanix::Grp10009Data getGRP10009(std::stringstream &buffer);
 
    private:
     odcore::io::conference::ContainerConference &m_conference;
