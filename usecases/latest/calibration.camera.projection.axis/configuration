@@ -73,42 +73,15 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 
 
 ###############################################################################
-###############################################################################
-#
-# CONFIGURATION FOR PROXY
-#
 
-proxy-camera.camera.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera.camera.name = documentation
-proxy-camera.camera.type = OpenCV   # OpenCV or UEYE.
-proxy-camera.camera.id = 1          # Select here the proper ID for OpenCV.
-proxy-camera.camera.width = 640     # 752-UEYE, 640-OpenCV.
-proxy-camera.camera.height = 480
-proxy-camera.camera.bpp = 3         # 3 = openCV, 1 = UEYE (untested).
-proxy-camera.camera.flipped = 1     # 1 = flipped image, 0 = not flipped image.
+proxy-camera-axis.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
+proxy-camera-axis.name = cam-axis
+proxy-camera-axis.address = 10.10.10.200
+proxy-camera-axis.username = root
+proxy-camera-axis.password = gcdc
+proxy-camera-axis.width = 1280
+proxy-camera-axis.height = 720
+proxy-camera-axis.calibrationfile = /opt/opendlv.core.configuration/file.yml  # This file must be accessible from within the Docker container.
 
-
-proxy-camera-axis:0.debug = 0               # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera-axis:0.name = front-left
-proxy-camera-axis:0.address = 10.42.42.30
-proxy-camera-axis:0.username = root
-proxy-camera-axis:0.password = gcdc
-proxy-camera-axis:0.width = 1280
-proxy-camera-axis:0.height = 720
-proxy-camera-axis:0.calibrationfile = /opt/opendlv.core.configuration/file.yml  # This file must be accessible from within the Docker container.
-
-###############################################################################
-###############################################################################
-#
-# CONFIGURATION FOR TOOLS
-#
-
-
-core-tool-camera-projection.cameraname = front-left
+core-tool-camera-projection.cameraname = cam-axis
 core-tool-camera-projection.debug = 1
-
-core-tool-camera-replay.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
-core-tool-camera-replay.sourcename = front-left
-core-tool-camera-replay.filepath = ./highway.avi
-core-tool-camera-replay.width = 1080
-core-tool-camera-replay.height = 720

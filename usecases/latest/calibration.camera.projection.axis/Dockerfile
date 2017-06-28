@@ -16,4 +16,4 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 # Date: 2016-09-09
-FROM seresearch/opendlv-core-on-opendavinci-on-base-dev:latest
+FROM seresearch/opendlv-core-on-opendavinci-on-base:latest

@@ -43,54 +43,18 @@ services:
         user: odv
         network_mode: host
         ipc: host
-        command: "/opt/opendlv.core/bin/opendlv-core-tool-camera-projection --cid=${CID} --freq=20 --id=0"
-
-    # Micro-service for proxy-camera-axis0.
-    # proxy-camera-axis0:
-    #     build: .
-    #     depends_on:
-    #         - odsupercomponent
-    #     environment:
-    #         - DISPLAY=$DISPLAY
-    #     volumes:
-    #         - /tmp/.X11-unix:/tmp/.X11-unix
-    #     user: root
-    #     volumes:
-    #         - .:/opt/opendlv.core.configuration
-    #     network_mode: host
-    #     ipc: host
-    #     command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera-axis --cid=${CID} --freq=20 --id=0"
+        command: "/opt/opendlv.core/bin/opendlv-core-tool-camera-projection --cid=${CID} --freq=20"
 
     # Micro-service for proxy-camera-documentation
-    # proxy-camera:
-    #     build: .
-    #     group_add:
-    #         - video
-    #     depends_on:
-    #         - odsupercomponent
-    #     devices:
-    #         - "/dev/video1:/dev/video1"
-    #     user: odv
-    #     network_mode: host
-    #     ipc: host
-    #     command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID} --freq=20"
-
-    # Microservice for replaying video files
-    core-tool-camera-replay:
+    proxy-camera:
         build: .
-        working_dir: /opt/recordings/
+        group_add:
+            - video
         depends_on:
             - odsupercomponent
+        devices:
+            - "/dev/video1:/dev/video1"
         user: odv
-        environment:
-            - DISPLAY=$DISPLAY
-        volumes:
-            - /tmp/.X11-unix:/tmp/.X11-unix
-            - .:/opt/opendlv.core.configuration
-            - ~/recordings/:/opt/recordings/
         network_mode: host
         ipc: host
-        command: "/opt/opendlv.core/bin/opendlv-core-tool-camera-replay --cid=${CID} --freq=20"
-
-
-
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-camera --cid=${CID} --freq=20"
