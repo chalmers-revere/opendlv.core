@@ -79,7 +79,7 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 
 proxy-camera.camera.debug = 0       # 1 = show recording (requires X11), 0 = otherwise.
-proxy-camera.camera.name = cam-v2l
+proxy-camera.camera.name = cam-v4l
 proxy-camera.camera.type = OpenCV   # OpenCV or UEYE.
 proxy-camera.camera.id = 1          # Select here the proper ID for OpenCV.
 proxy-camera.camera.width = 640     # 752-UEYE, 640-OpenCV.
