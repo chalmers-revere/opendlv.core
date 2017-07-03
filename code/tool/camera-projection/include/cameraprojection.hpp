@@ -21,13 +21,13 @@
 #define CORE_TOOL_CAMERAPROJECTION_HPP_
 
 #include <memory>
+#include <string>
+#include <vector>
 #include <opendavinci/odcore/wrapper/Eigen.h>
 
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/data/Container.h>
 
-#include "opencv2/video/tracking.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
 namespace opendlv {
@@ -62,12 +62,15 @@ class CameraProjection
 
   odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
   void Calibrate();
-  void Config();
+  void Config(std::vector<double>);
   void Save();
   void Project();
   void ReadMatrix();
   void Warp();
 
+  cv::Mat m_image;
+  std::string m_inputStr;
+  std::string m_outputStr;
   double m_recHeight;
   double m_recWidth;
   double m_recPosX;
@@ -76,11 +79,11 @@ class CameraProjection
   Eigen::MatrixXd m_bMatrix;
   Eigen::MatrixXd m_projectionMatrix;
 
-  int m_point;
   std::string m_cameraName;
   std::string m_transformationMatrixFileName;
 
   bool m_initialized;
+  bool m_debug;
 
 };
 

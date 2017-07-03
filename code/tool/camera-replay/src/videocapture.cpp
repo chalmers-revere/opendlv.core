@@ -30,11 +30,11 @@ namespace core {
 namespace tool {
 
 
-VideoCapture::VideoCapture(const std::string &sourcename, const std::string &filename, const uint32_t &width, const uint32_t &height, const bool &debug)
+VideoCapture::VideoCapture(const std::string &sourcename, const std::string &filepath, const uint32_t &width, const uint32_t &height, const bool &debug)
   : m_sharedImage()
   , m_sharedMemory()
   , m_sourcename(sourcename)
-  , m_filename(filename)
+  , m_filename(filepath)
   , m_width(width)
   , m_height(height)
   , m_size(0)
@@ -54,14 +54,13 @@ VideoCapture::VideoCapture(const std::string &sourcename, const std::string &fil
   //Is the BPP really 3?, isn't it channels per pixels?
   m_sharedImage.setBytesPerPixel(BPP);
 
-  const std::string FILEPATH = "/opt/Videos/" + filename;
-  m_capture.reset(new cv::VideoCapture(FILEPATH));
+  m_capture.reset(new cv::VideoCapture(filepath));
   if (m_capture->isOpened()) {
     m_capture->set(CV_CAP_PROP_FRAME_WIDTH, width);
     m_capture->set(CV_CAP_PROP_FRAME_HEIGHT, height);
-    std::cout << "[tools-camerareplay] Successfully opened '"<< FILEPATH << "'." << std::endl;
+    std::cout << "[tools-camerareplay] Successfully opened '"<< filepath << "'." << std::endl;
   } else {
-    std::cerr << "[tools-camerareplay] Could not open file: '" << FILEPATH << "'" << std::endl;
+    std::cerr << "[tools-camerareplay] Could not open file: '" << filepath << "'" << std::endl;
   }
 }
 

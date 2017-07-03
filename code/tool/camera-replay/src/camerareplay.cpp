@@ -18,25 +18,15 @@
  */
 
 #include <ctype.h>
-// #include <fstream>
 #include <cstring>
 #include <iostream>
 #include <string>
 #include <sys/types.h>
 #include <sys/stat.h>
-// #include <vector>
 #include <unistd.h>
 
 
-// #include "opencv2/video/tracking.hpp"
-// #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/highgui/highgui.hpp>
-
-// #include "opendavinci/GeneratedHeaders_OpenDaVINCI.h"
-// #include "opendavinci/odcore/data/Container.h"
-// #include "opendavinci/odcore/base/KeyValueConfiguration.h"
-// #include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
-// #include "opendavinci/odcore/wrapper/SharedMemory.h"
 
 #include "camerareplay.hpp"
 
@@ -60,12 +50,12 @@ void CameraReplay::setUp()
 { 
   auto kv = getKeyValueConfiguration();
   const std::string SOURCENAME = kv.getValue<std::string>("core-tool-camera-replay.sourcename");
-  const std::string FILENAME = kv.getValue<std::string>("core-tool-camera-replay.filename");
+  const std::string FILEPATH = kv.getValue<std::string>("core-tool-camera-replay.filepath");
   const uint32_t WIDTH = kv.getValue< uint32_t >("core-tool-camera-replay.width");
   const uint32_t HEIGHT = kv.getValue< uint32_t >("core-tool-camera-replay.height");
   const bool DEBUG = kv.getValue< bool >("core-tool-camera-replay.debug");
 
-  m_videoCapture = std::unique_ptr<VideoCapture>(new VideoCapture(SOURCENAME, FILENAME, WIDTH, HEIGHT, DEBUG));
+  m_videoCapture = std::unique_ptr<VideoCapture>(new VideoCapture(SOURCENAME, FILEPATH, WIDTH, HEIGHT, DEBUG));
   if (m_videoCapture.get() == NULL) {
     std::cerr << "[" << getName() << "] No valid video file defined." << std::endl;
   }
