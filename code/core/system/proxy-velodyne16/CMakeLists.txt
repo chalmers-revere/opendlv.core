@@ -61,9 +61,9 @@ ADD_EXECUTABLE (${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/apps/${PROJECT_NAME
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} ${PROJECT_NAME}-static ${LIBRARIES}) 
 
 ###############################################################################
-# This custom command copies the "atwallshort.pcap" recording file and the Velodyne calibration file "db.xml" to where
+# This custom command copies the "sampleShort.pcap" recording file and the Velodyne calibration file "VLP-16.xml" to where
 # the test suites are generated (more correctly to the parent folder) so
-# that the test suite "velodyneTestSuite.h" can open it during
+# that the test suite "ProxyVelodyne16TestSuite.h" can open it during
 # exection.
 ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/sampleShort.pcap
                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleShort.pcap ${CMAKE_BINARY_DIR}
