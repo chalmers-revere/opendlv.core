@@ -87,7 +87,7 @@ void Velodyne32Decoder::readCalibrationFile(){
 
 void Velodyne32Decoder::index32sensorIDs() {
     //Distance values for each 32 sensors with the same azimuth are ordered based on vertical angle,
-    //from -30.67 to 10.67 degress, with alternating increment 1.33 and 1.34--sensor IDs: -30.67, -29.33, -28, -26.66, -25.33, -24, -22.67, -21.33, -20, -18.67, -17.33, -16, -14.67, -13.33, -12, -10.67, -9.33, -8, -6.66, -5.33, -4, -2.67, -1.33, 0, 1.33, 2.67, 4, 5.33, 6.67, 8, 9.33, 10.67
+    //from -30.67 to 10.67 degrees, with alternating increment 1.33 and 1.34--sensor IDs: -30.67, -29.33, -28, -26.66, -25.33, -24, -22.67, -21.33, -20, -18.67, -17.33, -16, -14.67, -13.33, -12, -10.67, -9.33, -8, -6.66, -5.33, -4, -2.67, -1.33, 0, 1.33, 2.67, 4, 5.33, 6.67, 8, 9.33, 10.67
     readCalibrationFile();
     float orderedVerticalAngle[32];
     for (uint8_t i = 0; i < 32; i++) {
@@ -140,8 +140,6 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_startID(0)
     , m_previousAzimuth(0.0)
     , m_currentAzimuth(0.0)
-    , m_nextAzimuth(0.0)
-    , m_deltaAzimuth(0.0)
     , m_distance(0.0)
     , m_velodyneSharedMemory(m)
     , m_segment(NULL)
@@ -151,8 +149,12 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_withSPC(true)
     , m_withCPC(withCPC)
     , m_startAzimuth(0.0)
-    , m_distanceStringStreamNoIntensity("")
-    , m_distanceStringStreamWithIntensity("")
+    , m_distanceStringStreamNoIntensityPart1("")
+    , m_distanceStringStreamNoIntensityPart2("")
+    , m_distanceStringStreamNoIntensityPart3("")
+    , m_distanceStringStreamWithIntensityPart1("")
+    , m_distanceStringStreamWithIntensityPart2("")
+    , m_distanceStringStreamWithIntensityPart3("")
     , m_isStartAzimuth(true) {
     //Initial setup of the shared point cloud (N.B. The size and width of the shared point cloud depends on the number of points of a frame, hence they are not set up in the constructor)
     m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
@@ -188,8 +190,6 @@ Velodyne32Decoder::Velodyne32Decoder(odcore::io::conference::ContainerConference
     , m_startID(0)
     , m_previousAzimuth(0.0)
     , m_currentAzimuth(0.0)
-    , m_nextAzimuth(0.0)
-    , m_deltaAzimuth(0.0)
     , m_distance(0.0)
     , m_velodyneSharedMemory()
     , m_segment(NULL)
@@ -199,8 +199,12 @@ Velodyne32Decoder::Velodyne32Decoder(odcore::io::conference::ContainerConference
     , m_withSPC(false)
     , m_withCPC(true)
     , m_startAzimuth(0.0)
-    , m_distanceStringStreamNoIntensity("")
-    , m_distanceStringStreamWithIntensity("")
+    , m_distanceStringStreamNoIntensityPart1("")
+    , m_distanceStringStreamNoIntensityPart2("")
+    , m_distanceStringStreamNoIntensityPart3("")
+    , m_distanceStringStreamWithIntensityPart1("")
+    , m_distanceStringStreamWithIntensityPart2("")
+    , m_distanceStringStreamWithIntensityPart3("")
     , m_isStartAzimuth(true) {
     
     index32sensorIDs();
@@ -213,9 +217,39 @@ Velodyne32Decoder::~Velodyne32Decoder() {
     }
 }
 
+void Velodyne32Decoder::sendCPC (bool noIntensity) { 
+    TimeStamp now;
+    if (noIntensity) {
+        CompactPointCloud cpc1(m_startAzimuth, m_previousAzimuth, 12, m_distanceStringStreamNoIntensityPart1.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
+        Container c1(cpc1);
+        c1.setSampleTimeStamp(now);
+        m_velodyneContainer.send(c1);
+        CompactPointCloud cpc2(m_startAzimuth, m_previousAzimuth, 11, m_distanceStringStreamNoIntensityPart2.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
+        Container c2(cpc2);
+        c2.setSampleTimeStamp(now);
+        m_velodyneContainer.send(c2);
+        CompactPointCloud cpc3(m_startAzimuth, m_previousAzimuth, 9, m_distanceStringStreamNoIntensityPart3.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
+        Container c3(cpc3);
+        c3.setSampleTimeStamp(now);
+        m_velodyneContainer.send(c3);
+    } else {
+        CompactPointCloud cpc4(m_startAzimuth, m_previousAzimuth, 12, m_distanceStringStreamWithIntensityPart1.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
+        Container c4(cpc4);
+        c4.setSampleTimeStamp(now);
+        m_velodyneContainer.send(c4);
+        CompactPointCloud cpc5(m_startAzimuth, m_previousAzimuth, 11, m_distanceStringStreamWithIntensityPart2.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
+        Container c5(cpc5);
+        c5.setSampleTimeStamp(now);
+        m_velodyneContainer.send(c5);
+        CompactPointCloud cpc6(m_startAzimuth, m_previousAzimuth, 9, m_distanceStringStreamWithIntensityPart3.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
+        Container c6(cpc6);
+        c6.setSampleTimeStamp(now);
+        m_velodyneContainer.send(c6);
+    }
+}
+
 //Update the shared or compact point cloud when a complete scan is completed.
 void Velodyne32Decoder::sendPointCloud() {  
-    TimeStamp now;
     //Send shared point cloud
     if (m_withSPC) {
         if (m_velodyneSharedMemory->isValid()) {
@@ -224,6 +258,7 @@ void Velodyne32Decoder::sendPointCloud() {
             //Set the size and width of the shared point cloud of the current frame
             m_spc.setSize(m_SIZE); // Size in raw bytes.
             m_spc.setWidth(m_pointIndexSPC); // Number of points.
+            TimeStamp now;
             Container c(m_spc);
             c.setSampleTimeStamp(now);
             m_velodyneContainer.send(c);     
@@ -234,30 +269,22 @@ void Velodyne32Decoder::sendPointCloud() {
     //Send compact point cloud (format: start azimuth, end azimuth, entries per azimuth, distances, number if bits for intensity, intensity placement, distance decoding)
     if (m_withCPC) {
         if (m_CPCIntensityOption == 0) {
-            CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
-            Container c(cpc);
-            c.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c);
+            sendCPC (true);
         } else if (m_CPCIntensityOption == 1) {
-            CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
-            Container c(cpc);
-            c.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c);
+            sendCPC (false);
         } else{
-            CompactPointCloud cpcNoIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding)); 
-            CompactPointCloud cpcWithIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));  
-            Container c1(cpcNoIntensity);
-            c1.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c1);
-            Container c2(cpcWithIntensity);
-            c2.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c2);
+             sendCPC (true);
+             sendCPC (false);
         }
         m_pointIndexCPC = 0;
         m_startAzimuth = m_currentAzimuth;
         m_isStartAzimuth = false;
-        m_distanceStringStreamNoIntensity.str("");
-        m_distanceStringStreamWithIntensity.str("");
+        m_distanceStringStreamNoIntensityPart1.str("");
+        m_distanceStringStreamNoIntensityPart2.str("");
+        m_distanceStringStreamNoIntensityPart3.str("");
+        m_distanceStringStreamWithIntensityPart1.str("");
+        m_distanceStringStreamWithIntensityPart2.str("");
+        m_distanceStringStreamWithIntensityPart3.str("");
     }
 }
 
@@ -334,10 +361,16 @@ void Velodyne32Decoder::nextString(const string &payload) {
                                 m_32SensorsNoIntensity[sensorID] = m_32SensorsNoIntensity[sensorID] / 5;  //Store distance with resolution 1cm instead
                             }
                             
-                            if (sensorID == 15) {
-                                for (uint8_t index = 0; index < 16; index++) {
+                            if (sensorID == 31) {
+                                for (uint8_t index = 0; index < 32; index++) {
                                     m_32SensorsNoIntensity[m_sensorOrderIndex[index]] = htons(m_32SensorsNoIntensity[m_sensorOrderIndex[index]]);
-                                    m_distanceStringStreamNoIntensity.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                    if (index ==0 || index % 3 == 1) {//Layer 0, 1, 4, 7..., i.e., in addition to Layer 0, every 3rd layer from Layer 1 and resulting in 12 layers
+                                        m_distanceStringStreamNoIntensityPart1.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                    } else if (index == 2 || index % 3 == 0) {//Layer 2, 3, 6, 9..., i.e., in addition to Layer 2, every 3rd layer from Layer 3 and resulting in 11 layers
+                                        m_distanceStringStreamNoIntensityPart2.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                    } else {//Layer 5, 8, 11..., i.e., every 3rd layer from Layer 5 and resulting in 9 layers
+                                        m_distanceStringStreamNoIntensityPart3.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                    }
                                 }
                             }
                             m_pointIndexCPC++;    
@@ -365,10 +398,16 @@ void Velodyne32Decoder::nextString(const string &payload) {
                                 m_32SensorsWithIntensity[sensorID] = distance + intensityLevel;//(16-n) bits for distance + n bits for intensity
                             }
 
-                            if (sensorID == 15) {
-                                for (uint8_t index = 0; index < 16; index++) {
+                            if (sensorID == 31) {
+                                for (uint8_t index = 0; index < 32; index++) {
                                     m_32SensorsWithIntensity[m_sensorOrderIndex[index]] = htons(m_32SensorsWithIntensity[m_sensorOrderIndex[index]]);
-                                    m_distanceStringStreamWithIntensity.write((char*)(&m_32SensorsWithIntensity[m_sensorOrderIndex[index]]), 2);
+                                    if (index ==0 || index % 3 == 1) {//Layer 0, 1, 4, 7..., i.e., in addition to Layer 0, every 3rd layer from Layer 1 and resulting in 12 layers
+                                        m_distanceStringStreamWithIntensityPart1.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                    } else if (index == 2 || index % 3 == 0) {//Layer 2, 3, 6, 9..., i.e., in addition to Layer 2, every 3rd layer from Layer 3 and resulting in 11 layers
+                                        m_distanceStringStreamWithIntensityPart2.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                    } else {//Layer 5, 8, 11..., i.e., every 3rd layer from Layer 5 and resulting in 9 layers
+                                        m_distanceStringStreamWithIntensityPart3.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                    }
                                 }
                             }
                             if (m_CPCIntensityOption == 1) {

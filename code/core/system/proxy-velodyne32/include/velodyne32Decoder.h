@@ -88,6 +88,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     void readCalibrationFile();
     void index32sensorIDs();
     void setupIntensityMaskCPC(uint8_t &, uint8_t &);
+    void sendCPC(bool);
     void sendPointCloud();
    private:
     const uint32_t m_MAX_POINT_SIZE = 70000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
@@ -106,24 +107,26 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     uint32_t m_startID;
     float m_previousAzimuth;
     float m_currentAzimuth;
-    float m_nextAzimuth;
-    float m_deltaAzimuth;
     float m_distance;
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for shared point cloud
     float *m_segment;  //temporary memory for transferring data of each frame to the shared memory
     odcore::io::conference::ContainerConference &m_velodyneContainer;
     odcore::data::SharedPointCloud m_spc; //shared point cloud
     float m_verticalAngle[32];           //Vertical angle of each sensor beam
-    string m_calibration;  //name of the calibration file for VLP-16
+    string m_calibration;  //name of the calibration file for HDL-32E
     const float toRadian = static_cast<float>(M_PI) / 180.0f;  //degree to radian
     bool m_withSPC;  //if SPC is expected
     bool m_withCPC;  //if CPC is expected
         
     //For compact point cloud:
     float m_startAzimuth;
-    const uint8_t m_ENTRIES_PER_AZIMUTH = 32;//For HDL-32E, there are 32 points per azimuth
-    std::stringstream m_distanceStringStreamNoIntensity; //The string stream with distance values for all points of one frame, excluding intensity
-    std::stringstream m_distanceStringStreamWithIntensity; //The string stream with distance values for all points of one frame, including intensity
+    const uint8_t m_ENTRIES_PER_AZIMUTH = 11;//For HDL-32E, there are 32 points per azimuth
+    std::stringstream m_distanceStringStreamNoIntensityPart1; //Layer 0, 1, 4, 7..., i.e., in addition to Layer 0, every 3rd layer from Layer 1 and resulting in 12 layers, without intensity
+    std::stringstream m_distanceStringStreamNoIntensityPart2; //Layer 2, 3, 6, 9..., i.e., in addition to Layer 2, every 3rd layer from Layer 3 and resulting in 11 layers, without intensity
+    std::stringstream m_distanceStringStreamNoIntensityPart3; //Layer 5, 8, 11..., i.e., every 3rd layer from Layer 5 and resulting in 9 layers, without intensity
+    std::stringstream m_distanceStringStreamWithIntensityPart1; //Layer 0, 1, 4, 7..., i.e., in addition to Layer 0, every 3rd layer from Layer 1 and resulting in 12 layers, with intensity
+    std::stringstream m_distanceStringStreamWithIntensityPart2; //Layer 2, 6, 9, 8..., i.e., in addition to Layer 2, every 3rd layer from Layer 3 and resulting in 11 layers, with intensity
+    std::stringstream m_distanceStringStreamWithIntensityPart3; //Layer 5, 8, 11..., i.e., every 3rd layer from Layer 5 and resulting in 9 layers, with intensity
     bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
     uint8_t m_sensorOrderIndex[32];//Specify the sensor ID order for each 32 points with increasing vertical angle for CPC and SPC
     uint16_t m_32SensorsNoIntensity[32];//Store the distance values of the current 32 sensors for CPC without intensity
