@@ -1,3 +1,4 @@
+0.10.2 - Lifting updates from the lower layer to this repository.
 0.10.1 - Lifting updates from lower layer to this repository.
 0.10.0 - Updated to OpenDaVINCI 4.14.0 to have new CANDataStructureGenerator
 0.9.7 - Lifting OpenDaVINCI 4.13.1 to OpenDLV.core
