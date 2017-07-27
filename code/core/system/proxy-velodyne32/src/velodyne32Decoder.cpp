@@ -402,11 +402,11 @@ void Velodyne32Decoder::nextString(const string &payload) {
                                 for (uint8_t index = 0; index < 32; index++) {
                                     m_32SensorsWithIntensity[m_sensorOrderIndex[index]] = htons(m_32SensorsWithIntensity[m_sensorOrderIndex[index]]);
                                     if (index ==0 || index % 3 == 1) {//Layer 0, 1, 4, 7..., i.e., in addition to Layer 0, every 3rd layer from Layer 1 and resulting in 12 layers
-                                        m_distanceStringStreamWithIntensityPart1.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                        m_distanceStringStreamWithIntensityPart1.write((char*)(&m_32SensorsWithIntensity[m_sensorOrderIndex[index]]),2);
                                     } else if (index == 2 || index % 3 == 0) {//Layer 2, 3, 6, 9..., i.e., in addition to Layer 2, every 3rd layer from Layer 3 and resulting in 11 layers
-                                        m_distanceStringStreamWithIntensityPart2.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                        m_distanceStringStreamWithIntensityPart2.write((char*)(&m_32SensorsWithIntensity[m_sensorOrderIndex[index]]),2);
                                     } else {//Layer 5, 8, 11..., i.e., every 3rd layer from Layer 5 and resulting in 9 layers
-                                        m_distanceStringStreamWithIntensityPart3.write((char*)(&m_32SensorsNoIntensity[m_sensorOrderIndex[index]]),2);
+                                        m_distanceStringStreamWithIntensityPart3.write((char*)(&m_32SensorsWithIntensity[m_sensorOrderIndex[index]]),2);
                                     }
                                 }
                             }
