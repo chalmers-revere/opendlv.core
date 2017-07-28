@@ -217,6 +217,7 @@ Velodyne32Decoder::~Velodyne32Decoder() {
     }
 }
 
+//Send 3 CPC containers for each complete scan, 12+11+9 layers' combination
 void Velodyne32Decoder::sendCPC (bool noIntensity) { 
     TimeStamp now;
     if (noIntensity) {
@@ -268,11 +269,11 @@ void Velodyne32Decoder::sendPointCloud() {
     }
     //Send compact point cloud (format: start azimuth, end azimuth, entries per azimuth, distances, number if bits for intensity, intensity placement, distance decoding)
     if (m_withCPC) {
-        if (m_CPCIntensityOption == 0) {
+        if (m_CPCIntensityOption == 0) {//No intensity
             sendCPC (true);
-        } else if (m_CPCIntensityOption == 1) {
+        } else if (m_CPCIntensityOption == 1) {//With intensity
             sendCPC (false);
-        } else{
+        } else{//Send both CPCs with and without intensity
              sendCPC (true);
              sendCPC (false);
         }

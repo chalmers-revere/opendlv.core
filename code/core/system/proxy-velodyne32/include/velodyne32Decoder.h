@@ -124,9 +124,9 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     std::stringstream m_distanceStringStreamNoIntensityPart1; //Layer 0, 1, 4, 7..., i.e., in addition to Layer 0, every 3rd layer from Layer 1 and resulting in 12 layers, without intensity
     std::stringstream m_distanceStringStreamNoIntensityPart2; //Layer 2, 3, 6, 9..., i.e., in addition to Layer 2, every 3rd layer from Layer 3 and resulting in 11 layers, without intensity
     std::stringstream m_distanceStringStreamNoIntensityPart3; //Layer 5, 8, 11..., i.e., every 3rd layer from Layer 5 and resulting in 9 layers, without intensity
-    std::stringstream m_distanceStringStreamWithIntensityPart1; //Layer 0, 1, 4, 7..., i.e., in addition to Layer 0, every 3rd layer from Layer 1 and resulting in 12 layers, with intensity
-    std::stringstream m_distanceStringStreamWithIntensityPart2; //Layer 2, 6, 9, 8..., i.e., in addition to Layer 2, every 3rd layer from Layer 3 and resulting in 11 layers, with intensity
-    std::stringstream m_distanceStringStreamWithIntensityPart3; //Layer 5, 8, 11..., i.e., every 3rd layer from Layer 5 and resulting in 9 layers, with intensity
+    std::stringstream m_distanceStringStreamWithIntensityPart1; //Similar to m_distanceStringStreamNoIntensityPart1, with intensity
+    std::stringstream m_distanceStringStreamWithIntensityPart2; //Similar to m_distanceStringStreamNoIntensityPart2, with intensity
+    std::stringstream m_distanceStringStreamWithIntensityPart3; //Similar to m_distanceStringStreamNoIntensityPart3, with intensity
     bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
     uint8_t m_sensorOrderIndex[32];//Specify the sensor ID order for each 32 points with increasing vertical angle for CPC and SPC
     uint16_t m_32SensorsNoIntensity[32];//Store the distance values of the current 32 sensors for CPC without intensity
