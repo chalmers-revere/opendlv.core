@@ -54,7 +54,7 @@ odcore::io::conference::ContainerConference &c, const string &s)
     , m_distance(0.0)
     , m_velodyneSharedMemory(m)
     , m_segment(NULL)
-    , m_velodyneContainer(c)
+    , m_conference(c)
     , m_spc()
     , m_calibration(s) {
     //Initial setup of the shared point cloud (N.B. The size and width of the shared point cloud depends on the number of points of a frame, hence they are not set up in the constructor)
@@ -162,7 +162,7 @@ void Velodyne64Decoder::sendSharedPointCloud(const float &oldAzimuth, const floa
             m_spc.setSize(m_SIZE); // Size in raw bytes.
             m_spc.setWidth(m_pointIndex);                                                      // Number of points.
             Container c(m_spc);
-            m_velodyneContainer.send(c);
+            m_conference.send(c);
         }
         m_pointIndex = 0;
         m_startID = 0;

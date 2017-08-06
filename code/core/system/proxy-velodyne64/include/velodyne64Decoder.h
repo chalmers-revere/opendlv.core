@@ -77,7 +77,7 @@ class Velodyne64Decoder : public odcore::io::StringListener {
     float m_distance;
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for the shared point cloud
     float *m_segment;                                       //temporary memory for transferring data of each frame to the shared memory
-    odcore::io::conference::ContainerConference &m_velodyneContainer;
+    odcore::io::conference::ContainerConference &m_conference;
     odcore::data::SharedPointCloud m_spc;
     float m_rotCorrection[64];
     float m_vertCorrection[64];
