@@ -110,7 +110,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     float m_distance;
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for shared point cloud
     float *m_segment;  //temporary memory for transferring data of each frame to the shared memory
-    odcore::io::conference::ContainerConference &m_velodyneContainer;
+    odcore::io::conference::ContainerConference &m_conference;
     odcore::data::SharedPointCloud m_spc; //shared point cloud
     float m_verticalAngle[32];           //Vertical angle of each sensor beam
     string m_calibration;  //name of the calibration file for HDL-32E

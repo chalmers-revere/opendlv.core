@@ -143,7 +143,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_distance(0.0)
     , m_velodyneSharedMemory(m)
     , m_segment(NULL)
-    , m_velodyneContainer(c)
+    , m_conference(c)
     , m_spc()
     , m_calibration(s)
     , m_withSPC(true)
@@ -193,7 +193,7 @@ Velodyne32Decoder::Velodyne32Decoder(odcore::io::conference::ContainerConference
     , m_distance(0.0)
     , m_velodyneSharedMemory()
     , m_segment(NULL)
-    , m_velodyneContainer(c)
+    , m_conference(c)
     , m_spc()
     , m_calibration(s)
     , m_withSPC(false)
@@ -224,28 +224,28 @@ void Velodyne32Decoder::sendCPC (bool noIntensity) {
         CompactPointCloud cpc1(m_startAzimuth, m_previousAzimuth, 12, m_distanceStringStreamNoIntensityPart1.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
         Container c1(cpc1);
         c1.setSampleTimeStamp(now);
-        m_velodyneContainer.send(c1);
+        m_conference.send(c1);
         CompactPointCloud cpc2(m_startAzimuth, m_previousAzimuth, 11, m_distanceStringStreamNoIntensityPart2.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
         Container c2(cpc2);
         c2.setSampleTimeStamp(now);
-        m_velodyneContainer.send(c2);
+        m_conference.send(c2);
         CompactPointCloud cpc3(m_startAzimuth, m_previousAzimuth, 9, m_distanceStringStreamNoIntensityPart3.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
         Container c3(cpc3);
         c3.setSampleTimeStamp(now);
-        m_velodyneContainer.send(c3);
+        m_conference.send(c3);
     } else {
         CompactPointCloud cpc4(m_startAzimuth, m_previousAzimuth, 12, m_distanceStringStreamWithIntensityPart1.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
         Container c4(cpc4);
         c4.setSampleTimeStamp(now);
-        m_velodyneContainer.send(c4);
+        m_conference.send(c4);
         CompactPointCloud cpc5(m_startAzimuth, m_previousAzimuth, 11, m_distanceStringStreamWithIntensityPart2.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
         Container c5(cpc5);
         c5.setSampleTimeStamp(now);
-        m_velodyneContainer.send(c5);
+        m_conference.send(c5);
         CompactPointCloud cpc6(m_startAzimuth, m_previousAzimuth, 9, m_distanceStringStreamWithIntensityPart3.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
         Container c6(cpc6);
         c6.setSampleTimeStamp(now);
-        m_velodyneContainer.send(c6);
+        m_conference.send(c6);
     }
 }
 
@@ -262,7 +262,7 @@ void Velodyne32Decoder::sendPointCloud() {
             TimeStamp now;
             Container c(m_spc);
             c.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c);     
+            m_conference.send(c);     
         }
         m_pointIndexSPC = 0;
         m_startID = 0;
