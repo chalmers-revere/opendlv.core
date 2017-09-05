@@ -1,0 +1,99 @@
+# docker-compose.yml - Composition of micro-services to run OpenDLV software.
+# Copyright (C) 2017 Christian Berger
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+# Date: 2017-09-05
+
+version: '2'
+
+services:
+    # First, create two named pipes.
+    # make-pipes:
+    #     build: .
+    #     cap_add:
+    #         - MKNOD
+    #     volumes:
+    #         - .:/opt/io:shared
+    #     command: "/bin/bash -c '[ ! -f /opt/io/odfilter-odredirector ] && mknod -m 0666 /opt/io/odfilter-odredirector p; [ ! -f /opt/io/odredirector-odfilter ] && mknod -m 0666 /opt/io/odredirector-odfilter p'"
+
+    # odsupercomponent-111 hosts the PS3 controller and an odredirector to dump data to STDOUT.
+    odsupercomponent:
+        build: .
+        network_mode: "host"
+        # depends_on:
+        #     - make-pipes
+        volumes:
+        - .:/opt/opendlv.data
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
+
+    # micro service for PS3 controller (change /dev/input/js2 to your PS3 controller).
+    ps3controller:
+        build: .
+        network_mode: "host"
+        devices:
+            - /dev/input/js0:/dev/input/js0
+        depends_on:
+            - odsupercomponent-111
+        command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=${CID} --freq=100"
+
+    ############################################################################
+    # odsupercomponent-111 hosts odlivefeed (started manually) and an odredirector to read data from STDIN.
+    # odsupercomponent-114:
+    #     build: .
+    #     network_mode: "host"
+    #     depends_on:
+    #         - odsupercomponent-111
+    #     volumes:
+    #         - .:/opt/opendlv.data
+    #     command: "/opt/od4/bin/odsupercomponent --cid=114 --verbose=1 --configuration=/opt/opendlv.data/configuration"
+
+    # odredirector in 114 reads from STDIN (from a named pipe in our case) to restore the Containers in CID 114.
+    # odredirector-114:
+    #     build: .
+    #     network_mode: "host"
+    #     stdin_open: true
+    #     depends_on:
+    #         - odsupercomponent-114  # The dependency is declared in reverse order; first, we need the received data sink (odredirector-114)...
+    #     volumes:
+    #         - ./odfilter-odredirector:/opt/io/odfilter-odredirector
+    #     command: "/bin/sh -c '/opt/od4/bin/odredirector --cid=114 --fromstdin=1 0< /opt/io/odfilter-odredirector'"
+
+    # # odfilter reads from STDIN (from a named pipe in our case) and filters selected containers to STDOUT (another named pipe in our case).
+    # odfilter:
+    #     build: .
+    #     network_mode: "host"
+    #     stdin_open: true
+    #     depends_on:
+    #         - odredirector-114      # ...then, the odfilter in between, ...
+    #     volumes:
+    #         - ./odredirector-odfilter:/opt/io/odredirector-odfilter
+    #         - ./odfilter-odredirector:/opt/io/odfilter-odredirector
+    #     command: "/bin/sh -c '/opt/od4/bin/odfilter --keep=160 0< /opt/io/odredirector-odfilter 1> /opt/io/odfilter-odredirector'"
+
+    # odredirector in 111 dumps containers from CID 111 to STDOUT (to a named pipe in our case).
+    # odredirector-111:
+    #     build: .
+    #     network_mode: "host"
+    #     stdin_open: true
+    #     depends_on:
+    #         - odfilter              # ...followed by the data source.
+    #     volumes:
+    #         - ./odredirector-odfilter:/opt/io/odredirector-odfilter
+    #     command: "/bin/sh -c '/opt/od4/bin/odredirector --cid=111 --tostdout=1 1> /opt/io/odredirector-odfilter'"
+
+# To watch the data, start odlivefeed:
+# docker run --rm -ti --net=host seresearch/opendlv-rhino-on-opendlv-on-opendlv-core-on-opendavinci-on-base:latest /opt/od4/bin/odlivefeed --cid=114
+
