@@ -34,10 +34,10 @@ services:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID}"
 
-    proxy-v2xin:
+    proxy-v2xout:
         build: .
         network_mode: "host"
         depends_on:
             - odsupercomponent
-        commands: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xin --cid=${CID}"
+        commands: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xout --cid=${CID}"
 
