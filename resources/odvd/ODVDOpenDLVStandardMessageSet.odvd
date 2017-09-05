@@ -16,6 +16,53 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+
+// senderStamp == frameId
+message opendlv.coord.Frame [id = 201] {
+  double x [id = 1];
+  double y [id = 2];
+  double z [id = 3];
+  double roll [id = 4];
+  double pitch [id = 5];
+  double yaw [id = 6];
+}
+
+// senderStamp == frameId
+message opendlv.coord.Point [id = 202] {
+  double x [id = 1];
+  double y [id = 2];
+  double z [id = 3];
+}
+
+// senderStamp == frameId
+message opendlv.coord.Direction [id = 203] {
+  double azimuth [id = 1];
+  double altitude [id = 2];
+}
+
+// senderStamp == frameId
+message opendlv.coord.SphericalDirection [id = 204] {
+  double azimuth [id = 1];
+  double altitude [id = 2];
+}
+
+// senderStamp == frameId
+message opendlv.coord.KinematicState [id = 205] {
+  double vx [id = 1];
+  double vy [id = 2];
+  double vz [id = 3];
+  double rollRate [id = 4];
+  double pitchRate [id = 5];
+  double yawRate [id = 6];
+}
+
+// senderStamp == frameId
+message opendlv.coord.CubeShape [id = 206] {
+  double length [id = 1];
+  double width [id = 2];
+  double height [id = 3];
+}
+
 message opendlv.proxy.GroundSpeedReading [id = 215] {
   double groundSpeed [id = 1];
 }
