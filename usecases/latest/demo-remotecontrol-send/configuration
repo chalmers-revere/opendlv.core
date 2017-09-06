@@ -18,8 +18,10 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 system-ps3controller.ps3controllerdevicenode = /dev/input/js0   # Gamepad.
 
 system-ps3controller.acceleration.min = 0
-system-ps3controller.acceleration.max = 50
+system-ps3controller.acceleration.max = 3
 system-ps3controller.deceleration.min = 0
 system-ps3controller.deceleration.max = -10
-system-ps3controller.steering.min = -10
-system-ps3controller.steering.max = 10
+system-ps3controller.steering.min = -6.5
+system-ps3controller.steering.max = 6.5
+
+
