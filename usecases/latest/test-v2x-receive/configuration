@@ -15,16 +15,7 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 # NEXT, THE CONFIGURATION FOR OPENDLV SOFTWARE FOLLOWS. 
 #
 
-proxy-v2xout.address = 10.10.10.75
-proxy-v2xout.port = 4000
-proxy-v2xout.sender-id = 111
-proxy-v2xout.pinging = 1
-proxy-v2xout.filter-message-ids = 160
-
-system-ps3controller.ps3controllerdevicenode = /dev/input/js0   # Gamepad.
-system-ps3controller.acceleration.min = 0
-system-ps3controller.acceleration.max = 50
-system-ps3controller.deceleration.min = 0
-system-ps3controller.deceleration.max = -10
-system-ps3controller.steering.min = -10
-system-ps3controller.steering.max = 10
+proxy-v2xin.port = 4001
+proxy-v2xin.sender-id = 112
+proxy-v2xin.filter-sender-ids = 111
+proxy-v2xin.filter-message-ids = 160

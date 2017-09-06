@@ -27,19 +27,9 @@ services:
         - .:/opt/opendlv.data
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
 
-    v2xout:
+    v2xin:
        build: .
        network_mode: "host"
        depends_on:
            - odsupercomponent
-       command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xout --cid=${CID} --freq=1 --verbose=1"
-
-    ps3controller:
-        build: .
-        network_mode: "host"
-        devices:
-            - /dev/input/js0:/dev/input/js0
-        depends_on:
-            - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=${CID} --freq=100"
-
+       command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xin --cid=${CID} --verbose=1"
