@@ -15,13 +15,14 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 # NEXT, THE CONFIGURATION FOR OPENDLV SOFTWARE FOLLOWS. 
 #
 
-proxy-trimble.ip = 10.42.42.112    # Change to Trimble IP.
+proxy-trimble.ip = 10.10.10.206    # Change to Trimble IP.
 proxy-trimble.port = 9999          # Change to Trimble TCP port.
 proxy-trimble.debug = 0
 
-proxy-v2xout.addess = 127.0.0.1
+proxy-v2xout.address = 10.10.10.75
 proxy-v2xout.port = 4000
 proxy-v2xout.sender-id = 115
-proxy-v2xout.filter-message-ids = 19 #wgs
+proxy-v2xout.pinging = 1
+proxy-v2xout.filter-message-ids = 19
 
 
