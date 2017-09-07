@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 Ola Benderius
+ * Copyright (C) 2017 Ola Benderius, Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,9 +19,11 @@
 #ifndef PROXY_PROXYV2XIN_H
 #define PROXY_PROXYV2XIN_H
 
+#include <linux/if_ether.h>
+
 #include <memory>
 
-#include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/io/udp/UDPReceiver.h>
 
@@ -32,22 +34,38 @@ namespace core {
 namespace system {
 namespace proxy {
 
-class ProxyV2xIn : public odcore::base::module::DataTriggeredConferenceClientModule {
+class ProxyV2xIn : public odcore::base::module::TimeTriggeredConferenceClientModule {
   public:
     ProxyV2xIn(int32_t const &, char **);
     ProxyV2xIn(ProxyV2xIn const &) = delete;
     ProxyV2xIn &operator=(ProxyV2xIn const &) = delete;
 
     virtual ~ProxyV2xIn();
-    virtual void nextContainer(odcore::data::Container &);
+    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+
+  private:
+    enum ETHERTYPES {
+        GEO_NETWORKING = 0x8947
+    };
+
+    union rawEthernetFrame {
+        struct {
+            struct ethhdr header;
+            unsigned char data[ETH_DATA_LEN];
+        } field;
+        unsigned char rawBuffer[ETH_FRAME_LEN];
+    };
 
   private:
     void setUp();
     void tearDown();
 
   private:
-    std::shared_ptr<odcore::io::udp::UDPReceiver> m_v2xIn;
     std::unique_ptr<V2xInStringDecoder> m_v2xInStringDecoder;
+
+    int m_interfaceIndex;
+    unsigned char m_sourceAddress[ETH_ALEN];
+    int m_rawEthernetSocket;
 };
 
 }
