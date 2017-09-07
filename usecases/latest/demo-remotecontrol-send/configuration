@@ -26,3 +26,6 @@ system-ps3controller.deceleration.min = 0
 system-ps3controller.deceleration.max = -10
 system-ps3controller.steering.min = -6.5
 system-ps3controller.steering.max = 6.5
+
+
+odcockpit.directoriesForSharedLibaries = /opt/opendlv.core

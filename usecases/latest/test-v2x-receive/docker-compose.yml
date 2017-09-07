@@ -30,6 +30,7 @@ services:
     v2xin:
        build: .
        network_mode: "host"
+       privileged: true 
        depends_on:
            - odsupercomponent
        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xin --cid=${CID} --verbose=1"

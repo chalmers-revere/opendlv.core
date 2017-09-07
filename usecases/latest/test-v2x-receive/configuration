@@ -15,10 +15,10 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 # NEXT, THE CONFIGURATION FOR OPENDLV SOFTWARE FOLLOWS. 
 #
 
-proxy-v2xin.port = 4001
+proxy-v2xin.adapter = wlp4s0
 proxy-v2xin.sender-id = 112
 proxy-v2xin.filter-sender-ids = 111,115
 proxy-v2xin.filter-message-ids = 160,19
 
 
-odcockpit.directoriesForSharedLibaries = /opt/opendlv
+odcockpit.directoriesForSharedLibaries = /opt/opendlv.core
