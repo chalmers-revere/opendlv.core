@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 Ola Benderius
+ * Copyright (C) 2017 Ola Benderius, Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,18 +19,19 @@
 #ifndef PROXY_PROXYV2XOUT_H
 #define PROXY_PROXYV2XOUT_H
 
+#include <linux/if_ether.h>
+
 #include <memory>
 
-#include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/data/Container.h>
-#include <opendavinci/odcore/io/udp/UDPSender.h>
 
 namespace opendlv {
 namespace core {
 namespace system {
 namespace proxy {
 
-class ProxyV2xOut : public odcore::base::module::TimeTriggeredConferenceClientModule {
+class ProxyV2xOut : public odcore::base::module::DataTriggeredConferenceClientModule {
   public:
     ProxyV2xOut(int32_t const &, char **);
     ProxyV2xOut(ProxyV2xOut const &) = delete;
@@ -38,7 +39,6 @@ class ProxyV2xOut : public odcore::base::module::TimeTriggeredConferenceClientMo
     virtual ~ProxyV2xOut();
 
     virtual void nextContainer(odcore::data::Container &);
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
   private:
     void setUp();
@@ -46,10 +46,26 @@ class ProxyV2xOut : public odcore::base::module::TimeTriggeredConferenceClientMo
     std::string getBinaryString(uint32_t) const;
 
   private:
-    std::shared_ptr<odcore::io::udp::UDPSender> m_v2xOut;
+    enum ETHERTYPES {
+        GEO_NETWORKING = 0x8947
+    };
+
+    union rawEthernetFrame {
+        struct {
+            struct ethhdr header;
+            unsigned char data[ETH_DATA_LEN];
+        } field;
+        unsigned char rawBuffer[ETH_FRAME_LEN];
+    };
+
+  private:
     std::vector<uint32_t> m_filterMessageIds;
     uint32_t m_senderId;
-    bool m_isPinging;
+
+    int m_interfaceIndex;
+    unsigned char m_sourceAddress[ETH_ALEN];
+
+    int m_rawEthernetSocket;
 };
 
 }

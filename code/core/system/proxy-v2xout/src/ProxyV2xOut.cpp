@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 Ola Benderius
+ * Copyright (C) 2017 Ola Benderius, Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,13 +16,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <linux/if_packet.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #include <cstring>
 #include <iostream>
 #include <sstream>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
-#include <opendavinci/odcore/io/udp/UDPFactory.h>
 #include <opendavinci/odcore/strings/StringToolbox.h>
 
 #include "ProxyV2xOut.h"
@@ -33,11 +37,12 @@ namespace system {
 namespace proxy {
 
 ProxyV2xOut::ProxyV2xOut(const int &argc, char **argv)
-  : TimeTriggeredConferenceClientModule(argc, argv, "proxy-v2xout")
-    , m_v2xOut()
+  : DataTriggeredConferenceClientModule(argc, argv, "proxy-v2xout")
     , m_filterMessageIds()
     , m_senderId()
-    , m_isPinging()
+    , m_interfaceIndex(0)
+    , m_sourceAddress()
+    , m_rawEthernetSocket(-1)
 {
 }
 
@@ -45,20 +50,6 @@ ProxyV2xOut::~ProxyV2xOut()
 {
 }
 
-odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyV2xOut::body()
-{
-  while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
-      == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
-
-    if (m_isPinging) {
-      std::string data = getBinaryString(m_senderId);
-      m_v2xOut->send(data);
-    }
-  }
-
-  return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
-}
-    
 std::string ProxyV2xOut::getBinaryString(uint32_t a_i) const
 {
   std::vector<unsigned char> bytes(4);
@@ -76,9 +67,8 @@ std::string ProxyV2xOut::getBinaryString(uint32_t a_i) const
 void ProxyV2xOut::setUp()
 {
   std::string const address = getKeyValueConfiguration().getValue<std::string>("proxy-v2xout.address");
-  uint32_t const port = getKeyValueConfiguration().getValue<uint32_t>("proxy-v2xout.port");
   m_senderId = getKeyValueConfiguration().getValue<uint32_t>("proxy-v2xout.sender-id");
-  m_isPinging = getKeyValueConfiguration().getValue<bool>("proxy-v2xout.pinging");
+  std::string const networkAdapterName = getKeyValueConfiguration().getValue<std::string>("proxy-v2xout.adapter");
 
   std::string const filterMessageIdsString = 
     getKeyValueConfiguration().getValue<std::string>(
@@ -90,14 +80,40 @@ void ProxyV2xOut::setUp()
     m_filterMessageIds.push_back(filterMessageId);
   }
 
-  try {
-    m_v2xOut = std::shared_ptr<odcore::io::udp::UDPSender>(
-        odcore::io::udp::UDPFactory::createUDPSender(address, port));
-  } catch (std::string &exception) {
-    std::stringstream info;
-    info << "[" << getName() << "] Failed to create UDPSender: " << exception 
-      << std::endl;
-    toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
+  // Creating the raw socket to send data.
+  {
+
+    if (!((m_rawEthernetSocket = ::socket(AF_PACKET, SOCK_RAW, htons(ProxyV2xOut::GEO_NETWORKING))) < 0)) {
+        struct ifreq bufferInterface;
+        ::memset(&bufferInterface, 0, sizeof(bufferInterface));
+
+        ::strncpy(bufferInterface.ifr_name, networkAdapterName.c_str(), IFNAMSIZ);
+        if (!(::ioctl(m_rawEthernetSocket, SIOCGIFINDEX, &bufferInterface) < 0)) {
+            m_interfaceIndex = bufferInterface.ifr_ifindex;
+
+            if (!(::ioctl(m_rawEthernetSocket, SIOCGIFHWADDR, &bufferInterface) < 0)) {
+                ::memcpy((void*)m_sourceAddress, (void*)(bufferInterface.ifr_hwaddr.sa_data), ETH_ALEN);
+            }
+            else {
+                std::stringstream warning;
+                warning << "[" << getName() << "] Could not get interface address: " << ::strerror(errno) << std::endl;
+                toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
+                ::close(m_rawEthernetSocket);
+            }
+        }
+        else {
+            std::stringstream warning;
+            warning << "[" << getName() << "] Could not get interface index: " << ::strerror(errno) << std::endl;
+            toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
+            ::close(m_rawEthernetSocket);
+        }
+    }
+    else {
+        std::stringstream warning;
+        warning << "[" << getName() << "] Failed to create raw socket: " << ::strerror(errno) << std::endl;
+        toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
+    }
+
   }
 }
 
@@ -120,11 +136,33 @@ void ProxyV2xOut::nextContainer(odcore::data::Container &a_container)
   std::string messageString = stringStream.str();
 
   std::string data = senderIdString + messageString;
-  m_v2xOut->send(data);
+  if (!(m_rawEthernetSocket < 0)) {
+    unsigned char ethernetBroadcast[ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
-  if (isVerbose()) {
-    std::cout << "Broadcasting message " << messageId << " with sender id " 
-      << m_senderId << std::endl;
+    union ProxyV2xOut::rawEthernetFrame frameToSend;
+    ::memcpy(frameToSend.field.header.h_dest, ethernetBroadcast, ETH_ALEN);
+    ::memcpy(frameToSend.field.header.h_source, m_sourceAddress, ETH_ALEN);
+    frameToSend.field.header.h_proto = htons(ProxyV2xOut::GEO_NETWORKING);
+    ::memcpy(frameToSend.field.data, data.c_str(), data.length());
+
+    struct sockaddr_ll sendToDetails;
+    ::memset((void*)&sendToDetails, 0, sizeof(sendToDetails));
+    sendToDetails.sll_family = PF_PACKET;
+    sendToDetails.sll_halen = ETH_ALEN;
+    sendToDetails.sll_ifindex = m_interfaceIndex;
+    ::memcpy((void*)(sendToDetails.sll_addr), (void*)ethernetBroadcast, ETH_ALEN);
+
+    const unsigned int frameLength = data.length() + ETH_HLEN;
+    if (!(::sendto(m_rawEthernetSocket, frameToSend.rawBuffer, frameLength, 0, (struct sockaddr*)&sendToDetails, sizeof(sendToDetails)) > 0)) {
+        std::stringstream warning;
+        warning << "[" << getName() << "] Error sending raw frame: " << ::strerror(errno) << std::endl;
+        toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
+    }
+    else {
+        if (isVerbose()) {
+            std::cout << "Broadcasting message " << messageId << " with sender id " << m_senderId << std::endl;
+        }
+    }
   }
 }
 
