@@ -64,7 +64,6 @@ class ProxyV2xOut : public odcore::base::module::DataTriggeredConferenceClientMo
 
     int m_interfaceIndex;
     unsigned char m_sourceAddress[ETH_ALEN];
-
     int m_rawEthernetSocket;
 };
 

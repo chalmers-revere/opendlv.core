@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 Ola Benderius
+ * Copyright (C) 2017 Ola Benderius, Christian Berger
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,13 +16,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <linux/if_packet.h>
+#include <sys/ioctl.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+
 #include <stdint.h>
 
+#include <cstring>
 #include <iostream>
 #include <sstream>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
-#include <opendavinci/odcore/io/udp/UDPFactory.h>
 #include <opendavinci/odcore/strings/StringToolbox.h>
 
 #include "ProxyV2xIn.h"
@@ -33,9 +40,11 @@ namespace system {
 namespace proxy {
 
 ProxyV2xIn::ProxyV2xIn(const int &argc, char **argv)
-  : DataTriggeredConferenceClientModule(argc, argv, "proxy-v2xin")
-    , m_v2xIn()
+  : TimeTriggeredConferenceClientModule(argc, argv, "proxy-v2xin")
     , m_v2xInStringDecoder()
+    , m_interfaceIndex(0)
+    , m_sourceAddress()
+    , m_rawEthernetSocket(-1)
 {
 }
 
@@ -45,8 +54,7 @@ ProxyV2xIn::~ProxyV2xIn()
 
 void ProxyV2xIn::setUp()
 {
-  //std::string const v2xInAddress = getKeyValueConfiguration().getValue<std::string>("proxy-v2xin.address");
-  uint32_t const v2xInPort = getKeyValueConfiguration().getValue<uint32_t>("proxy-v2xin.port");
+  std::string const networkAdapterName = getKeyValueConfiguration().getValue<std::string>("proxy-v2xin.adapter");
 
   std::vector<uint32_t> filterSenderIds;
   std::string const filterSenderIdsString = 
@@ -74,35 +82,94 @@ void ProxyV2xIn::setUp()
       new V2xInStringDecoder(getConference(), filterSenderIds, 
         filterMessageIds, isVerbose()));
 
-  try {
-    m_v2xIn = std::shared_ptr<odcore::io::udp::UDPReceiver>(
-        odcore::io::udp::UDPFactory::createUDPReceiver("0.0.0.0", v2xInPort));
+  // Creating the raw socket to receive data.
+  {
 
-    m_v2xIn->setStringListener(m_v2xInStringDecoder.get());
-    m_v2xIn->start();
+    if (!((m_rawEthernetSocket = ::socket(AF_PACKET, SOCK_RAW, htons(ProxyV2xIn::GEO_NETWORKING))) < 0)) {
+        struct ifreq bufferInterface;
+        ::memset(&bufferInterface, 0, sizeof(bufferInterface));
 
-    if (isVerbose()) {
-      std::cout << "Listening on port: " << v2xInPort << std::endl;
+        ::strncpy(bufferInterface.ifr_name, networkAdapterName.c_str(), IFNAMSIZ);
+        if (!(::ioctl(m_rawEthernetSocket, SIOCGIFINDEX, &bufferInterface) < 0)) {
+            m_interfaceIndex = bufferInterface.ifr_ifindex;
+
+            if (!(::ioctl(m_rawEthernetSocket, SIOCGIFHWADDR, &bufferInterface) < 0)) {
+                ::memcpy((void*)m_sourceAddress, (void*)(bufferInterface.ifr_hwaddr.sa_data), ETH_ALEN);
+
+                struct sockaddr_ll socketDetails;
+                ::memset((void*)&socketDetails, 0, sizeof(socketDetails));
+                socketDetails.sll_family = AF_PACKET;
+                socketDetails.sll_ifindex = m_interfaceIndex;
+                socketDetails.sll_protocol = htons(ProxyV2xIn::GEO_NETWORKING);
+                if(::bind(m_rawEthernetSocket, (struct sockaddr*)&socketDetails, sizeof (socketDetails)) == -1) {
+                    std::stringstream warning;
+                    warning << "[" << getName() << "] Could not bind socket: " << ::strerror(errno) << std::endl;
+                    toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
+                    ::close(m_rawEthernetSocket);
+                    m_rawEthernetSocket = -1;
+                }
+            }
+            else {
+                std::stringstream warning;
+                warning << "[" << getName() << "] Could not get interface address: " << ::strerror(errno) << std::endl;
+                toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
+                ::close(m_rawEthernetSocket);
+                m_rawEthernetSocket = -1;
+            }
+        }
+        else {
+            std::stringstream warning;
+            warning << "[" << getName() << "] Could not get interface index: " << ::strerror(errno) << std::endl;
+            toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
+            ::close(m_rawEthernetSocket);
+            m_rawEthernetSocket = -1;
+        }
     }
-  } catch (std::string &exception) {
-    std::stringstream info;
-    info << "[" << getName() << "] Could not connect to V2xIn: " << exception 
-      << std::endl;
-    toLogger(odcore::data::LogMessage::LogLevel::INFO, info.str());
+    else {
+        std::stringstream warning;
+        warning << "[" << getName() << "] Failed to create raw socket: " << ::strerror(errno) << std::endl;
+        toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
+        m_rawEthernetSocket = -1;
+    }
   }
 }
 
 void ProxyV2xIn::tearDown()
-{
-  if (m_v2xIn.get() != nullptr) {
-    m_v2xIn->stop();
-    m_v2xIn->setStringListener(nullptr);
+{}
+
+odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyV2xIn::body() {
+  if (m_rawEthernetSocket > -1) {
+    fd_set rfds;
+    struct timeval timeout;
+
+    const uint16_t BUFFER_MAX = 4096;
+    char *buffer = new char[BUFFER_MAX];
+    int32_t nbytes = 0;
+    while (getModuleState() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+
+        FD_ZERO(&rfds);
+        FD_SET(m_rawEthernetSocket, &rfds);
+
+        ::select(m_rawEthernetSocket + 1, &rfds, NULL, NULL, &timeout);
+        if (FD_ISSET(m_rawEthernetSocket, &rfds)) {
+            nbytes = ::recv(m_rawEthernetSocket, buffer, BUFFER_MAX, MSG_DONTWAIT);
+            if (nbytes > 0) {
+                // Pass string for decoding the payload.
+                const std::string incomingData(buffer, nbytes);
+                if (m_v2xInStringDecoder.get() != nullptr) {
+                    m_v2xInStringDecoder->nextString(incomingData);
+                }
+            }
+        }
+    }
+    delete [] buffer;
+
   }
+  return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 
-void ProxyV2xIn::nextContainer(odcore::data::Container &)
-{
-}
 
 }
 }

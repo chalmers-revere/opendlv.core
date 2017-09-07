@@ -99,6 +99,7 @@ void ProxyV2xOut::setUp()
                 warning << "[" << getName() << "] Could not get interface address: " << ::strerror(errno) << std::endl;
                 toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
                 ::close(m_rawEthernetSocket);
+                m_rawEthernetSocket = -1;
             }
         }
         else {
@@ -106,14 +107,15 @@ void ProxyV2xOut::setUp()
             warning << "[" << getName() << "] Could not get interface index: " << ::strerror(errno) << std::endl;
             toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
             ::close(m_rawEthernetSocket);
+            m_rawEthernetSocket = -1;
         }
     }
     else {
         std::stringstream warning;
         warning << "[" << getName() << "] Failed to create raw socket: " << ::strerror(errno) << std::endl;
         toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
+        m_rawEthernetSocket = -1;
     }
-
   }
 }
 
