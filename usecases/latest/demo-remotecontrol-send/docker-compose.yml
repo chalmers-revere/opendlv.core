@@ -30,6 +30,7 @@ services:
     proxy-v2xout:
        build: .
        network_mode: "host"
+       privileged: true 
        depends_on:
            - odsupercomponent
        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xout --cid=${CID} --freq=1 --verbose=1"
