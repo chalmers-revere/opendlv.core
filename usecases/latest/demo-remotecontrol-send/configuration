@@ -28,7 +28,3 @@ system-ps3controller.deceleration.min = 0
 system-ps3controller.deceleration.max = -10
 system-ps3controller.steering.min = -6.5
 system-ps3controller.steering.max = 6.5
-system-ps3controller.acceleration-axis = 4
-system-ps3controller.steering-axis = 0
-
-
