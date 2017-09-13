@@ -66,15 +66,11 @@ std::string ProxyV2xOut::getBinaryString(uint32_t a_i) const
 
 void ProxyV2xOut::setUp()
 {
-  std::string const address = getKeyValueConfiguration().getValue<std::string>("proxy-v2xout.address");
   m_senderId = getKeyValueConfiguration().getValue<uint32_t>("proxy-v2xout.sender-id");
   std::string const networkAdapterName = getKeyValueConfiguration().getValue<std::string>("proxy-v2xout.adapter");
 
-  std::string const filterMessageIdsString = 
-    getKeyValueConfiguration().getValue<std::string>(
-        "proxy-v2xout.filter-message-ids");
-  auto const filterMessageIdsStringVec = 
-    odcore::strings::StringToolbox::split(filterMessageIdsString, ',');
+  std::string const filterMessageIdsString = getKeyValueConfiguration().getValue<std::string>("proxy-v2xout.filter-message-ids");
+  auto const filterMessageIdsStringVec = odcore::strings::StringToolbox::split(filterMessageIdsString, ',');
   for (std::string const filterMessageIdString : filterMessageIdsStringVec) {
     uint32_t const filterMessageId = std::stoul(filterMessageIdString);
     m_filterMessageIds.push_back(filterMessageId);

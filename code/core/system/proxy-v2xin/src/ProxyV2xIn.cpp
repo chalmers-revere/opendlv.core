@@ -27,6 +27,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 
 #include <opendavinci/odcore/base/KeyValueConfiguration.h>
@@ -85,7 +86,7 @@ void ProxyV2xIn::setUp()
   // Creating the raw socket to receive data.
   {
 
-    if (!((m_rawEthernetSocket = ::socket(AF_PACKET, SOCK_RAW, htons(ProxyV2xIn::GEO_NETWORKING))) < 0)) {
+    if (!((m_rawEthernetSocket = ::socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0)) {
         struct ifreq bufferInterface;
         ::memset(&bufferInterface, 0, sizeof(bufferInterface));
 
@@ -100,13 +101,16 @@ void ProxyV2xIn::setUp()
                 ::memset((void*)&socketDetails, 0, sizeof(socketDetails));
                 socketDetails.sll_family = AF_PACKET;
                 socketDetails.sll_ifindex = m_interfaceIndex;
-                socketDetails.sll_protocol = htons(ProxyV2xIn::GEO_NETWORKING);
+                socketDetails.sll_protocol = htons(ETH_P_ALL);
                 if(::bind(m_rawEthernetSocket, (struct sockaddr*)&socketDetails, sizeof (socketDetails)) == -1) {
                     std::stringstream warning;
                     warning << "[" << getName() << "] Could not bind socket: " << ::strerror(errno) << std::endl;
                     toLogger(odcore::data::LogMessage::LogLevel::WARN, warning.str());
                     ::close(m_rawEthernetSocket);
                     m_rawEthernetSocket = -1;
+                }
+                else {
+                    std::cout << "[" << getName() << "]: Ready." << std::endl;
                 }
             }
             else {
@@ -155,11 +159,17 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyV2xIn::body() {
         ::select(m_rawEthernetSocket + 1, &rfds, NULL, NULL, &timeout);
         if (FD_ISSET(m_rawEthernetSocket, &rfds)) {
             nbytes = ::recv(m_rawEthernetSocket, buffer, BUFFER_MAX, MSG_DONTWAIT);
-            if (nbytes > 0) {
-                // Pass string for decoding the payload.
-                const std::string incomingData(buffer, nbytes);
-                if (m_v2xInStringDecoder.get() != nullptr) {
-                    m_v2xInStringDecoder->nextString(incomingData);
+            if (nbytes > 14) {
+                uint16_t foundGeoProtocol = *(reinterpret_cast<uint16_t*>(buffer+6+6));
+                foundGeoProtocol = ntohs(foundGeoProtocol);
+
+                if (foundGeoProtocol == ProxyV2xIn::GEO_NETWORKING) {
+std::cout << getName() << " Received " << nbytes << ", protocol: 0x" << std::hex << (uint32_t)foundGeoProtocol << std::dec << std::endl;
+                    // Pass string for decoding the payload.
+                    const std::string incomingData(buffer+6+6+2, nbytes-(+6+6+2));
+                    if (m_v2xInStringDecoder.get() != nullptr) {
+                        m_v2xInStringDecoder->nextString(incomingData);
+                    }
                 }
             }
         }

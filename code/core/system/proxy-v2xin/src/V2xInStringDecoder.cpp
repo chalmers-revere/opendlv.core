@@ -75,6 +75,10 @@ void V2xInStringDecoder::nextString(std::string const &a_message)
   odcore::data::Container container;
   inputStream >> container;
 
+  if (m_isVerbose) {
+    std::cout << "Received container " << (uint32_t)container.getDataType() << ", sent at " << container.getSentTimeStamp().getYYYYMMDD_HHMMSSms() << ", received at " << container.getReceivedTimeStamp().getYYYYMMDD_HHMMSSms() << ", delta = " << (container.getReceivedTimeStamp() - container.getSentTimeStamp()).toMicroseconds() << "us." << std::endl;
+  }
+
   uint32_t messageId = container.getDataType();
   if (std::find(m_filterMessageIds.begin(), m_filterMessageIds.end(), 
         messageId) == m_filterMessageIds.end()) {
