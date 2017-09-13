@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Chalmers REVERE
+ * Copyright (C) 2017 openKorp
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,87 +34,91 @@
 
 namespace opendlv {
 namespace core {
-namespace system {
-namespace proxy {
+namespace system{
+namespace proxy{
+
 
 ProxyIMU::ProxyIMU(int32_t const &a_argc, char **a_argv)
     : TimeTriggeredConferenceClientModule(
-      a_argc, a_argv, "proxy-imu")
+      a_argc, a_argv, "proxy-miniature-imu")
     , m_device()
-    , m_debug() {
+{
 }
 
 ProxyIMU::~ProxyIMU() {
 }
 
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
-    while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
+  while (getModuleStateAndWaitForRemainingTimeInTimeslice() 
+      == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
 
-        auto gyroscopeReading = m_device->ReadGyroscope();
-        odcore::data::Container gyroscopeContainer(gyroscopeReading);
-        getConference().send(gyroscopeContainer);
+    auto gyroscopeReading = m_device->ReadGyroscope();
+    odcore::data::Container gyroscopeContainer(gyroscopeReading);
+    gyroscopeContainer.setSenderStamp(getIdentifier());
+    getConference().send(gyroscopeContainer);
 
-        auto accelerometerReading = m_device->ReadAccelerometer();
-        odcore::data::Container accelerometerContainer(accelerometerReading);
-        getConference().send(accelerometerContainer);
+    auto accelerometerReading = m_device->ReadAccelerometer();
+    odcore::data::Container accelerometerContainer(accelerometerReading);
+    accelerometerContainer.setSenderStamp(getIdentifier());
+    getConference().send(accelerometerContainer);
 
-        auto magnetometerReading = m_device->ReadMagnetometer();
-        odcore::data::Container magnetometerContainer(magnetometerReading);
-        getConference().send(magnetometerContainer);
+    auto magnetometerReading = m_device->ReadMagnetometer();
+    odcore::data::Container magnetometerContainer(magnetometerReading);
+    magnetometerContainer.setSenderStamp(getIdentifier());
+    getConference().send(magnetometerContainer);
 
-        auto altimeterReading = m_device->ReadAltimeter();
-        odcore::data::Container altimeterContainer(altimeterReading);
-        getConference().send(altimeterContainer);
+    auto barometerReading = m_device->ReadBarometer();
+    odcore::data::Container barometerContainer(barometerReading);
+    barometerContainer.setSenderStamp(getIdentifier());
+    getConference().send(barometerContainer);
 
-        auto temperatureReading = m_device->ReadTemperature();
-        odcore::data::Container temperatureContainer(temperatureReading);
-        getConference().send(temperatureContainer);
+    auto thermometerReading = m_device->ReadThermometer();
+    odcore::data::Container thermometerContainer(thermometerReading);
+    thermometerContainer.setSenderStamp(getIdentifier());
+    getConference().send(thermometerContainer);
 
-
-        if (m_debug) {
-            std::cout << gyroscopeReading.toString() << ", "
-            << accelerometerReading.toString() << ", "
-            << magnetometerReading.toString() << ", "
-            << altimeterReading.toString() << ", "
-            << temperatureReading.toString() << std::endl;
-        }
+    if (isVerbose()) {
+      std::cout << "[" << getName() << "] Sending IMU data: \n"
+          << gyroscopeReading.toString() << "\n"
+          << accelerometerReading.toString() << "\n"
+          << magnetometerReading.toString() << "\n"
+          << barometerReading.toString() << "\n"
+          << thermometerReading.toString() << std::endl;
     }
+  }
 
-    return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
+  return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
 
 void ProxyIMU::setUp() {
-    odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
-    double roll = kv.getValue<double>("proxy-imu.mount.roll")*M_PI/180.0;
-    double pitch = kv.getValue<double>("proxy-imu.mount.pitch")*M_PI/180.0;
-    double yaw = kv.getValue<double>("proxy-imu.mount.yaw")*M_PI/180.0;
-    std::vector<double> const mountRotation({roll, pitch, yaw});
-    std::string const type = kv.getValue<std::string>("proxy-imu.type");
-    uint32_t const calibrationNumberOfSamples = kv.getValue<uint32_t>("proxy-imu.calibration_number_of_samples");
-    bool const lockCalibration = (kv.getValue< int32_t >("proxy-imu.lockcalibration") == 1);
-    m_debug = (kv.getValue< int32_t >("proxy-imu.debug") == 1);
-    std::string const calibrationFile = kv.getValue<std::string>("proxy-imu.calibration_file");
+  odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
+  std::string const type = kv.getValue<std::string>(getName() + ".type");
 
-    if (type.compare("pololu.altimu10") == 0) {
-        std::string const deviceNode = kv.getValue< std::string >("proxy-imu.pololu.altimu10.device_node");
-        std::string const addressType = kv.getValue<std::string>("proxy-imu.pololu.altimu10.address_type");
-        if(addressType.compare("high") || addressType.compare("low")) {
-            m_device = std::unique_ptr<PololuAltImu10Device>(new PololuAltImu10Device(deviceNode, addressType, mountRotation, calibrationNumberOfSamples, calibrationFile, lockCalibration, m_debug));
-        } else {
-            std::cerr << "[proxy-imu] Address type invalid. Must be either high xor low." << std::endl; 
-        }
-        std::cout << "[proxy-imu] Successfully initiated.";
+  if (type.compare("pololu.altimu10") == 0) {
+    std::string const deviceNode = 
+        kv.getValue< std::string >(getName() + ".pololu.altimu10.device_node");
+    std::string const addressType = 
+        kv.getValue<std::string>(getName() + ".pololu.altimu10.address_type");
+    if (addressType.compare("high") || addressType.compare("low")) {
+      m_device = std::unique_ptr<PololuAltImu10Device>(
+          new PololuAltImu10Device(deviceNode, addressType));
+    } else {
+      std::cerr 
+          << "[" << getName() 
+          << "] Address type invalid. Must be either high xor low." 
+          << std::endl; 
     }
-    if (m_device.get() == nullptr) {
-        std::cerr << "[proxy-imu] No valid device driver defined."
-                  << std::endl;
-    }
+    std::cout << "[" << getName() << "] Successfully initiated.";
+  }
+  if (m_device.get() == nullptr) {
+    std::cerr << "[" << getName() << "] No valid device driver defined."
+        << std::endl;
+  }
 }
 
-void ProxyIMU::tearDown() {
-    m_device->saveCalibrationFile();
+void ProxyIMU::tearDown() {}
+
 }
 }
 }
-}
-} // opendlv::core::system::proxy
+} 

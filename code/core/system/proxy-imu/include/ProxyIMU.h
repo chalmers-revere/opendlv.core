@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Chalmers REVERE
+ * Copyright (C) 2017 openKorp
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
 #include <opendavinci/odcore/data/Container.h>
 
+
 namespace opendlv {
 namespace core {
 namespace system {
@@ -45,20 +46,21 @@ class ProxyIMU : public odcore::base::module::TimeTriggeredConferenceClientModul
 
     virtual ~ProxyIMU();
 
-    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
-
    private:
     void setUp();
 
     void tearDown();
 
+    odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
+    
     std::unique_ptr< PololuAltImu10Device > m_device;
     
-    bool m_debug;
 };
+
 }
 }
 }
 } // opendlv::core::system::proxy
 
 #endif
+

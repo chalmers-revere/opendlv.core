@@ -23,8 +23,8 @@ message opendlv.proxy.AccelerometerReading [id = 161] {
 
 }
 
-message opendlv.proxy.AltimeterReading [id = 162] {
-  float altitude [id = 1];
+message opendlv.proxy.BarometerReading [id = 162] {
+  float pressure [id = 1];
 }
 
 message opendlv.proxy.MagnetometerReading [id = 163] {
@@ -40,6 +40,6 @@ message opendlv.proxy.GyroscopeReading [id = 168] {
   float angularVelocityZ [id = 3];
 }
 
-message opendlv.proxy.TemperatureReading [id=190] {
+message opendlv.proxy.ThermometerReading [id=190] {
   float temperature [id = 1];
 }
