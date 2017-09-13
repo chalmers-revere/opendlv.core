@@ -40,7 +40,7 @@ namespace proxy{
 
 ProxyIMU::ProxyIMU(int32_t const &a_argc, char **a_argv)
     : TimeTriggeredConferenceClientModule(
-      a_argc, a_argv, "proxy-miniature-imu")
+      a_argc, a_argv, "proxy-imu")
     , m_device()
 {
 }
