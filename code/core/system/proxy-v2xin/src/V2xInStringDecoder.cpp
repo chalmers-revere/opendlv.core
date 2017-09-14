@@ -89,7 +89,7 @@ void V2xInStringDecoder::nextString(std::string const &a_message)
     std::cout << "Received and injected message " << messageId << " from "
       << senderId << std::endl;
   }
-
+  container.setSenderStamp(senderId);
   m_conference.send(container);
 }
 
