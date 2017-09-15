@@ -20,24 +20,9 @@
 version: '2'
 
 services:
-    odsupercomponent:
-        build: .
-        network_mode: "host"
-        volumes:
-        - .:/opt/copplar.data
-        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/copplar.data/configuration"
-        
-    proxy-trimble:
-        build: .
-        network_mode: "host"
-        depends_on:
-            - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-trimble --cid=${CID}"
-
     proxy-v2xout:
         build: .
         network_mode: "host"
-        depends_on:
-            - odsupercomponent
+        restart: always
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xout --cid=${CID} --freq=1 --verbose=1"
 
