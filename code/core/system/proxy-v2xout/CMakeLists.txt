@@ -1,5 +1,4 @@
-# proxy-fh16 - Interface to FH16 truck.
-# Copyright (C) 2016 Christian Berger
+# Copyright (C) 2017 Ola Benderius
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,7 +16,7 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (opendlv-core-system-proxy-fh16)
+PROJECT (opendlv-core-system-proxy-v2xout)
 
 ###########################################################################
 # Set the search path for .cmake files.
@@ -45,50 +44,28 @@ INCLUDE (CheckCxxTestEnvironment)
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
-# Find ODVDFH16Truck.
-find_package(ODVDFH16Truck REQUIRED)
+# Find OpenDLV.
+SET(OPENDLV_DIR "${OPENDAVINCI_DIR}")
+FIND_PACKAGE (OpenDLV REQUIRED)
 
 ###########################################################################
-# Find ODVDVehicle.
-find_package(ODVDVehicle REQUIRED)
-
-###########################################################################
-# Find fh16mapping.
-find_package(fh16mapping REQUIRED)
-
-###########################################################################
-# Find AutomotiveData.
-set(AUTOMOTIVEDATA_DIR "${OPENDAVINCI_DIR}")
-find_package(AutomotiveData REQUIRED)
-
-###########################################################################
-# Find odcantools.
-set(ODCANTOOLS_DIR "${OPENDAVINCI_DIR}")
-find_package(odcantools REQUIRED)
+# Find ODVDTrimble.
+find_package(ODVDTrimble REQUIRED)
 
 ###############################################################################
-# Set header files from ODCANTools.
-INCLUDE_DIRECTORIES (SYSTEM ${ODCANTOOLS_INCLUDE_DIRS})
-# Set header files from AutomotiveData.
-INCLUDE_DIRECTORIES (SYSTEM ${AUTOMOTIVEDATA_INCLUDE_DIRS})
-# Set header files from ODVDFH16Truck.
-INCLUDE_DIRECTORIES (SYSTEM ${FH16MAPPING_INCLUDE_DIRS})
-# Set header files from ODVDFH16Truck.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDFH16TRUCK_INCLUDE_DIRS})
-# Set header files from ODVDVehicle.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDVEHICLE_INCLUDE_DIRS})
+# Set header files from ODVDTrimble.
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDTRIMBLE_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
+# Set header files from OpenDLV.
+INCLUDE_DIRECTORIES (SYSTEM ${OPENDLV_INCLUDE_DIRS})
 # Set include directory.
 INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
-              ${ODVDFH16TRUCK_LIBRARIES}
-              ${ODVDVEHICLE_LIBRARIES}
-              ${FH16MAPPING_LIBRARIES}
-              ${AUTOMOTIVEDATA_LIBRARIES}
-              ${ODCANTOOLS_LIBRARIES})
+              ${OPENDLV_LIBRARIES}
+              ${ODVDTRIMBLE_LIBRARIES})
 
 ###############################################################################
 # Build this project.

@@ -46,12 +46,14 @@ FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
 # Find OpenCV.
+IF( (EXISTS "/usr/pkg/include/opencv") OR (EXISTS "/usr/pkg/include/opencv2") )
+    SET(OPENCV_ROOT_DIR "/usr/pkg")
+ENDIF()
 FIND_PACKAGE(OpenCV REQUIRED)
-
 
 ###############################################################################
 # Set header files from OpenCV.
-INCLUDE_DIRECTORIES (SYSTEM ${OpenCV_INCLUDE_DIR})
+INCLUDE_DIRECTORIES (SYSTEM ${OpenCV_INCLUDE_DIRS})
 
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})

@@ -9,54 +9,74 @@ using ODVDFH16Truck;
 // In the following, all interesting CAN signals are listed.
 ///////////////////////////////////////////////////////////////////////////////
 
-driveline.enginetorque in 0x108 at bit 16 for 16 bit is unsigned little endian multiply by 1 add 0 with range [0, 0];
-driveline.enginespeed in 0x108 at bit 0 for 16 bit is unsigned little endian multiply by 0.125 add 0 with range [0, 0];
-driveline.currentgear in 0x108 at bit 32 for 8 bit is unsigned little endian multiply by 1 add -125 with range [-125, 130];
+CAN Message 0x108 driveline is 5 bytes {
+    enginetorque at bit 16 for 16 bit is unsigned little endian multiply by 1 add 0 with range [0, 0];
+    enginespeed at bit 0 for 16 bit is unsigned little endian multiply by 0.125 add 0 with range [0, 0];
+    currentgear at bit 32 for 8 bit is unsigned little endian multiply by 1 add -125 with range [-125, 130];
+}
 
 // CAN message for manual driver.
-manualdriver.torsionbartorque in 0x106 at bit 16 for 16 bit is unsigned little endian multiply by 0.0009765625 add -32 with range [-32, 31.9990234375];
-manualdriver.brakepedalposition in 0x106 at bit 8 for 8 bit is unsigned little endian multiply by 0.4 add 0 with range [0, 102];
-manualdriver.accelerationpedalposition in 0x106 at bit 0 for 8 bit is unsigned little endian multiply by 0.4 add 0 with range [0, 102];
+CAN Message 0x106 manualdriver is 4 bytes {
+    torsionbartorque at bit 16 for 16 bit is unsigned little endian multiply by 0.0009765625 add -32 with range [-32, 31.9990234375];
+    brakepedalposition at bit 8 for 8 bit is unsigned little endian multiply by 0.4 add 0 with range [0, 102];
+    accelerationpedalposition at bit 0 for 8 bit is unsigned little endian multiply by 0.4 add 0 with range [0, 102];
+}
 
 // CAN message for acceleration.
-accelerationrequest.accelerationrequestpedal in 0x203 at bit 0 for 8 bit is unsigned little endian multiply by 0.4 add 0 with range [0, 102];
-accelerationrequest.enable_accrequest in 0x203 at bit 8 for 1 bit is unsigned little endian multiply by 1 add 0 with range [0, 1];
+CAN Message 0x203 accelerationrequest is 2 bytes {
+    accelerationrequestpedal at bit 0 for 8 bit is unsigned little endian multiply by 0.4 add 0 with range [0, 102];
+    enable_accrequest at bit 8 for 1 bit is unsigned little endian multiply by 1 add 0 with range [0, 1];
+}
 
 // CAN message for deceleration.
-brakerequest.enable_brakerequest in 0x202 at bit 16 for 1 bit is unsigned little endian multiply by 1 add 0 with range [0, 1];
-brakerequest.brakerequest in 0x202 at bit 0 for 16 bit is unsigned little endian multiply by 0.00048828125 add -15.687 with range [-15.687, 16.31251171875];
+CAN Message 0x202 brakerequest is 3 bytes {
+    enable_brakerequest at bit 16 for 1 bit is unsigned little endian multiply by 1 add 0 with range [0, 1];
+    brakerequest at bit 0 for 16 bit is unsigned little endian multiply by 0.00048828125 add -15.687 with range [-15.687, 16.31251171875];
+}
 
 // CAN message for steering.
-steerrequest.enable_steerreq in 0x201 at bit 32 for 1 bit is unsigned little endian multiply by 1 add 0 with range [0, 1];
-steerrequest.steerreq_rwa in 0x201 at bit 16 for 16 bit is unsigned little endian multiply by 0.000192 add -3.2 with range [-3.2, 3.2];
-steerrequest.steerreq_deltatrq in 0x201 at bit 0 for 16 bit is unsigned little endian multiply by 0.001 add -32 with range [-32, 33.535];
+CAN Message 0x201 steerrequest is 5 bytes {
+    enable_steerreq at bit 32 for 1 bit is unsigned little endian multiply by 1 add 0 with range [0, 1];
+    steerreq_rwa at bit 16 for 16 bit is unsigned little endian multiply by 0.000192 add -3.2 with range [-3.2, 3.2];
+    steerreq_deltatrq at bit 0 for 16 bit is unsigned little endian multiply by 0.001 add -32 with range [-32, 33.535];
+}
 
 // CAN message for reading the steering.
-steering.steeringwheelangle in 0x107 at bit 16 for 16 bit is unsigned little endian multiply by 0.0009765625 add -31.374 with range [-31.374, 32.6250234375];
-steering.roadwheelangle in 0x107 at bit 0 for 16 bit is unsigned little endian multiply by 0.000058751 add -1.925 with range [-1.925, 1.925246785];
+CAN Message 0x107 steering is 4 bytes {
+    steeringwheelangle at bit 16 for 16 bit is unsigned little endian multiply by 0.0009765625 add -31.374 with range [-31.374, 32.6250234375];
+    roadwheelangle at bit 0 for 16 bit is unsigned little endian multiply by 0.000058751 add -1.925 with range [-1.925, 1.925246785];
+}
 
 // CAN message for reading the axle loads.
-axleloads.driveaxle2load in 0x105 at bit 32 for 16 bit is unsigned little endian multiply by 0.5 add 0 with range [0, 32767.5];
-axleloads.driveaxle1load in 0x105 at bit 16 for 16 bit is unsigned little endian multiply by 0.5 add 0 with range [0, 32767.5];
-axleloads.frontaxle1load in 0x105 at bit 0 for 16 bit is unsigned little endian multiply by 0.5 add 0 with range [0, 32767.5];
+CAN Message 0x105 axleloads is 6 bytes {
+    driveaxle2load at bit 32 for 16 bit is unsigned little endian multiply by 0.5 add 0 with range [0, 32767.5];
+    driveaxle1load at bit 16 for 16 bit is unsigned little endian multiply by 0.5 add 0 with range [0, 32767.5];
+    frontaxle1load at bit 0 for 16 bit is unsigned little endian multiply by 0.5 add 0 with range [0, 32767.5];
+}
 
 // CAN message for reading the vehicle dynamics.
-vehicledynamics.yawrate in 0x104 at bit 32 for 16 bit is unsigned little endian multiply by 0.000122 add -3.92 with range [-3.92, 4.07527];
-vehicledynamics.acceleration_y in 0x104 at bit 16 for 16 bit is unsigned little endian multiply by 0.00048828125 add -15.687 with range [-15.687, 16.31251171875];
-vehicledynamics.acceleration_x in 0x104 at bit 0 for 16 bit is unsigned little endian multiply by 0.00048828125 add -15.687 with range [-15.687, 16.31251171875];
+CAN Message 0x104 vehicledynamics is 6 bytes {
+    yawrate at bit 32 for 16 bit is unsigned little endian multiply by 0.000122 add -3.92 with range [-3.92, 4.07527];
+    acceleration_y at bit 16 for 16 bit is unsigned little endian multiply by 0.00048828125 add -15.687 with range [-15.687, 16.31251171875];
+    acceleration_x at bit 0 for 16 bit is unsigned little endian multiply by 0.00048828125 add -15.687 with range [-15.687, 16.31251171875];
+}
 
 // CAN message for reading the vehicle speed.
-vehiclespeed.vehiclespeedpropshaft in 0x103 at bit 0 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
+CAN Message 0x103 vehiclespeed is 2 bytes {
+    vehiclespeedpropshaft at bit 0 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
+}
 
 // CAN message for reading the wheel speed.
-wheelspeeds2.driveaxle2wheelspeedright in 0x102 at bit 16 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
-wheelspeeds2.driveaxle2wheelspeedleft in 0x102 at bit 0 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
-
-wheelspeeds1.driveaxle1wheelspeedright in 0x101 at bit 48 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
-wheelspeeds1.driveaxle1wheelspeedleft in 0x101 at bit 32 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
-wheelspeeds1.frontaxle1wheelspeedright in 0x101 at bit 16 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
-wheelspeeds1.frontaxle1wheelspeedleft in 0x101 at bit 0 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
-
+CAN Message 0x102 wheelspeeds2 is 4 bytes {
+    driveaxle2wheelspeedright at bit 16 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
+    driveaxle2wheelspeedleft at bit 0 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
+}
+CAN Message 0x101 wheelspeeds1 is 8 bytes {
+    driveaxle1wheelspeedright at bit 48 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
+    driveaxle1wheelspeedleft at bit 32 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
+    frontaxle1wheelspeedright at bit 16 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
+    frontaxle1wheelspeedleft at bit 0 for 16 bit is unsigned little endian multiply by 0.00390625 add 0 with range [0, 255.99609375];
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // In the following, the actual mapping between low-level CAN signals and

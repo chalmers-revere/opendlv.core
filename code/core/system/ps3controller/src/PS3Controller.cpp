@@ -79,8 +79,11 @@ void PS3Controller::setUp() {
         exit(1);
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverflow"
     ioctl(m_ps3controllerDevice, JSIOCGAXES, &num_of_axes);
     ioctl(m_ps3controllerDevice, JSIOCGBUTTONS, &num_of_buttons);
+#pragma GCC diagnostic pop
     ioctl(m_ps3controllerDevice, JSIOCGNAME(80), &name_of_ps3controller);
 
     m_axes = (int *)calloc(num_of_axes, sizeof(int));

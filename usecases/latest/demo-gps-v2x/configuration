@@ -1,0 +1,24 @@
+global.buffer.memorySegmentSize = 2800000 # Size of a memory segment in bytes.
+global.buffer.numberOfMemorySegments = 4  # Number of memory segments.
+
+global.session.expectedModules = copplar-control-example
+
+
+odsupercomponent.pulseshift.shift = 10000 # (in microseconds)
+odsupercomponent.pulsetimeack.timeout = 5000 # (in milliseconds)
+odsupercomponent.pulsetimeack.yield = 5000 # (in microseconds)
+odsupercomponent.pulsetimeack.exclude = odcockpit
+
+###############################################################################
+###############################################################################
+#
+# NEXT, THE CONFIGURATION FOR OPENDLV SOFTWARE FOLLOWS. 
+#
+
+
+proxy-v2xout.address = 10.10.10.75
+proxy-v2xout.sender-id = 115
+proxy-v2xout.filter-message-ids = 19,215
+proxy-v2xout.adapter = wlp4s0
+
+

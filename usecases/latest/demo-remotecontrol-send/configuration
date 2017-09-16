@@ -1,0 +1,31 @@
+global.buffer.memorySegmentSize = 2800000 # Size of a memory segment in bytes.
+global.buffer.numberOfMemorySegments = 4  # Number of memory segments.
+
+global.session.expectedModules = 
+
+
+odsupercomponent.pulseshift.shift = 10000 # (in microseconds)
+odsupercomponent.pulsetimeack.timeout = 5000 # (in milliseconds)
+odsupercomponent.pulsetimeack.yield = 5000 # (in microseconds)
+odsupercomponent.pulsetimeack.exclude = odcockpit
+
+###############################################################################
+###############################################################################
+#
+# NEXT, THE CONFIGURATION FOR OPENDLV SOFTWARE FOLLOWS. 
+#
+
+proxy-v2xout.adapter = wlp4s0
+proxy-v2xout.sender-id = 111
+proxy-v2xout.filter-message-ids = 160
+
+system-ps3controller.ps3controllerdevicenode = /dev/input/js0   # Gamepad.
+system-ps3controller.acceleration.min = 0
+system-ps3controller.acceleration.max = 3
+system-ps3controller.deceleration.min = 0
+system-ps3controller.deceleration.max = -10
+system-ps3controller.steering.min = -6.5
+system-ps3controller.steering.max = 6.5
+
+
+odcockpit.directoriesForSharedLibaries = /opt/opendlv.core

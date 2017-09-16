@@ -1,6 +1,5 @@
 /**
- * proxy-fh16truck - Interface to FH16 truck.
- * Copyright (C) 2016 Christian Berger
+ * Copyright (C) 2017 Ola Benderius
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,9 +16,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "ProxyFH16.h"
+#ifndef PROXY_PROXYV2XOUT_TESTSUITE_H
+#define PROXY_PROXYV2XOUT_TESTSUITE_H
 
-int32_t main(int32_t argc, char **argv) {
-    opendlv::core::system::proxy::ProxyFH16 truck(argc, argv);
-    return truck.runModule();
-}
+#include "cxxtest/TestSuite.h"
+
+#include "../include/ProxyV2xOut.h"
+
+class ProxyV2xOutTest : public CxxTest::TestSuite {
+   public:
+    void setUp()
+    {
+    }
+
+    void tearDown()
+    {
+    }
+
+    void testApplication()
+    {
+    }
+};
+
+#endif
