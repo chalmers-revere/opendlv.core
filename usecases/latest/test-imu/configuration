@@ -10,6 +10,9 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 # CONFIGURATION FOR proxy-imu
 #
+proxy-imu-calibration.uncalibrated_id = 2
+proxy-imu-calibration.calibrated_id = 10
+
 proxy-imu.type = pololu.altimu10
 proxy-imu.pololu.altimu10.device_node = /dev/i2c-2
 

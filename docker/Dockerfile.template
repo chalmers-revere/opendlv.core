@@ -23,7 +23,7 @@ MAINTAINER Christian Berger "christian.berger@gu.se"
 ADD opt /opt
 
 # Change owner for binaries.
-RUN chown -R 1000:1000 /opt/opendlv.core
+#RUN chown -R 1000:1000 /opt/opendlv.core
 
 # Environment parameters to allow GUIs.
 ENV QT_X11_NO_MITSHM=1
