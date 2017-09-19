@@ -35,7 +35,7 @@ services:
         restart: always
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xout --cid=${CID} --freq=1 --verbose=1"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xout --cid=${CID} --freq=1 --verbose=0"
 
     ps3controller:
         image: ${IMAGE}
@@ -45,5 +45,5 @@ services:
         restart: always
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=${CID} --freq=100 --verbose=1"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=${CID} --freq=100 --verbose=0"
 
