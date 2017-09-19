@@ -16,7 +16,7 @@ odsupercomponent.pulsetimeack.exclude = odcockpit
 #
 
 proxy-v2xout.adapter = wlp4s0
-proxy-v2xout.sender-id = 111
+proxy-v2xout.sender-id = 112
 proxy-v2xout.filter-message-ids = 160
 
 system-ps3controller.ps3controllerdevicenode = /dev/input/js0   # Gamepad.
@@ -26,6 +26,5 @@ system-ps3controller.deceleration.min = 0
 system-ps3controller.deceleration.max = -10
 system-ps3controller.steering.min = -6.5
 system-ps3controller.steering.max = 6.5
-
 
 odcockpit.directoriesForSharedLibaries = /opt/opendlv.core
