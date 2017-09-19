@@ -1,5 +1,5 @@
 # docker-compose.yml - Composition of micro-services to run OpenDLV software.
-# Copyright (C) 2016 Christian Berger
+# Copyright (C) 2017 Christian Berger
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,14 +15,35 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# Date: 2016-10-08
+# Date: 2017-09-05
 
 version: '2'
 
 services:
-    proxy-v2xout:
-        build: .
+    odsupercomponent:
+        image: ${IMAGE}
         network_mode: "host"
         restart: always
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xout --cid=${CID} --freq=1 --verbose=1"
+        volumes:
+            - .:/opt/opendlv.data
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
+
+    proxy-v2xout:
+        image: ${IMAGE}
+        network_mode: "host"
+        privileged: true 
+        restart: always
+        depends_on:
+            - odsupercomponent
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xout --cid=${CID} --freq=1 --verbose=0"
+
+    ps3controller:
+        image: ${IMAGE}
+        network_mode: "host"
+        devices:
+            - /dev/input/js0:/dev/input/js0
+        restart: always
+        depends_on:
+            - odsupercomponent
+        command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=${CID} --freq=100 --verbose=0"
 
