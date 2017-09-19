@@ -23,6 +23,7 @@ services:
     odsupercomponent:
         image: ${IMAGE}
         network_mode: "host"
+        restart: always
         volumes:
             - .:/opt/opendlv.data
         command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/opendlv.data/configuration"
@@ -31,6 +32,7 @@ services:
         image: ${IMAGE}
         network_mode: "host"
         privileged: true 
+        restart: always
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xout --cid=${CID} --freq=1 --verbose=1"
@@ -40,6 +42,7 @@ services:
         network_mode: "host"
         devices:
             - /dev/input/js0:/dev/input/js0
+        restart: always
         depends_on:
             - odsupercomponent
         command: "/opt/opendlv.core/bin/opendlv-core-system-ps3controller --cid=${CID} --freq=100 --verbose=1"

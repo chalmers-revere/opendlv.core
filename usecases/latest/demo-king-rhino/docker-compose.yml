@@ -23,6 +23,7 @@ services:
     proxy-v2xin:
         image: ${IMAGE}
         network_mode: "host"
+        restart: always
         privileged: true 
         command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2xin --cid=${CID} --freq=1 --verbose=0"
 
