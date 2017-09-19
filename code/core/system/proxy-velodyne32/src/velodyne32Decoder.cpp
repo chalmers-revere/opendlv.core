@@ -23,6 +23,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <array>
 
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
 #include "opendavinci/odcore/base/Lock.h"
@@ -89,7 +90,7 @@ void Velodyne32Decoder::index32sensorIDs() {
     //Distance values for each 32 sensors with the same azimuth are ordered based on vertical angle,
     //from -30.67 to 10.67 degrees, with alternating increment 1.33 and 1.34--sensor IDs: -30.67, -29.33, -28, -26.66, -25.33, -24, -22.67, -21.33, -20, -18.67, -17.33, -16, -14.67, -13.33, -12, -10.67, -9.33, -8, -6.66, -5.33, -4, -2.67, -1.33, 0, 1.33, 2.67, 4, 5.33, 6.67, 8, 9.33, 10.67
     readCalibrationFile();
-    float orderedVerticalAngle[32];
+    std::array<float, 32> orderedVerticalAngle;
     for (uint8_t i = 0; i < 32; i++) {
         m_32SensorsNoIntensity[i] = 0;
         m_32SensorsWithIntensity[i] = 0;
@@ -145,6 +146,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_segment(NULL)
     , m_conference(c)
     , m_spc()
+    , m_verticalAngle()
     , m_calibration(s)
     , m_withSPC(true)
     , m_withCPC(withCPC)
@@ -155,7 +157,10 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_distanceStringStreamWithIntensityPart1("")
     , m_distanceStringStreamWithIntensityPart2("")
     , m_distanceStringStreamWithIntensityPart3("")
-    , m_isStartAzimuth(true) {
+    , m_isStartAzimuth(true)
+    , m_sensorOrderIndex()
+    , m_32SensorsNoIntensity()
+    , m_32SensorsWithIntensity() {
     //Initial setup of the shared point cloud (N.B. The size and width of the shared point cloud depends on the number of points of a frame, hence they are not set up in the constructor)
     m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
     m_spc.setHeight(1); // We have just a sequence of vectors.
@@ -195,6 +200,7 @@ Velodyne32Decoder::Velodyne32Decoder(odcore::io::conference::ContainerConference
     , m_segment(NULL)
     , m_conference(c)
     , m_spc()
+    , m_verticalAngle()
     , m_calibration(s)
     , m_withSPC(false)
     , m_withCPC(true)
@@ -205,8 +211,10 @@ Velodyne32Decoder::Velodyne32Decoder(odcore::io::conference::ContainerConference
     , m_distanceStringStreamWithIntensityPart1("")
     , m_distanceStringStreamWithIntensityPart2("")
     , m_distanceStringStreamWithIntensityPart3("")
-    , m_isStartAzimuth(true) {
-    
+    , m_isStartAzimuth(true)
+    , m_sensorOrderIndex()
+    , m_32SensorsNoIntensity()
+    , m_32SensorsWithIntensity() {
     index32sensorIDs();
     setupIntensityMaskCPC(m_numberOfBitsForIntensity, m_intensityPlacement);
 }
@@ -423,6 +431,7 @@ void Velodyne32Decoder::nextString(const string &payload) {
 
                     if ((m_withCPC && m_pointIndexCPC >= m_MAX_POINT_SIZE) || (!m_withCPC && m_pointIndexSPC >= m_MAX_POINT_SIZE)) {
                         position += 3 * (31 - counter); //Discard the points of the current frame when the preallocated shared memory is full; move the position to be read in the 1206 bytes
+                        cout << "More than 70000 points." << endl; 
                         break;
                     }
                 }

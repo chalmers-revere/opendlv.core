@@ -22,6 +22,7 @@
 
 #include <cmath>
 #include <memory>
+#include <array>
 
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
 #include "opendavinci/generated/odcore/data/CompactPointCloud.h"
@@ -112,7 +113,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     float *m_segment;  //temporary memory for transferring data of each frame to the shared memory
     odcore::io::conference::ContainerConference &m_conference;
     odcore::data::SharedPointCloud m_spc; //shared point cloud
-    float m_verticalAngle[32];           //Vertical angle of each sensor beam
+    std::array<float, 32> m_verticalAngle; //Vertical angle of each sensor beam
     string m_calibration;  //name of the calibration file for HDL-32E
     const float toRadian = static_cast<float>(M_PI) / 180.0f;  //degree to radian
     bool m_withSPC;  //if SPC is expected
@@ -128,9 +129,9 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     std::stringstream m_distanceStringStreamWithIntensityPart2; //Similar to m_distanceStringStreamNoIntensityPart2, with intensity
     std::stringstream m_distanceStringStreamWithIntensityPart3; //Similar to m_distanceStringStreamNoIntensityPart3, with intensity
     bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
-    uint8_t m_sensorOrderIndex[32];//Specify the sensor ID order for each 32 points with increasing vertical angle for CPC and SPC
-    uint16_t m_32SensorsNoIntensity[32];//Store the distance values of the current 32 sensors for CPC without intensity
-    uint16_t m_32SensorsWithIntensity[32];//Store the distance values of the current 32 sensors for CPC with intensity
+    std::array<uint8_t, 32> m_sensorOrderIndex; //Specify the sensor ID order for each 32 points with increasing vertical angle for CPC and SPC
+    std::array<uint16_t, 32> m_32SensorsNoIntensity; //Store the distance values of the current 32 sensors for CPC without intensity
+    std::array<uint16_t, 32> m_32SensorsWithIntensity; //Store the distance values of the current 32 sensors for CPC with intensity
 };
 }
 }
