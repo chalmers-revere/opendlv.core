@@ -23,6 +23,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <array>
 
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
 #include "opendavinci/odcore/base/Lock.h"
@@ -89,7 +90,7 @@ void Velodyne16Decoder::index16sensorIDs() {
     //Distance values for each 16 sensors with the same azimuth are ordered based on vertical angle,
     //from -15 to 15 degress, with increment 2--sensor IDs: 0, 2, 4, 6, 8, 10, 12, 14, 1, 3, 5, 7, 9, 11, 13, 15
     readCalibrationFile();
-    float orderedVerticalAngle[16];
+    std::array<float, 16> orderedVerticalAngle;
     for (uint8_t i = 0; i < 16; i++) {
         m_16SensorsNoIntensity[i] = 0;
         m_16SensorsWithIntensity[i] = 0;
@@ -147,6 +148,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_segment(NULL)
     , m_velodyneContainer(c)
     , m_spc()
+    , m_verticalAngle()
     , m_calibration(s)
     , m_withSPC(true)
     , m_withCPC(withCPC)
@@ -195,6 +197,7 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_segment(NULL)
     , m_velodyneContainer(c)
     , m_spc()
+    , m_verticalAngle()
     , m_calibration(s)
     , m_withSPC(false)
     , m_withCPC(true)
