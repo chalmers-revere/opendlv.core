@@ -21,19 +21,19 @@ version: '2'
 
 services:
     odsupercomponent:
-        build: .
+        image: ${IMAGE}
         network_mode: "host"
         volumes:
-        - .:/opt/copplar.data
-        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --verbose=1 --configuration=/opt/copplar.data/configuration"
+        - .:/opt/opendlv.data
+        command: "/opt/od4/bin/odsupercomponent --cid=${CID} --configuration=/opt/opendlv.data/configuration"
         
     # micro service for proxy-ledstrip.
     proxy-ledstrip:
-        build: .
+        image: ${IMAGE}
         devices:
-        - "/dev/ttyS1:/dev/ttyS1"
+        - "/dev/ttyUSB0:/dev/ttyUSB0"
         network_mode: "host"
         depends_on:
             - odsupercomponent
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-v2v --cid=${CID}"
+        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-ledstrip --cid=${CID} --verbose=1"
 
