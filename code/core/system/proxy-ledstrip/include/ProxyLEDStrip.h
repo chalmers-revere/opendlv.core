@@ -17,23 +17,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROXY_PROXYV2V_H
-#define PROXY_PROXYV2V_H
+#ifndef PROXY_PROXYLEDSTRIP_H
+#define PROXY_PROXYLEDSTRIP_H
 
 #include <memory>
 
-#include <opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h>
+#include "opendavinci/odcore/base/module/DataTriggeredConferenceClientModule.h"
+#include "opendavinci/odcore/base/Mutex.h"
+#include "opendavinci/odcore/wrapper/SerialPort.h"
 
 namespace opendlv {
 namespace core {
 namespace system {
 namespace proxy {
 
-using namespace std;
-
-/**
- * Interface to a V2V unit.
- */
 class ProxyLEDStrip : public odcore::base::module::DataTriggeredConferenceClientModule {
    private:
     ProxyLEDStrip(const ProxyLEDStrip & /*obj*/) = delete;
@@ -60,6 +57,10 @@ class ProxyLEDStrip : public odcore::base::module::DataTriggeredConferenceClient
 
    private:
     float m_angle;
+    odcore::base::Mutex m_mutex;
+    std::shared_ptr<odcore::wrapper::SerialPort> m_serialPort;
+    uint8_t m_activeLedSize;
+    uint8_t m_fadeSize;
     uint8_t m_R;
     uint8_t m_G;
     uint8_t m_B;
@@ -69,4 +70,4 @@ class ProxyLEDStrip : public odcore::base::module::DataTriggeredConferenceClient
 }
 } // opendlv::core::system::proxy
 
-#endif /*PROXY_PROXYV2V_H*/
+#endif 
