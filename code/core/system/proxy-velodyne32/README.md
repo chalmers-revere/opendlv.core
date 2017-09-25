@@ -1,0 +1,18 @@
+# HDL-32E decoder: principles behind its CPC implementation
+
+proxy-velodyne32 takes the original HDL-32E (Velodyne LiDAR with 32 layers) UDP packets as the input and tranforms the payload into Shared Point Cloud (SPC) or/and Compact Point Cloud (CPC). SPC stores all points of each scan as a shared memory. A SPC includes either (1) the xyz and intensity or (2) distance, azimuth,vertical angle, and intensity of each point in the same scan. CPC is a compact form of the original 3D point cloud. More detailed explanation of SPC and CPC can be found in the paper "Hang Yin and Christian Berger, Mastering data complexity for autonomous driving with adaptive point clouds for urban environments, 2017 IEEE Intelligent Vehicles Symposium, 2017 (https://www.researchgate.net/publication/318093493_Mastering_Data_Complexity_for_Autonomous_Driving_with_Adaptive_Point_Clouds_for_Urban_Environments)".
+
+CPC is able to squeeze a complete scan of VPL-16 (Velodyne LiDAR with 16 layers) into a single UDP packet, i.e., with smaller size than 65535 bytes, assuming 10Hz rotation rate. In contrast, the number of points fired by HDL-32E per scan is more than double the size of VLP-16. Assuming 10Hz rotation rate, HDL-32E is able to fire up to 70,000 points, which cannot be all squeezed into one single UDP packet by CPC. Therefore, proxy-velodyne32 stores the data of a complete scan into three separate CPC messages, with each CPC containing a subset of the 32 layers. The first CPC contains 12 layers; the second CPC contains 11 layers; and the third CPC contains 9 layers.
+
+For every 32 points with the same azimuth, they are re-ordered with increasing vertical angle. The top layer has a vertical angle of -30.67 degree. The bottom layer has a vertical angle of 10.67 degree. From the top layer all the way down to the bottom layer, the vertical angle increment alternates between 1.33 and 1.34 degree. For instance, the vertical angle of the top layer, Layer 0, is -30.67 degree, while the vertical angles of Layer 1 and Layer 2 are -29.33 and -28 degree, respectively.
+
+The layers from different CPCs interleave with each other. The first CPC includes Layer 0, Layer 1, and every 3rd layer after Layer 1, thereby resulting in 12 layers. The second CPC includes Layer 2, Layer 3, and every 3rd layer after Layer 3, resulting in 11 layers. The third CPC includes Layer 5 and every 3rd layer after Layer 5, resulting in 9 layers. More specifically,
+
+- The first CPC includes layers 0, 1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31.
+- The second CPC includes layers 2, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30.
+- The third CPC includes layers 5, 8, 11, 14, 17, 20, 23, 26, 29.
+
+Since these three CPCs incude unique numbers of layers, a receiver can easily distinguish them from the number of layers. For instance, a CPC with 16 layers implies a CPC from VLP-16, while a CPC with 11 layers implies the second CPC from HDL-32E.
+
+In OpenDaVINCI, CPC is sent via UDP multicast to the local network. UDP communication does not guarantee that the original packet sending order is preserved on the receive side, and packet loss is possible. Consequently, the three CPCs may be received by another software module in the system in a different order. Furthermore, some of these three CPCs may never be received due to UDP packet loss. To deal with such problems, all the three CPCs of the same scan have the same sample timestamp. In this way, a receiver will figure out if a new CPC belongs to the same scan as the previous CPC or comes from a new scan. For 10Hz rotation rate, the delay between every two adjacent scans is roughly 100ms. If the difference between the sample timestamps of two CPCs is close to 100ms, they must come from different scans. 
+
