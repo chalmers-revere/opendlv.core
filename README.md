@@ -14,6 +14,7 @@
 The resulting Docker image chalmersrevere/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest contains
 the OpenDLV core binaries on the latest OpenDaVINCI framework running on Ubuntu 16.04 LTS.
 
+Note that cmake is required to build opendlv.core for both native Linux and Docker building processes.
 ## Run the resulting Docker image:
 
     docker run -ti --rm --net host --user odv chalmersrevere/opendlv-core-on-opendavinci-ubuntu-16.04-complete:latest /bin/bash
