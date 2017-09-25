@@ -91,7 +91,6 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyLEDStrip::body() 
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     odcore::base::Lock l(m_mutex);
 
-
     // capping the max angle at 45 deg = 0.785398 rad
     if (std::fabs(m_angle) >= 0.785398f) {
       if (m_angle >= 0.0f) {
