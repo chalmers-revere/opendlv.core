@@ -59,11 +59,11 @@ void ProxyLEDStrip::setUp()
   odcore::base::KeyValueConfiguration kv = getKeyValueConfiguration();
   // "/dev/ttyUSB0";
   const std::string SERIAL_PORT = kv.getValue<std::string>(getName() + ".serialport"); 
-  const uint32_t BAUD_RATE = kv.getValue<uint32_t>(getName() + ".baudrate");    
+  const uint32_t BAUD_RATE = kv.getValue<int32_t>(getName() + ".baudrate");    
   // the size of the LED section to be powered
-  m_activeLedSize = kv.getValue<uint8_t>(getName() + ".activeledsize");
+  m_activeLedSize = kv.getValue<int32_t>(getName() + ".activeledsize");
   // the number of LEDs to be dimmed at the edge of the lighted section
-  m_fadeSize = kv.getValue<uint8_t>(getName() + ".fadesize"); ;
+  m_fadeSize = kv.getValue<int32_t>(getName() + ".fadesize"); ;
   try {
     m_serialPort = std::shared_ptr<odcore::wrapper::SerialPort>(odcore::wrapper::SerialPortFactory::createSerialPort(SERIAL_PORT, BAUD_RATE));
   }
@@ -90,10 +90,7 @@ void ProxyLEDStrip::nextContainer(odcore::data::Container &a_c) {
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyLEDStrip::body() {
   while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
     odcore::base::Lock l(m_mutex);
-    m_angle += 0.1f;
-    if ( m_angle > 0.7f ) {
-      m_angle = -0.7f;
-    }
+
 
     // capping the max angle at 45 deg = 0.785398 rad
     if (std::fabs(m_angle) >= 0.785398f) {
