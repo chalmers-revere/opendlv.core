@@ -146,7 +146,7 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     , m_distance(0.0)
     , m_velodyneSharedMemory(m)
     , m_segment(NULL)
-    , m_velodyneContainer(c)
+    , m_conference(c)
     , m_spc()
     , m_verticalAngle()
     , m_calibration(s)
@@ -195,7 +195,7 @@ Velodyne16Decoder::Velodyne16Decoder(odcore::io::conference::ContainerConference
     , m_distance(0.0)
     , m_velodyneSharedMemory()
     , m_segment(NULL)
-    , m_velodyneContainer(c)
+    , m_conference(c)
     , m_spc()
     , m_verticalAngle()
     , m_calibration(s)
@@ -229,7 +229,7 @@ void Velodyne16Decoder::sendPointCloud() {
             m_spc.setWidth(m_pointIndexSPC); // Number of points.
             Container c(m_spc);
             c.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c);     
+            m_conference.send(c);     
         }
         m_pointIndexSPC = 0;
         m_startID = 0;
@@ -240,21 +240,21 @@ void Velodyne16Decoder::sendPointCloud() {
             CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
             Container c(cpc);
             c.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c);
+            m_conference.send(c);
         } else if (m_CPCIntensityOption == 1) {
             CompactPointCloud cpc(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));    
             Container c(cpc);
             c.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c);
+            m_conference.send(c);
         } else{
             CompactPointCloud cpcNoIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamNoIntensity.str(), 0, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding)); 
             CompactPointCloud cpcWithIntensity(m_startAzimuth, m_previousAzimuth, m_ENTRIES_PER_AZIMUTH, m_distanceStringStreamWithIntensity.str(), m_numberOfBitsForIntensity, static_cast< CompactPointCloud::INTENSITY_PLACEMENT >(m_intensityPlacement), static_cast< CompactPointCloud::DISTANCE_ENCODING >(m_distanceEncoding));  
             Container c1(cpcNoIntensity);
             c1.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c1);
+            m_conference.send(c1);
             Container c2(cpcWithIntensity);
             c2.setSampleTimeStamp(now);
-            m_velodyneContainer.send(c2);
+            m_conference.send(c2);
         }
         m_pointIndexCPC = 0;
         m_startAzimuth = m_currentAzimuth;
