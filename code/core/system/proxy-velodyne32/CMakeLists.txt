@@ -1,5 +1,5 @@
-# proxy-velodyne16 - Interface to VLP-16.
-# Copyright (C) 2016 Christian Berger and Hang Yin
+# proxy-velodyne32 - Interface to HDL-32E.
+# Copyright (C) 2017 Christian Berger and Hang Yin
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,7 +17,7 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8)
 
-PROJECT (opendlv-core-system-proxy-velodyne16)
+PROJECT (opendlv-core-system-proxy-velodyne32)
 
 ###########################################################################
 # Set the search path for .cmake files.
@@ -61,24 +61,24 @@ ADD_EXECUTABLE (${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/apps/${PROJECT_NAME
 TARGET_LINK_LIBRARIES (${PROJECT_NAME} ${PROJECT_NAME}-static ${LIBRARIES}) 
 
 ###############################################################################
-# This custom command copies the "sampleShort.pcap" recording file and the Velodyne calibration file "VLP-16.xml" to where
+# This custom command copies the "sampleShort_velodyne32.pcap" recording file and the Velodyne calibration file "HDL-32E.xml" to where
 # the test suites are generated (more correctly to the parent folder) so
-# that the test suite "ProxyVelodyne16TestSuite.h" can open it during
+# that the test suite "ProxyVelodyne32TestSuite.h" can open it during
 # exection.
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/sampleShort.pcap
-                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleShort.pcap ${CMAKE_BINARY_DIR}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleShort.pcap)
-ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyPCAPFile DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sampleShort.pcap)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/sampleShort_velodyne32.pcap
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleShort_velodyne32.pcap ${CMAKE_BINARY_DIR}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleShort_velodyne32.pcap)
+ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyPCAPFile DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sampleShort_velodyne32.pcap)
 
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/VLP-16.xml
-                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/VLP-16.xml ${CMAKE_BINARY_DIR}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/VLP-16.xml)
-ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyCalibrationFile DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/VLP-16.xml)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/HDL-32E.xml
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/HDL-32E.xml ${CMAKE_BINARY_DIR}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/HDL-32E.xml)
+ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyCalibrationFile DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/HDL-32E.xml)
 
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/sampleVeloViewFrame1.zip
-                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleVeloViewFrame1.zip ${CMAKE_BINARY_DIR}
-                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleVeloViewFrame1.zip)
-ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyZipFile DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sampleVeloViewFrame1.zip)
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/sampleVeloViewFrame1_velodyne32.zip
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleVeloViewFrame1_velodyne32.zip ${CMAKE_BINARY_DIR}
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/testsuites/sampleVeloViewFrame1_velodyne32.zip)
+ADD_CUSTOM_TARGET(${PROJECT_NAME}-CopyZipFile DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/sampleVeloViewFrame1_velodyne32.zip)
 
 ###############################################################################
 # Enable CxxTest for all available testsuites.

@@ -24,6 +24,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <array>
 
 #include "opendavinci/GeneratedHeaders_OpenDaVINCI.h"
 #include "opendavinci/generated/odcore/data/SharedPointCloud.h"
@@ -54,8 +55,13 @@ odcore::io::conference::ContainerConference &c, const string &s)
     , m_distance(0.0)
     , m_velodyneSharedMemory(m)
     , m_segment(NULL)
-    , m_velodyneContainer(c)
+    , m_conference(c)
     , m_spc()
+    , m_rotCorrection()
+    , m_vertCorrection()
+    , m_distCorrection()
+    , m_vertOffsetCorrection()
+    , m_horizOffsetCorrection()
     , m_calibration(s) {
     //Initial setup of the shared point cloud (N.B. The size and width of the shared point cloud depends on the number of points of a frame, hence they are not set up in the constructor)
     m_spc.setName(m_velodyneSharedMemory->getName()); // Name of the shared memory segment with the data.
@@ -73,8 +79,8 @@ odcore::io::conference::ContainerConference &c, const string &s)
     if (!in.is_open()){
         cout << "Calibration file not found." << endl;
     }
-    int counter[5] = {0, 0, 0, 0, 0}; //corresponds to the index of the five calibration values
-    bool found[5] = {false, false, false, false, false};
+    std::array<int, 5> counter = {{0, 0, 0, 0, 0}}; //corresponds to the index of the five calibration values
+    std::array<bool, 5> found = {{false, false, false, false, false}};
 
     while (getline(in, line)) {
         string tmp; // strip whitespaces from the beginning
@@ -162,7 +168,7 @@ void Velodyne64Decoder::sendSharedPointCloud(const float &oldAzimuth, const floa
             m_spc.setSize(m_SIZE); // Size in raw bytes.
             m_spc.setWidth(m_pointIndex);                                                      // Number of points.
             Container c(m_spc);
-            m_velodyneContainer.send(c);
+            m_conference.send(c);
         }
         m_pointIndex = 0;
         m_startID = 0;
