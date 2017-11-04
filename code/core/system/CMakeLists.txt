@@ -60,6 +60,7 @@ add_subdirectory(proxy-v2v)
 add_subdirectory(proxy-v2xin)
 add_subdirectory(proxy-v2xout)
 add_subdirectory(proxy-velodyne16)
+add_subdirectory(proxy-velodyne32)
 add_subdirectory(proxy-velodyne64)
 add_subdirectory(ps3controller)
 

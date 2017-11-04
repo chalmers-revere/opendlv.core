@@ -1,6 +1,6 @@
 /**
- * Velodyne16Decoder is used to decode VLP-16 data realized with OpenDaVINCI
- * Copyright (C) 2016 Hang Yin
+ * Velodyne32Decoder is used to decode HDL-32E data realized with OpenDaVINCI
+ * Copyright (C) 2017 Hang Yin
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef VELODYNE16DECODER_H_
-#define VELODYNE16DECODER_H_
+#ifndef VELODYNE32DECODER_H_
+#define VELODYNE32DECODER_H_
 
 #include <cmath>
 #include <memory>
@@ -38,21 +38,21 @@ namespace proxy {
 using namespace odcore::wrapper;
 
 // This class will handle bytes received via a UDP socket.
-class Velodyne16Decoder : public odcore::io::StringListener {
+class Velodyne32Decoder : public odcore::io::StringListener {
    private:
     /**
          * "Forbidden" copy constructor. Goal: The compiler should warn
          * already at compile time for unwanted bugs caused by any misuse
          * of the copy constructor.
          */
-    Velodyne16Decoder(const Velodyne16Decoder &);
+    Velodyne32Decoder(const Velodyne32Decoder &);
 
     /**
          * "Forbidden" assignment operator. Goal: The compiler should warn
          * already at compile time for unwanted bugs caused by any misuse
          * of the assignment operator.
          */
-    Velodyne16Decoder &operator=(const Velodyne16Decoder &);
+    Velodyne32Decoder &operator=(const Velodyne32Decoder &);
 
    public:
     /**
@@ -67,7 +67,7 @@ class Velodyne16Decoder : public odcore::io::StringListener {
      * @param intensityPlacement higher or lower bits for intensity
      * @param distanceEncoding use cm or 2mm for distance encoding
      */  
-    Velodyne16Decoder(const std::shared_ptr< SharedMemory > m,
+    Velodyne32Decoder(const std::shared_ptr< SharedMemory > m,
 odcore::io::conference::ContainerConference &c, const string &s, const bool &withCPC, const uint8_t &SPCOption, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &intensityPlacement, const uint8_t &distanceEncoding);
     
     /**
@@ -79,19 +79,20 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
      * @param intensityPlacement higher or lower bits for intensity
      * @param distanceEncoding use cm or 2mm for distance encoding
      */
-    Velodyne16Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &intensityPlacement, const uint8_t &distanceEncoding);
+    Velodyne32Decoder(odcore::io::conference::ContainerConference &c, const string &s, const uint8_t &CPCIntensityOption, const uint8_t &numberOfBitsForIntensity, const uint8_t &intensityPlacement, const uint8_t &distanceEncoding);
 
-    virtual ~Velodyne16Decoder();
+    virtual ~Velodyne32Decoder();
 
     virtual void nextString(const std::string &s);
 
    private:
     void readCalibrationFile();
-    void index16sensorIDs();
+    void index32sensorIDs();
     void setupIntensityMaskCPC(uint8_t &, uint8_t &);
+    void sendCPC(bool);
     void sendPointCloud();
    private:
-    const uint32_t m_MAX_POINT_SIZE = 30000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
+    const uint32_t m_MAX_POINT_SIZE = 70000; //the maximum number of points per frame. This upper bound should be set as low as possible, as it affects the shared memory size and thus the frame updating speed.
     const uint32_t m_SIZE_PER_COMPONENT = sizeof(float);
     const uint8_t m_NUMBER_OF_COMPONENTS_PER_POINT = 4;  //4 components per vector: (1) cartesian: xyz+intensity; (2) polar: distance+azimuth+vertical angle+intensity
     const uint32_t m_SIZE = m_MAX_POINT_SIZE * m_NUMBER_OF_COMPONENTS_PER_POINT * m_SIZE_PER_COMPONENT; //the total size of the shared memory
@@ -107,31 +108,33 @@ odcore::io::conference::ContainerConference &c, const string &s, const bool &wit
     uint32_t m_startID;
     float m_previousAzimuth;
     float m_currentAzimuth;
-    float m_nextAzimuth;
-    float m_deltaAzimuth;
     float m_distance;
     std::shared_ptr< SharedMemory > m_velodyneSharedMemory; //shared memory for shared point cloud
     float *m_segment;  //temporary memory for transferring data of each frame to the shared memory
     odcore::io::conference::ContainerConference &m_conference;
     odcore::data::SharedPointCloud m_spc; //shared point cloud
-    std::array<float, 16> m_verticalAngle;           //Vertical angle of each sensor beam
-    string m_calibration;  //name of the calibration file for VLP-16
+    std::array<float, 32> m_verticalAngle; //Vertical angle of each sensor beam
+    string m_calibration;  //name of the calibration file for HDL-32E
     const float toRadian = static_cast<float>(M_PI) / 180.0f;  //degree to radian
     bool m_withSPC;  //if SPC is expected
     bool m_withCPC;  //if CPC is expected
         
     //For compact point cloud:
     float m_startAzimuth;
-    const uint8_t m_ENTRIES_PER_AZIMUTH = 16;//For VLP-16, there are 16 points per azimuth
-    std::stringstream m_distanceStringStreamNoIntensity; //The string stream with distance values for all points of one frame, excluding intensity
-    std::stringstream m_distanceStringStreamWithIntensity; //The string stream with distance values for all points of one frame, including intensity
+    const uint8_t m_ENTRIES_PER_AZIMUTH = 11;//For HDL-32E, there are 32 points per azimuth
+    std::stringstream m_distanceStringStreamNoIntensityPart1; //Layer 0, 1, 4, 7..., i.e., in addition to Layer 0, every 3rd layer from Layer 1 and resulting in 12 layers, without intensity
+    std::stringstream m_distanceStringStreamNoIntensityPart2; //Layer 2, 3, 6, 9..., i.e., in addition to Layer 2, every 3rd layer from Layer 3 and resulting in 11 layers, without intensity
+    std::stringstream m_distanceStringStreamNoIntensityPart3; //Layer 5, 8, 11..., i.e., every 3rd layer from Layer 5 and resulting in 9 layers, without intensity
+    std::stringstream m_distanceStringStreamWithIntensityPart1; //Similar to m_distanceStringStreamNoIntensityPart1, with intensity
+    std::stringstream m_distanceStringStreamWithIntensityPart2; //Similar to m_distanceStringStreamNoIntensityPart2, with intensity
+    std::stringstream m_distanceStringStreamWithIntensityPart3; //Similar to m_distanceStringStreamNoIntensityPart3, with intensity
     bool m_isStartAzimuth;  //Indicate if an azimuth is the starting azimuth of a new frame
-    std::array<uint8_t, 16> m_sensorOrderIndex;//Specify the sensor ID order for each 16 points with increasing vertical angle for CPC and SPC
-    std::array<uint16_t, 16> m_16SensorsNoIntensity;//Store the distance values of the current 16 sensors for CPC without intensity
-    std::array<uint16_t, 16> m_16SensorsWithIntensity;//Store the distance values of the current 16 sensors for CPC with intensity
+    std::array<uint8_t, 32> m_sensorOrderIndex; //Specify the sensor ID order for each 32 points with increasing vertical angle for CPC and SPC
+    std::array<uint16_t, 32> m_32SensorsNoIntensity; //Store the distance values of the current 32 sensors for CPC without intensity
+    std::array<uint16_t, 32> m_32SensorsWithIntensity; //Store the distance values of the current 32 sensors for CPC with intensity
 };
 }
 }
 }
 } // opendlv::core::system::proxy
-#endif /*VELODYNE16DECODER_H_*/
+#endif /*VELODYNE32DECODER_H_*/
