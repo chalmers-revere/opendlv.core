@@ -60,6 +60,7 @@ add_subdirectory(proxy-trimble)
 add_subdirectory(proxy-v2v)
 add_subdirectory(proxy-velodyne16)
 add_subdirectory(proxy-velodyne64)
+add_subdirectory(proxy-steppermotor)
 add_subdirectory(ps3controller)
 
 #install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../../config/configuration DESTINATION . COMPONENT system)
