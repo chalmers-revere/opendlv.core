@@ -288,6 +288,30 @@ bool Steppermotor::GetValue(uint16_t const a_pin) const
   }
 }
 
+
+void Steppermotor::MoveSteps(uint16_t a_step a_dir) const
+{
+StepPin;
+DirectionPin;
+
+StepState=GetValue(StepPin);
+DirectionState=GetValue(DirectionPin);
+
+// check if direction is right
+if (DirectionState==a_dir) {
+} else {
+SetValue=!DirectionState
+}
+
+
+// change high/low for number of steps
+for (uint_32 i=0 i<a_step ++i) {
+SetValue=!StepState;
+usleep(10);
+}
+
+}
+
 }
 }
 }
