@@ -1,4 +1,4 @@
-# camera-replay - A tool to replay a video file as a camera feed
+# camera-replay - A tool to find calibration matrices for IMU sensors
 # Copyright (C) 2016 Chalmers Revere
 #
 # This program is free software; you can redistribute it and/or

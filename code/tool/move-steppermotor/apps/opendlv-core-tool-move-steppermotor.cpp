@@ -1,5 +1,5 @@
 /**
- * camera-replay - Tool to replay a video as camera feed.
+ * move-steppermotor - Tool to rotate IMU on test rig
  * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or

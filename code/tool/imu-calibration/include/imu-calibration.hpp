@@ -1,5 +1,5 @@
 /**
- * move-steppermotor - Tool to rotate IMU on test rig
+ * imu-calibration - Tool to find calibration matrix of IMU.
  * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or
@@ -17,39 +17,41 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <ctype.h>
-#include <cstring>
-#include <iostream>
-#include <string>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-//include <logger.h>??
+#ifndef CORE_TOOL_IMUCALIBRATION_HPP_
+#define CORE_TOOL_IMUCALIBRATION_HPP_
 
-#include <opencv2/highgui/highgui.hpp>
+#include <map>
+#include <memory>
 
-#include "movesteppermotor.hpp"
+
+#include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+#include <opendavinci/odcore/data/Container.h>
+
+
+#include "imu-calibration.hpp"
 
 namespace opendlv {
 namespace core {
 namespace tool {
 
-for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor1:: MoveSteps(20 1)
-usleep(50000);
-}
+class IMUCalibration
+: public odcore::base::module::TimeTriggeredConferenceClientModule{
+ public:
+  IMUCalibration(int32_t const &, char **);
+  IMUCalibration(MoveSteppermotor const &) = delete;
+  IMUCalibration &operator=(MoveSteppermotor const &) = delete;
+  virtual ~IMUCalibration();
 
-for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor2:: MoveSteps(20 1)
-usleep(50000);
-}
+ private:
+  void setUp();
+  void tearDown();
 
-for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor3:: MoveSteps(20 1)
-usleep(50000);
-}
+  odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
+};
 
-} // tool
+} // tools
 } // core
 } // opendlv
+
+#endif

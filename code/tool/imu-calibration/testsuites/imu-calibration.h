@@ -1,5 +1,5 @@
 /**
- * move-steppermotor - Tool to rotate IMU on test rig
+ * imu-calibration - Tool to find projection matrix of camera.
  * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or
@@ -17,39 +17,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <ctype.h>
-#include <cstring>
-#include <iostream>
-#include <string>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-//include <logger.h>??
+#ifndef CORE_TOOL_IMUCALIBRATION_TESTSUITE_H
+#define CORE_TOOL_IMUCALIBRATION_TESTSUITE_H
 
-#include <opencv2/highgui/highgui.hpp>
+#include "cxxtest/IMUCalibration.h"
 
-#include "movesteppermotor.hpp"
+// Include local header files.
+#include "../include/imu-calibration.hpp"
 
-namespace opendlv {
-namespace core {
-namespace tool {
+class ProxySickTest : public CxxTest::TestSuite {
+   public:
+    void setUp() {}
 
-for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor1:: MoveSteps(20 1)
-usleep(50000);
-}
+    void tearDown() {}
 
-for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor2:: MoveSteps(20 1)
-usleep(50000);
-}
+    void testApplication() {
+        TS_ASSERT(true);
+    }
+};
 
-for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor3:: MoveSteps(20 1)
-usleep(50000);
-}
-
-
-} // tool
-} // core
-} // opendlv
+#endif

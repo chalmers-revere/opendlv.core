@@ -1,5 +1,5 @@
 /**
- * camera-projection - Tool to find projection matrix of camera.
+ * move-steppermotor - Tool to rotate IMU on test rig
  * Copyright (C) 2016 Chalmers Revere
  *
  * This program is free software; you can redistribute it and/or
