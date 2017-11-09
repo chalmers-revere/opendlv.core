@@ -22,12 +22,6 @@
 #include <string>
 #include <vector>
 
-#include <opendavinci/odcore/base/KeyValueConfiguration.h>
-#include <opendavinci/odcore/data/Container.h>
-#include <opendavinci/odcore/strings/StringToolbox.h>
-
-#include <odvdminiature/GeneratedHeaders_ODVDMiniature.h>
-
 #include "Steppermotor.h"
 
 namespace opendlv {
@@ -301,13 +295,14 @@ DirectionState=GetValue(DirectionPin);
 // check if direction is right
 if (DirectionState==a_dir) {
 } else {
-SetValue=!DirectionState;
+SetValue(DirectionState)=!DirectionState;
+usleep(10);
 }
 
 
 // change high/low for number of steps
 for (uint_32 i=0 i<a_step ++i) {
-SetValue=!StepState;
+SetValue(StepState)=!StepState;
 usleep(10);
 }
 

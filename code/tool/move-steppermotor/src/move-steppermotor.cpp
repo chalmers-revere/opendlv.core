@@ -26,27 +26,29 @@
 #include <unistd.h>
 //include <logger.h>??
 
-#include <opencv2/highgui/highgui.hpp>
-
 #include "movesteppermotor.hpp"
 
 namespace opendlv {
 namespace core {
 namespace tool {
 
+// start logger?
+
+// start
+
 for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor.1:: MoveSteps(20 1)
-usleep(50000);
+opendlv::core::proxy-steppermotor.1::steppermotor:: MoveSteps(20 1)
+usleep(2000);
 }
 
 for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor.2:: MoveSteps(20 1)
-usleep(50000);
+opendlv::core::proxy-steppermotor.2::steppermotor:: MoveSteps(20 1)
+usleep(2000);
 }
 
 for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor.3:: MoveSteps(20 1)
-usleep(50000);
+opendlv::core::proxy-steppermotor.3::steppermotor:: MoveSteps(20 1)
+usleep(2000);
 }
 
 
