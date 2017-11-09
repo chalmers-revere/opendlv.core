@@ -1,4 +1,4 @@
-# docker-compose.yml - Composition of micro-services to run OpenDLV software.
+# Dockerfile - Dockerfile to run OpenDLV software.
 # Copyright (C) 2016 Christian Berger
 #
 # This program is free software; you can redistribute it and/or
@@ -15,16 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# Date: 2016-10-16
+# Date: 2016-09-09
 
-version: '2'
-
-services:
-    proxy-steppermotor:
-        image: ${IMAGE}
-        volumes:
-            - .:/opt/opendlv.core.configuration
-        network_mode: "host"
-        command: "/opt/opendlv.core/bin/opendlv-core-system-proxy-imu-calibration --cid=${CID}"
-
+FROM seresearch/opendlv-core-on-opendavinci-on-base:latest
 

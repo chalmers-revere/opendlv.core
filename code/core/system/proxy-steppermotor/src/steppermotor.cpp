@@ -297,10 +297,11 @@ DirectionPin;
 StepState=GetValue(StepPin);
 DirectionState=GetValue(DirectionPin);
 
+
 // check if direction is right
 if (DirectionState==a_dir) {
 } else {
-SetValue=!DirectionState
+SetValue=!DirectionState;
 }
 
 
@@ -311,6 +312,7 @@ usleep(10);
 }
 
 }
+
 
 }
 }

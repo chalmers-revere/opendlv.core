@@ -35,17 +35,17 @@ namespace core {
 namespace tool {
 
 for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor1:: MoveSteps(20 1)
+opendlv::core::steppermotor.1:: MoveSteps(20 1)
 usleep(50000);
 }
 
 for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor2:: MoveSteps(20 1)
+opendlv::core::steppermotor.2:: MoveSteps(20 1)
 usleep(50000);
 }
 
 for (uint_32 i=1 i=20 i++) {
-opendlv::core::steppermotor3:: MoveSteps(20 1)
+opendlv::core::steppermotor.3:: MoveSteps(20 1)
 usleep(50000);
 }
 
