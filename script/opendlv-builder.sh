@@ -22,6 +22,7 @@ IMAGE=$2
 
 # IDEA: Output mode: (1) docker image, (2) binaries, (3) packages
 # TODO: Fix ccache, volume for build files
+# TODO: Abort if compilation (or somethig else) fails
 
 REPOSITORY=seresearch
 IMAGE_PATH=$REPOSITORY/$IMAGE
@@ -34,11 +35,11 @@ VERSION=`cat $SOURCE_PATH/VERSION`
 DOCKER_NETWORK_NAME=nw_$IMAGE
 
 DOCKER_SOCK="/var/run/docker.sock"
-#if ![ -f "$DOCKER_SOCK" ]
-#then
-#	echo "$DOCKER_SOCK not found. If running in container, please link this file from the host system, or make sure that docker is running."
-#  exit 1
-#fi
+if [ ! -e "$DOCKER_SOCK" ]
+then
+	echo "$DOCKER_SOCK not found. If running in container, please link this file from the host system, or make sure that docker is running."
+  exit 1
+fi
 
 docker network inspect $DOCKER_NETWORK_NAME || docker network create $DOCKER_NETWORK_NAME
 
@@ -59,14 +60,24 @@ chmod +x /opt/run-cmake.sh
 
 docker network rm $DOCKER_NETWORK_NAME
 
+ADD_CMDS=""
+if [ -e "/opt/output/bin" ]
+then
+  ADD_CMDS="$ADD_CMDS\nADD bin /usr/bin" 
+fi
+if [ -e "/opt/output/lib" ]
+then
+  ADD_CMDS="$ADD_CMDS\nADD lib /usr/lib" 
+fi
+if [ -e "/opt/output/share" ]
+then
+  ADD_CMDS="$ADD_CMDS\nADD share /usr/share" 
+fi
 
 cat <<EOF > /opt/output/Dockerfile
 FROM $BASE_IMAGE_PATH
 MAINTAINER Christian Berger "christian.berger@gu.se"
-
-ADD bin /usr/bin
-ADD lib /usr/lib
-ADD share /usr/share
+$ADD_CMDS
 EOF
 	
 cd /opt/output 

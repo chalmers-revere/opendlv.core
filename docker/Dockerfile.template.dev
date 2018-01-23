@@ -23,7 +23,7 @@ ADD lib /usr/lib
 ADD share /usr/share
 
 RUN apt-get update
-RUN apt-get -y install docker.io cxxtest witty witty-dev
+RUN apt-get -y install docker.io catch libwebsockets7 libwebsockets-dev
 
 ADD opendlv-builder.sh /usr/bin/opendlv-builder
 RUN chmod +x /usr/bin/opendlv-builder

@@ -22,6 +22,6 @@ ADD lib /usr/lib
 ADD share /usr/share
 
 RUN apt-get update
-RUN apt-get -y install witty
+RUN apt-get -y install libwebsockets7
 
 ENV QT_X11_NO_MITSHM=1
