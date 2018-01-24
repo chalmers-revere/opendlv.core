@@ -1,5 +1,4 @@
-# Dockerfile to create an image for building and running OpenDLV core.
-# Copyright (C) 2016 Christian Berger
+# Copyright (C) 2018 Ola Benderius
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,13 +14,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-FROM BASEIMAGE
-MAINTAINER Christian Berger "christian.berger@gu.se"
+FROM alpine
+MAINTAINER Ola Benderius "ola.benderius@chalmers.se"
+
+ADD od4/lib/libodcantools.so /usr/lib
+ADD od4/lib/libopendavinci.so /usr/lib
 
 ADD lib /usr/lib
 ADD share /usr/share
-
-RUN apt-get update
-RUN apt-get -y install libwebsockets7
-
-ENV QT_X11_NO_MITSHM=1

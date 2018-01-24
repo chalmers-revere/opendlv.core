@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Chalmers Revere
+# Copyright (C) 2018 Ola Benderius
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -14,34 +14,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
-project(opendlv.core)
+project(opendlv-standardmessageset)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake.Modules" ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH "${OPENDAVINCI_DIR}/share/cmake-${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}/Modules" ${CMAKE_MODULE_PATH})
 
 include(ExternalProject)
 include(FindJava REQUIRED)
-
 include(FindodDataStructureGenerator REQUIRED)
-include(FindodCANDataStructureGenerator REQUIRED)
 
-set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
-set(PROJECT_ROOT ${CMAKE_SOURCE_DIR})
-
-if(NOT("${DPKG_EXECUTABLE}" STREQUAL "DPKG_EXECUTABLE-NOTFOUND")
-    AND NOT("${RPMBUILD_EXECUTABLE}" STREQUAL "RPMBUILD_EXECUTABLE-NOTFOUND")
-    AND ("${PACKAGING_ENABLED}" STREQUAL "YES") )
-  message(STATUS "Enabling building .deb and .rpm packages.")
-  set(MAKE_PACKAGE package)
-else()
-  # If the platform does not provide dpkg and rpmbuild, make package is
-  # replaced with make help to simply have a no-op.
-  set(MAKE_PACKAGE help)
-endif()
-
-### ODVD BEGIN ###
 ExternalProject_Add (libodvdopendlvstandardmessageset-cleanup
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlvstandardmessageset
@@ -55,14 +38,13 @@ ExternalProject_Add (libodvdopendlvstandardmessageset-cleanup
 ExternalProject_Add (libodvdopendlvstandardmessageset
     DEPENDS libodvdopendlvstandardmessageset-cleanup
     DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resource/odvd/ODVDOpenDLVStandardMessageSet.odvd
+    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/ODVDOpenDLVStandardMessageSet.odvd
     PATCH_COMMAND ""
     SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlvstandardmessageset"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
     CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}"
     CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
     CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
     TEST_BEFORE_INSTALL 1
     TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
     INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlvstandardmessageset-prefix/src/libodvdopendlvstandardmessageset-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlvstandardmessageset-prefix/src/libodvdopendlvstandardmessageset-build --target ${MAKE_PACKAGE})
-  ### ODVD END ###

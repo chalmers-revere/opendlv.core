@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# completeBuild.sh - Script to build opendlv.core.
-# Copyright (C) 2016 Christian Berger
+# Copyright (C) 2018 Ola Benderius
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,19 +17,21 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 UID_AS=$1
+GID_AS=$2
 
 cat <<EOF > /opt/run-cmake.sh
 #!/bin/bash
 cd /opt/build
 
-echo "[opendlv.core Docker builder] Complete build."
 cmake -E remove_directory .
 PATH=/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D PACKAGING_ENABLED=NO -D CMAKE_INSTALL_PREFIX=/opt/output /opt/sources
 PATH=/opt/od4/bin:$PATH make -j4
+cp -r /opt/od4 /opt/output
 EOF
 
 chmod 755 /opt/run-cmake.sh
-chown $UID_AS:$UID_AS /opt/run-cmake.sh
+chown $UID_AS:$GID_AS /opt/run-cmake.sh
 
-su -m `getent passwd $UID_AS|cut -f1 -d":"` -c /opt/run-cmake.sh
-
+groupadd -g $GID_AS worker
+useradd -u $UID_AS -g $GID_AS worker
+su -m worker -c /opt/run-cmake.sh

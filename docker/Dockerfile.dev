@@ -1,5 +1,4 @@
-# Dockerfile to create an image for building and running OpenDLV core.
-# Copyright (C) 2016 Christian Berger
+# Copyright (C) 2018 Ola Benderius
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -15,18 +14,24 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-FROM BASEIMAGE
-MAINTAINER Christian Berger "christian.berger@gu.se"
+FROM alpine
+MAINTAINER Ola Benderius "ola.benderius@chalmers.se"
+
+ADD od4/bin/odCANDataStructureGenerator-latest.jar /usr/bin
+ADD od4/bin/odDataStructureGenerator-latest.jar /usr/bin
+
+ADD od4/include/odcantools /usr/include
+ADD od4/include/opendavinci /usr/include
+
+ADD od4/lib/libodcantools.so /usr/lib
+ADD od4/lib/libopendavinci.so /usr/lib
+
+ADD od4/share/cmake-3.5/Modules/FindOpenDaVINCI.cmake /usr/share/cmake-3.5/Modules
+ADD od4/share/cmake-3.5/Modules/FindodCANDataStructureGenerator.cmake /usr/share/cmake-3.5/Modules
+ADD od4/share/cmake-3.5/Modules/FindodDataStructureGenerator.cmake /usr/share/cmake-3.5/Modules
 
 ADD include /usr/include
 ADD lib /usr/lib
 ADD share /usr/share
 
-RUN apt-get update
-RUN apt-get -y install docker.io catch libwebsockets7 libwebsockets-dev
-
-ADD opendlv-builder.sh /usr/bin/opendlv-builder
-RUN chmod +x /usr/bin/opendlv-builder
-RUN mkdir /opt/sources
-
-ENV QT_X11_NO_MITSHM=1
+RUN apk add --update cmake g++ gcc make openjdk8-jre

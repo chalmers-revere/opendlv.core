@@ -1,21 +1,15 @@
 # opendlv-core
 
-## Building on a native Linux:
-
-    mkdir build && cd build
-    PATH=/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/opendlv.core ..
+This repository contains the minimum requirements for compiling and running
+any OpenDLV microservice, in particular the middleware OpenDaVINCI and the
+OpenDLV Standard Message set.
 
 ## Building using a Docker builder:
 
     cd docker
-    make buildComplete
-    make createDockerImage
+    make
 
-The resulting Docker image chalmersrevere/opendlv-core-on-opendavinci-on-base:latest contains
-the OpenDLV core binaries on the latest OpenDaVINCI framework.
-
-Note that cmake is required to build opendlv.core for both native Linux and Docker building processes.
-## Run the resulting Docker image:
-
-    docker run -ti --rm --net host --user odv chalmersrevere/opendlv-core-on-opendavinci-on-base:latest /bin/bash
+The resulting Docker image chalmersrevere/opendlv-core:latest and 
+chalmersrevere/opendlv-core-dev:latest contains the OpenDLV core runtime 
+binaries and development binaries respectively.
 
