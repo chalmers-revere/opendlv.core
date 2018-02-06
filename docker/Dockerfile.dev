@@ -17,21 +17,30 @@
 FROM alpine
 MAINTAINER Ola Benderius "ola.benderius@chalmers.se"
 
-ADD od4/bin/odCANDataStructureGenerator-latest.jar /usr/bin
-ADD od4/bin/odDataStructureGenerator-latest.jar /usr/bin
+COPY od4/bin/odCANDataStructureGenerator-latest.jar /usr/bin/
+COPY od4/bin/odDataStructureGenerator-latest.jar /usr/bin/
 
-ADD od4/include/odcantools /usr/include
-ADD od4/include/opendavinci /usr/include
+COPY od4/include/odcantools /usr/include
+COPY od4/include/opendavinci /usr/include
 
-ADD od4/lib/libodcantools.so /usr/lib
-ADD od4/lib/libopendavinci.so /usr/lib
+COPY od4/lib/libodcantools.so /usr/lib/
+COPY od4/lib/libopendavinci.so /usr/lib/
 
-ADD od4/share/cmake-3.5/Modules/FindOpenDaVINCI.cmake /usr/share/cmake-3.5/Modules
-ADD od4/share/cmake-3.5/Modules/FindodCANDataStructureGenerator.cmake /usr/share/cmake-3.5/Modules
-ADD od4/share/cmake-3.5/Modules/FindodDataStructureGenerator.cmake /usr/share/cmake-3.5/Modules
+COPY od4/share/cmake-2.8/Modules/FindOpenDaVINCI.cmake /usr/share/cmake-2.8/Modules/
+COPY od4/share/cmake-2.8/Modules/FindLibRT.cmake /usr/share/cmake-2.8/Modules/
+COPY od4/share/cmake-2.8/Modules/FindodCANDataStructureGenerator.cmake /usr/share/cmake-2.8/Modules/
+COPY od4/share/cmake-2.8/Modules/FindodDataStructureGenerator.cmake /usr/share/cmake-2.8/Modules/
+COPY od4/share/cmake-3.0/Modules/FindOpenDaVINCI.cmake /usr/share/cmake-3.0/Modules/
+COPY od4/share/cmake-3.0/Modules/FindLibRT.cmake /usr/share/cmake-3.0/Modules/
+COPY od4/share/cmake-3.0/Modules/FindodCANDataStructureGenerator.cmake /usr/share/cmake-3.0/Modules/
+COPY od4/share/cmake-3.0/Modules/FindodDataStructureGenerator.cmake /usr/share/cmake-3.0/Modules/
+COPY od4/share/cmake-3.5/Modules/FindOpenDaVINCI.cmake /usr/share/cmake-3.5/Modules/
+COPY od4/share/cmake-3.5/Modules/FindLibRT.cmake /usr/share/cmake-3.5/Modules/
+COPY od4/share/cmake-3.5/Modules/FindodCANDataStructureGenerator.cmake /usr/share/cmake-3.5/Modules/
+COPY od4/share/cmake-3.5/Modules/FindodDataStructureGenerator.cmake /usr/share/cmake-3.5/Modules/
 
-ADD include /usr/include
-ADD lib /usr/lib
-ADD share /usr/share
+COPY include /usr/include
+COPY lib /usr/lib
+COPY share /usr/share
 
 RUN apk add --update cmake g++ gcc make openjdk8-jre

@@ -57,7 +57,7 @@ clean:
 
 buildComplete:
 	$(CMAKE) -E make_directory $(BUILD_PATH)/build $(BUILD_PATH)/output
-	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH)/message:/opt/sources -v $(BUILD_PATH)/build:/opt/build -v $(BUILD_PATH)/output:/opt/output -v $(SOURCE_TREE_PATH)/docker/build.sh:/opt/build.sh -w /opt $(BASE_IMAGE_DEV_PATH):$(BASE_IMAGE_DEV_VERSION) /opt/build.sh $(BUILD_AS) 
+	$(DOCKER) run -ti --rm -v $(SOURCE_TREE_PATH)/message:/opt/sources -v $(BUILD_PATH)/build:/opt/build -v $(BUILD_PATH)/output:/opt/output -v $(SOURCE_TREE_PATH)/docker/build.sh:/opt/build.sh $(BASE_IMAGE_DEV_PATH):$(BASE_IMAGE_DEV_VERSION) /opt/build.sh $(BUILD_AS) 
 
 createDockerImage: createDockerImageRun createDockerImageDev
 

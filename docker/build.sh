@@ -23,8 +23,7 @@ cat <<EOF > /opt/run-cmake.sh
 #!/bin/bash
 cd /opt/build
 
-cmake -E remove_directory .
-PATH=/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D PACKAGING_ENABLED=NO -D CMAKE_INSTALL_PREFIX=/opt/output /opt/sources
+PATH=/opt/od4/bin:$PATH cmake -D OPENDAVINCI_DIR=/opt/od4 -D CMAKE_INSTALL_PREFIX=/opt/output /opt/sources
 PATH=/opt/od4/bin:$PATH make -j4
 cp -r /opt/od4 /opt/output
 EOF

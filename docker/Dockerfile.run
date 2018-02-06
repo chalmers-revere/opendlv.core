@@ -17,8 +17,8 @@
 FROM alpine
 MAINTAINER Ola Benderius "ola.benderius@chalmers.se"
 
-ADD od4/lib/libodcantools.so /usr/lib
-ADD od4/lib/libopendavinci.so /usr/lib
+COPY od4/lib/libodcantools.so /usr/lib/
+COPY od4/lib/libopendavinci.so /usr/lib/
 
-ADD lib /usr/lib
-ADD share /usr/share
+COPY lib /usr/lib
+COPY share /usr/share
