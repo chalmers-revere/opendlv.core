@@ -306,14 +306,17 @@ message opendlv.logic.perception.GroundSurfaceProperty [id = 1142] {
   string property [id = 2];
 }
 
-// TODO: Perspective?
-//message opendlv.logic.perception.GroundSurfaceArea [id = 1143] {
-//  uint32 surfaceId [id = 1];
-//  float azimuthAngleLeft [id = 2];
-//  float azimuthAngleRight [id = 3];
-//  float zenithAngleNear [id = 4];
-//  float zenithAngleFar [id = 5];
-//}
+message opendlv.logic.perception.GroundSurfaceArea [id = 1143] {
+  uint32 surfaceId [id = 1];
+  float leftPerpendicularAngle [id = 2];
+  float leftDistance [id = 3];
+  float rightPerpendicularAngle [id = 4];
+  float rightDistance [id = 5];
+  float nearPerpendicularAngle [id = 6];
+  float nearDistance [id = 7];
+  float farPerpendicularAngle [id = 8];
+  float farDistance [id = 9];
+}
 
 
 message opendlv.logic.action.AimDirection [id = 1171] {
