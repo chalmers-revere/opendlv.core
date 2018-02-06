@@ -85,6 +85,31 @@ message(STATUS "Installing OpenDLV.core to ${INSTALL_DIR}.")
 set(PROJECT_ROOT ${CMAKE_SOURCE_DIR})
 
 ###########################################################################
+ExternalProject_Add (libodvdopendlv-0_9_1-cleanup
+    DOWNLOAD_COMMAND ""
+    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlv-0_9_1
+    PATCH_COMMAND ""
+    SOURCE_DIR ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    TEST_COMMAND ""
+    INSTALL_COMMAND "")
+
+ExternalProject_Add (libodvdopendlv-0_9_1
+    DEPENDS libodvdopendlv-0_9_1-cleanup
+    DOWNLOAD_COMMAND ""
+    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resources/odvd/opendlv-0.9.1.odvd
+    PATCH_COMMAND ""
+    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlv-0_9_1"
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
+    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
+    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
+    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
+    TEST_BEFORE_INSTALL 1
+    TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
+    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlv-0_9_1-prefix/src/libodvdopendlv-0_9_1-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlv-0_9_1-prefix/src/libodvdopendlv-0_9_1-build --target ${MAKE_PACKAGE})
+
+###########################################################################
 # This "external project" simply deletes the existing libodvdopendlvdatamodel.
 ExternalProject_Add (libodvdopendlvdatamodel-cleanup
     DOWNLOAD_COMMAND ""
