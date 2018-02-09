@@ -41,7 +41,6 @@ SickStringDecoder::SickStringDecoder(odcore::io::conference::ContainerConference
     : m_conference(a_conference)
     , m_header(false)
     , m_startConfirmed(false)
-    , m_latestReading()
     , m_buffer()
 {
   m_position[0] = a_x;
@@ -119,6 +118,8 @@ SickStringDecoder::~SickStringDecoder()
 
 void SickStringDecoder::convertToDistances()
 {
+  // TODO: Pack in standard point clound message.
+  /*
   uint32_t byte1;
   uint32_t byte2;
   uint32_t distance;
@@ -159,6 +160,7 @@ void SickStringDecoder::convertToDistances()
   // Distribute data.
   odcore::data::Container c(m_latestReading);
   m_conference.send(c);
+  */
 }
 
 bool SickStringDecoder::tryDecode()
