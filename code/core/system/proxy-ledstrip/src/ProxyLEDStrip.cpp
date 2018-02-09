@@ -30,8 +30,7 @@
 #include <opendavinci/odcore/wrapper/SerialPort.h>
 #include <opendavinci/odcore/wrapper/SerialPortFactory.h>
 
-#include "odvdopendlvdatamodel/generated/opendlv/model/Direction.h"
-#include "odvdopendlvdatamodel/generated/opendlv/perception/StimulusDirectionOfMovement.h"
+#include "odvdopendlvstandardmessageset/GeneratedHeaders_ODVDOpenDLVStandardMessageSet.h"
 
 #include "ProxyLEDStrip.h"
 
@@ -59,10 +58,9 @@ void ProxyLEDStrip::setUp() {}
 void ProxyLEDStrip::tearDown() {}
 
 void ProxyLEDStrip::nextContainer(odcore::data::Container &c) {
-    if (c.getDataType() == opendlv::perception::StimulusDirectionOfMovement::ID()) {
-        opendlv::perception::StimulusDirectionOfMovement stimulusDirectionOfMovement = c.getData< opendlv::perception::StimulusDirectionOfMovement >();
-        opendlv::model::Direction direction = stimulusDirectionOfMovement.getDesiredDirectionOfMovement();
-        m_angle = direction.getAzimuth();
+    if (c.getDataType() == opendlv::logic::action::AimPoint::ID()) {
+        auto aimPoint = c.getData<opendlv::logic::action::AimPoint>();
+        m_angle = aimPoint.getAzimuthAngle();
         cout << "[" << getName() << "] Direction azimuth: " << m_angle << std::endl;
     }
 }

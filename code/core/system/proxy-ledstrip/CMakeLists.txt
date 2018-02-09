@@ -46,11 +46,11 @@ FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
 # Find ODVDOpenDLVDataModel.
-FIND_PACKAGE (ODVDOpenDLVDataModel REQUIRED)
+FIND_PACKAGE (ODVDOpenDLVStandardMessageSet REQUIRED)
 
 ###############################################################################
 # Set header files from ODVDOpenDLVDataModel.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDOPENDLVDATAMODEL_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDOPENDLVSTANDARDMESSAGESET_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set include directory.
@@ -58,7 +58,7 @@ INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
-              ${ODVDOPENDLVDATAMODEL_LIBRARIES})
+  ${ODVDOPENDLVSTANDARDMESSAGESET_LIBRARIES})
 
 ###############################################################################
 # Build this project.

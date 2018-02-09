@@ -27,8 +27,6 @@
 #include <opendavinci/odcore/data/Container.h>
 #include <opendavinci/odcore/strings/StringToolbox.h>
 
-#include "odvdimu/GeneratedHeaders_ODVDIMU.h"
-
 #include "Pololualtimu10device.h"
 #include "ProxyIMU.h"
 
@@ -50,19 +48,19 @@ ProxyIMU::~ProxyIMU() {
 odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyIMU::body() {
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
 
-        opendlv::proxy::GyroscopeReading gyroscopeReading = m_device->ReadGyroscope();
+        opendlv::proxy::AngularVelocityReading gyroscopeReading = m_device->ReadGyroscope();
         odcore::data::Container gyroscopeContainer(gyroscopeReading);
         getConference().send(gyroscopeContainer);
 
-        opendlv::proxy::AccelerometerReading accelerometerReading = m_device->ReadAccelerometer();
+        opendlv::proxy::AccelerationReading accelerometerReading = m_device->ReadAccelerometer();
         odcore::data::Container accelerometerContainer(accelerometerReading);
         getConference().send(accelerometerContainer);
 
-        opendlv::proxy::MagnetometerReading magnetometerReading = m_device->ReadMagnetometer();
+        opendlv::proxy::MagneticFieldReading magnetometerReading = m_device->ReadMagnetometer();
         odcore::data::Container magnetometerContainer(magnetometerReading);
         getConference().send(magnetometerContainer);
 
-        opendlv::proxy::AltimeterReading altimeterReading = m_device->ReadAltimeter();
+        opendlv::proxy::AltitudeReading altimeterReading = m_device->ReadAltimeter();
         odcore::data::Container altimeterContainer(altimeterReading);
         getConference().send(altimeterContainer);
 

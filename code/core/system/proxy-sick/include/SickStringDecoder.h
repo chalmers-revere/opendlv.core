@@ -24,7 +24,6 @@
 
 #include <opendavinci/odcore/io/StringListener.h>
 #include <opendavinci/odcore/io/conference/ContainerConference.h>
-#include "odvdopendlvdatamodel/generated/opendlv/core/sensors/EchoReading.h"
 
 namespace opendlv {
 namespace core {
@@ -53,7 +52,6 @@ class SickStringDecoder : public odcore::io::StringListener {
   bool m_header;
   bool m_startConfirmed;
 
-  opendlv::core::sensors::EchoReading m_latestReading;
   double m_position[3];
   unsigned char m_measurements[1000];
   unsigned char m_startResponse[10];

@@ -391,12 +391,12 @@ std::vector<float> PololuAltImu10Device::GetAcceleration() {
     return std::vector<float>{scaledX, scaledY, scaledZ};
 }
 
-opendlv::proxy::AccelerometerReading PololuAltImu10Device::ReadAccelerometer() {
+opendlv::proxy::AccelerationReading PololuAltImu10Device::ReadAccelerometer() {
     std::vector<float> reading = GetAcceleration();
     CalibrateAccelerometer(&reading);
     Eigen::Vector3f rawReading(reading[0], reading[1], reading[2]);
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
-    opendlv::proxy::AccelerometerReading accelerometerReading(adjustedReading[0],adjustedReading[1],adjustedReading[2]);
+    opendlv::proxy::AccelerationReading accelerometerReading(adjustedReading[0],adjustedReading[1],adjustedReading[2]);
     return accelerometerReading;
 }
 
@@ -453,9 +453,9 @@ float PololuAltImu10Device::GetAltitude() {
     return altitude;
 }
 
-opendlv::proxy::AltimeterReading PololuAltImu10Device::ReadAltimeter() {
+opendlv::proxy::AltitudeReading PololuAltImu10Device::ReadAltimeter() {
     float altitude = GetAltitude();
-    opendlv::proxy::AltimeterReading altimeterReading(altitude);
+    opendlv::proxy::AltitudeReading altimeterReading(altitude);
     return altimeterReading;
 }
 
@@ -524,7 +524,7 @@ std::vector<float> PololuAltImu10Device::GetMagneticField() {
     return std::vector<float>{scaledX,scaledY,scaledZ};
 }
 
-opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
+opendlv::proxy::MagneticFieldReading PololuAltImu10Device::ReadMagnetometer() {
     std::vector<float> reading = GetMagneticField();
 
     CalibrateMagnetometer(&reading);
@@ -532,7 +532,7 @@ opendlv::proxy::MagnetometerReading PololuAltImu10Device::ReadMagnetometer() {
     Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);    
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
 
-    opendlv::proxy::MagnetometerReading magnetometerReading(adjustedReading[0],adjustedReading[1],adjustedReading[2]);
+    opendlv::proxy::MagneticFieldReading magnetometerReading(adjustedReading[0],adjustedReading[1],adjustedReading[2]);
     return magnetometerReading;
 }
 
@@ -610,12 +610,12 @@ std::vector<float> PololuAltImu10Device::GetAngularVelocity() {
 }
 
 
-opendlv::proxy::GyroscopeReading PololuAltImu10Device::ReadGyroscope() {
+opendlv::proxy::AngularVelocityReading PololuAltImu10Device::ReadGyroscope() {
     std::vector<float> reading = GetAngularVelocity();
     CalibrateGyroscope(&reading);
     Eigen::Vector3f rawReading(reading[0],reading[1],reading[2]);
     Eigen::Vector3f adjustedReading = Rotate(rawReading, m_rotationMatrix);
-    opendlv::proxy::GyroscopeReading gyroscopeReading(adjustedReading[0], adjustedReading[1], adjustedReading[2]);
+    opendlv::proxy::AngularVelocityReading gyroscopeReading(adjustedReading[0], adjustedReading[1], adjustedReading[2]);
     return gyroscopeReading;
 }
 

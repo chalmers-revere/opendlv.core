@@ -51,11 +51,11 @@ FIND_PACKAGE (OpenDLV REQUIRED)
 
 ###########################################################################
 # Find ODVDTrimble.
-find_package(ODVDTrimble REQUIRED)
+find_package(ODVDOpenDLVStandardMessageSet REQUIRED)
 
 ###############################################################################
 # Set header files from ODVDTrimble.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDTRIMBLE_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDOPENDLVSTANDARDMESSAGESET_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set header files from OpenDLV.
@@ -66,7 +66,7 @@ INCLUDE_DIRECTORIES(include)
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
               ${OPENDLV_LIBRARIES}
-              ${ODVDTRIMBLE_LIBRARIES})
+              ${ODVDOPENDLVSTANDARDMESSAGESET_LIBRARIES})
 
 ###############################################################################
 # Build this project.

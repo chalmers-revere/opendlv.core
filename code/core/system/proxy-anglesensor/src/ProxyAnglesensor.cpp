@@ -31,8 +31,7 @@
 #include <opendavinci/odcore/strings/StringToolbox.h>
 
 
-#include "odvdanglesensor/GeneratedHeaders_ODVDAnglesensor.h"
-// #include <odvdanglesensor/GeneratedHeaders_ODVDAnglesensor.h>
+#include "odvdopendlvstandardmessageset/GeneratedHeaders_ODVDOpenDLVStandardMessageSet.h"
 
 #include "ProxyAnglesensor.h"
 
@@ -69,7 +68,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode ProxyAnglesensor::body
         uint16_t rawReading = GetRawReading();
         float angle = Analogue2Radians(rawReading);
         
-        opendlv::proxy::AnglesensorReading reading(angle);
+        opendlv::proxy::AngleReading reading(angle);
         odcore::data::Container readingContainer(reading);
         getConference().send(readingContainer);
 

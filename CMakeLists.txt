@@ -84,57 +84,6 @@ set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
 message(STATUS "Installing OpenDLV.core to ${INSTALL_DIR}.")
 set(PROJECT_ROOT ${CMAKE_SOURCE_DIR})
 
-###########################################################################
-ExternalProject_Add (libodvdopendlv-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlv
-    PATCH_COMMAND ""
-    SOURCE_DIR ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    TEST_COMMAND ""
-    INSTALL_COMMAND "")
-
-ExternalProject_Add (libodvdopendlv
-    DEPENDS libodvdopendlv-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resources/odvd/ODVDopendlv.odvd
-    PATCH_COMMAND ""
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlv"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
-    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
-    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
-    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
-    TEST_BEFORE_INSTALL 1
-    TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlv-prefix/src/libodvdopendlv-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlv-prefix/src/libodvdopendlv-build --target ${MAKE_PACKAGE})
-
-###########################################################################
-# This "external project" simply deletes the existing libodvdopendlvdatamodel.
-ExternalProject_Add (libodvdopendlvdatamodel-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlvdatamodel
-    PATCH_COMMAND ""
-    SOURCE_DIR ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    TEST_COMMAND ""
-    INSTALL_COMMAND "")
-
-# This "external project" builds libodvdopendlvdatamodel.
-ExternalProject_Add (libodvdopendlvdatamodel
-    DEPENDS libodvdopendlvdatamodel-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resources/odvd/ODVDOpenDLVDataModel.odvd
-    PATCH_COMMAND ""
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlvdatamodel"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
-    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
-    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
-    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
-    TEST_BEFORE_INSTALL 1
-    TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlvdatamodel-prefix/src/libodvdopendlvdatamodel-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdopendlvdatamodel-prefix/src/libodvdopendlvdatamodel-build --target ${MAKE_PACKAGE})
 
 ###########################################################################
 # This "external project" simply deletes the existing libodvdapplanix.
@@ -218,85 +167,6 @@ ExternalProject_Add (libodvdvehicle
     INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdvehicle-prefix/src/libodvdvehicle-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdvehicle-prefix/src/libodvdvehicle-build --target ${MAKE_PACKAGE})
 
 ###########################################################################
-# This "external project" simply deletes the existing libodvdfh16truck.
-ExternalProject_Add (libodvdfh16truck-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdfh16truck
-    PATCH_COMMAND ""
-    SOURCE_DIR ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    TEST_COMMAND ""
-    INSTALL_COMMAND "")
-
-# This "external project" builds libodvdfh16truck.
-ExternalProject_Add (libodvdfh16truck
-    DEPENDS libodvdfh16truck-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resources/odvd/ODVDFH16Truck.odvd
-    PATCH_COMMAND ""
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdfh16truck"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
-    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
-    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
-    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
-    TEST_BEFORE_INSTALL 1
-    TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdfh16truck-prefix/src/libodvdfh16truck-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdfh16truck-prefix/src/libodvdfh16truck-build --target ${MAKE_PACKAGE})
-
-###########################################################################
-# This "external project" simply deletes the existing libfh16mapping.
-ExternalProject_Add(libfh16mapping-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libfh16mapping
-    PATCH_COMMAND ""
-    SOURCE_DIR ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    TEST_COMMAND ""
-    INSTALL_COMMAND "")
-
-# This "external project" builds libfh16mapping.
-ExternalProject_Add(libfh16mapping
-    DEPENDS libfh16mapping-cleanup libodvdfh16truck
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODCANDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_SOURCE_DIR}/resources/can/fh16mapping.can
-    PATCH_COMMAND ""
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libfh16mapping"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
-    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
-    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
-    TEST_BEFORE_INSTALL 1
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libfh16mapping-prefix/src/libfh16mapping-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libfh16mapping-prefix/src/libfh16mapping-build --target ${MAKE_PACKAGE})
-
-###########################################################################
-# This "external project" simply deletes the existing libodvdtrimble.
-ExternalProject_Add (libodvdtrimble-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdtrimble
-    PATCH_COMMAND ""
-    SOURCE_DIR ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    TEST_COMMAND ""
-    INSTALL_COMMAND "")
-
-# This "external project" builds libodvdtrimble.
-ExternalProject_Add (libodvdtrimble
-    DEPENDS libodvdtrimble-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resources/odvd/ODVDTrimble.odvd
-    PATCH_COMMAND ""
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdtrimble"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
-    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
-    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
-    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
-    TEST_BEFORE_INSTALL 1
-    TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdtrimble-prefix/src/libodvdtrimble-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdtrimble-prefix/src/libodvdtrimble-build --target ${MAKE_PACKAGE})
-
-###########################################################################
 # This "external project" simply deletes the existing libodvdv2v.
 ExternalProject_Add (libodvdv2v-cleanup
     DOWNLOAD_COMMAND ""
@@ -324,65 +194,9 @@ ExternalProject_Add (libodvdv2v
     INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdv2v-prefix/src/libodvdv2v-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdv2v-prefix/src/libodvdv2v-build --target ${MAKE_PACKAGE})
 
 ###########################################################################
-# This "external project" simply deletes the existing libodvdimu.
-ExternalProject_Add (libodvdimu-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdimu
-    PATCH_COMMAND ""
-    SOURCE_DIR ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    TEST_COMMAND ""
-    INSTALL_COMMAND "")
-
-# This "external project" builds libodvdimu.
-ExternalProject_Add (libodvdimu
-    DEPENDS libodvdimu-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resources/odvd/ODVDIMU.odvd
-    PATCH_COMMAND ""
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdimu"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
-    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
-    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
-    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
-    TEST_BEFORE_INSTALL 1
-    TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdimu-prefix/src/libodvdimu-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdimu-prefix/src/libodvdimu-build --target ${MAKE_PACKAGE})
-
-
-###########################################################################
-# This "external project" simply deletes the existing libodvdanglesensor.
-ExternalProject_Add (libodvdanglesensor-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/libodvdanglesensor
-    PATCH_COMMAND ""
-    SOURCE_DIR ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    TEST_COMMAND ""
-    INSTALL_COMMAND "")
-
-# This "external project" builds libodvdanglesensor.
-ExternalProject_Add (libodvdanglesensor
-    DEPENDS libodvdanglesensor-cleanup
-    DOWNLOAD_COMMAND ""
-    UPDATE_COMMAND cd ${CMAKE_CURRENT_BINARY_DIR} && ${Java_JAVA_EXECUTABLE} -jar ${ODDATASTRUCTUREGENERATOR_EXECUTABLE} --withCMake ${CMAKE_CURRENT_SOURCE_DIR}/resources/odvd/ODVDAnglesensor.odvd
-    PATCH_COMMAND ""
-    SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libodvdanglesensor"
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}"
-    CMAKE_ARGS "-DOPENDAVINCI_DIR=${OPENDAVINCI_DIR}"
-    CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE}"
-    CMAKE_ARGS "-DCXXTEST_INCLUDE_DIR=${CXXTEST_INCLUDE_DIR}"
-    TEST_BEFORE_INSTALL 1
-    TEST_COMMAND ${CMAKE_CTEST_COMMAND} ${CTEST_PARAMETERS}
-    INSTALL_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdanglesensor-prefix/src/libodvdanglesensor-build --target install COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/libodvdanglesensor-prefix/src/libodvdanglesensor-build --target ${MAKE_PACKAGE})
-
-
-###########################################################################
 # This "external project" builds and installs the system software stack.
 ExternalProject_Add(system
-    DEPENDS libodvdapplanix libodvdopendlvstandardmessageset libodvdvehicle libodvdfh16truck libfh16mapping libodvdtrimble libodvdimu libodvdanglesensor libodvdv2v libodvdopendlvdatamodel
+    DEPENDS libodvdapplanix libodvdopendlvstandardmessageset libodvdvehicle libodvdv2v
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ""
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/code/core/system"
@@ -395,7 +209,7 @@ ExternalProject_Add(system
 ###########################################################################
 # This "external project" builds and installs the tool software stack.
 ExternalProject_Add(tool
-    DEPENDS libodvdapplanix libodvdopendlvstandardmessageset libodvdvehicle libodvdfh16truck libfh16mapping libodvdtrimble libodvdv2v libodvdopendlvdatamodel
+    DEPENDS libodvdapplanix libodvdopendlvstandardmessageset libodvdvehicle libodvdv2v
     DOWNLOAD_COMMAND ""
     UPDATE_COMMAND ""
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/code/tool"

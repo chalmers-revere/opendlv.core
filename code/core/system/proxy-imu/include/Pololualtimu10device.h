@@ -28,7 +28,7 @@
 
 #include <opendavinci/odcore/wrapper/Eigen.h>
 
-#include "odvdimu/GeneratedHeaders_ODVDIMU.h"
+#include "odvdopendlvstandardmessageset/GeneratedHeaders_ODVDOpenDLVStandardMessageSet.h"
 
 namespace opendlv {
 namespace core {
@@ -49,11 +49,11 @@ class PololuAltImu10Device {
 
     std::vector<float> GetAcceleration();
 
-    opendlv::proxy::AccelerometerReading ReadAccelerometer();
+    opendlv::proxy::AccelerationReading ReadAccelerometer();
 
     float GetAltitude();
 
-    opendlv::proxy::AltimeterReading ReadAltimeter();
+    opendlv::proxy::AltitudeReading ReadAltimeter();
 
     float GetTemperature();
 
@@ -61,11 +61,11 @@ class PololuAltImu10Device {
 
     std::vector<float> GetMagneticField();
 
-    opendlv::proxy::MagnetometerReading ReadMagnetometer();
+    opendlv::proxy::MagneticFieldReading ReadMagnetometer();
 
     std::vector<float> GetAngularVelocity();
 
-    opendlv::proxy::GyroscopeReading ReadGyroscope();
+    opendlv::proxy::AngularVelocityReading ReadGyroscope();
 
     bool IsInitialized() const;
 
