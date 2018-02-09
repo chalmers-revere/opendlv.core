@@ -46,12 +46,12 @@ FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
 ###########################################################################
 # Find ODVDAnglesensor.
-FIND_PACKAGE(ODVDAnglesensor REQUIRED)
+FIND_PACKAGE(ODVDOpenDLVStandardMessageSet REQUIRED)
 
 
 ###############################################################################
 # Set header files from ODVDAnglesensor.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDANGLESENSOR_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDOPENDLVSTANDARDMESSAGESET_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set include directory.
@@ -59,7 +59,7 @@ INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
-              ${ODVDANGLESENSOR_LIBRARIES})
+              ${ODVDOPENDLVSTANDARDMESSAGESET_LIBRARIES})
 
 ###############################################################################
 # Build this project.

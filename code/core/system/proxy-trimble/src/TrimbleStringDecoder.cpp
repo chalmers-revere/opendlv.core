@@ -31,7 +31,7 @@
 #include <opendlv/data/environment/Point3.h>
 #include <opendlv/data/environment/WGS84Coordinate.h>
 
-#include "odvdtrimble/GeneratedHeaders_ODVDTrimble.h"
+#include "odvdopendlvstandardmessageset/GeneratedHeaders_ODVDOpenDLVStandardMessageSet.h"
 
 #include "TrimbleStringDecoder.h"
 
@@ -53,16 +53,16 @@ TrimbleStringDecoder::~TrimbleStringDecoder() {}
 void TrimbleStringDecoder::nextString(string const &s) {
     static bool hasOldWGS84 = false;
     static opendlv::data::environment::WGS84Coordinate oldWGS84;
-    double timestamp = 0;
+   // double timestamp = 0;
     double latitude = 0;
     double longitude = 0;
-    float altitude = 0;
+  //  float altitude = 0;
     float northHeading = 0;
-    float speed = 0;
-    uint8_t latitudeDirection = 0;
-    uint8_t longitudeDirection = 0;
-    uint8_t satelliteCount = 0;
-    bool hasHeading = false;
+   // float speed = 0;
+   // uint8_t latitudeDirection = 0;
+   // uint8_t longitudeDirection = 0;
+   // uint8_t satelliteCount = 0;
+   // bool hasHeading = false;
     bool hasRtk = false;
 
     bool gotGpgga = false;
@@ -110,13 +110,13 @@ void TrimbleStringDecoder::nextString(string const &s) {
             try {
                 gotGpgga = true;
 
-                timestamp = stod(fields.at(1));
+               // timestamp = stod(fields.at(1));
 
                 latitude = stod(fields.at(2));
-                latitudeDirection = fields.at(3)[0];
+              //  latitudeDirection = fields.at(3)[0];
 
                 longitude = stod(fields.at(4));
-                longitudeDirection = fields.at(5)[0];
+              //  longitudeDirection = fields.at(5)[0];
 
                 // Convert from format dd mm,mmmm
                 latitude = latitude / 100.0;
@@ -128,11 +128,11 @@ void TrimbleStringDecoder::nextString(string const &s) {
                 const int gpsQuality = stoi(fields.at(6));
                 hasRtk = (gpsQuality == 4 || gpsQuality == 5);
 
-                satelliteCount = stoi(fields.at(7));
+              //  satelliteCount = stoi(fields.at(7));
 
                 //   float hdop = stof(fields.at(8));
 
-                altitude = stof(fields.at(9));
+             //   altitude = stof(fields.at(9));
 
                 //string altitudeUnit = fields.at(10);
 
@@ -185,12 +185,12 @@ void TrimbleStringDecoder::nextString(string const &s) {
             // Set oldWGS84 coordinate as reference, transform wgs84 into Cartesian frame, and compute heading.
             opendlv::data::environment::Point3 p = oldWGS84.transform(wgs84);
             northHeading = p.getAngleXY() - M_PI*0.5;
-            hasHeading = true;
+        //    hasHeading = true;
             oldWGS84 = wgs84;
         }
         hasOldWGS84 = true;
 
-
+/*
         opendlv::core::sensors::trimble::GpsReading gps(timestamp,
                                                         latitude,
                                                         longitude,
@@ -204,6 +204,7 @@ void TrimbleStringDecoder::nextString(string const &s) {
                                                         hasRtk);
         Container c(gps);
         m_conference.send(c);
+*/
 
         // Distribute WGS84 coordinate.
         Container c2(wgs84);

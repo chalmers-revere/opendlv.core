@@ -44,14 +44,12 @@ INCLUDE (CheckCxxTestEnvironment)
 # Find OpenDaVINCI.
 FIND_PACKAGE (OpenDaVINCI REQUIRED)
 
-###########################################################################
-# Find ODVDIMU.
-find_package(ODVDIMU REQUIRED)
+find_package(ODVDOpenDLVStandardMessageSet REQUIRED)
 
 
 ###############################################################################
 # Set header files from ODVDIMU.
-INCLUDE_DIRECTORIES (SYSTEM ${ODVDIMU_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES (SYSTEM ${ODVDOPENDLVSTANDARDMESSAGESET_INCLUDE_DIRS})
 # Set header files from OpenDaVINCI.
 INCLUDE_DIRECTORIES (SYSTEM ${OPENDAVINCI_INCLUDE_DIRS})
 # Set include directory.
@@ -59,7 +57,7 @@ INCLUDE_DIRECTORIES(include)
 
 # Set libraries to link against.
 set(LIBRARIES ${OPENDAVINCI_LIBRARIES}
-              ${ODVDIMU_LIBRARIES})
+  ${ODVDOPENDLVSTANDARDMESSAGESET_LIBRARIES})
 
 ###############################################################################
 # Build this project.
