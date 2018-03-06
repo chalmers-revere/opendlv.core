@@ -118,8 +118,8 @@ message opendlv.proxy.PedalPositionReading [id = 1041] {
   float position [id = 1];
 }
 
-message opendlv.proxy.GroundSteeringReading [id = 1045] {
-  float groundSteering [id = 1];
+message opendlv.proxy.GroundSteeringAngleReading [id = 1045] {
+  float groundSteeringAngle [id = 1];
 }
 
 message opendlv.proxy.GroundSpeedReading [id = 1046] {
@@ -200,8 +200,8 @@ message opendlv.proxy.PulseWidthModulationRequest [id = 1087] {
   uint32 dutyCycleNs [id = 1];
 }
 
-message opendlv.proxy.GroundSteeringRequest [id = 1090] {
-  float groundSteering [id = 1];
+message opendlv.proxy.GroundSteeringAngleRequest [id = 1090] {
+  float groundSteeringAngle [id = 1];
 }
 
 message opendlv.proxy.GroundSpeedRequest [id = 1091] {
