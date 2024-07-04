@@ -1,3 +1,5 @@
+Moved to https://git.opendlv.org.
+
 # opendlv-core
 
 ## Building on a native Linux:
